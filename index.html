@@ -83,7 +83,7 @@
     min-height:100vh;
     padding-bottom:env(safe-area-inset-bottom);
   }
-  .wrap{max-width:820px;margin:0 auto;padding:max(24px, env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));}
+  .wrap{max-width:820px;margin:0 auto;padding:max(24px, env(safe-area-inset-top)) 16px calc(88px + env(safe-area-inset-bottom));}
 
   header{
     text-align:center;margin-bottom:8px;position:sticky;top:env(safe-area-inset-top);z-index:50;
@@ -117,17 +117,21 @@
 
   /* ---- hub tabs ---- */
   .hub-tabs{
-    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;margin:0;
-    background:var(--carvao-2);border-top:1px solid var(--border);
-    padding-bottom:env(safe-area-inset-bottom);
-    box-shadow:0 -2px 10px rgba(0,0,0,0.06);
+    display:flex;position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));
+    z-index:60;margin:0;border-radius:20px;overflow:hidden;
+    background:var(--carvao-2);border:1px solid var(--border);
+    box-shadow:0 6px 24px rgba(0,0,0,0.18);
   }
   .hub-tab-btn{
     flex:1;background:none;border:none;color:var(--areia-dim);font-family:var(--sans);
-    font-size:0.74rem;font-weight:600;padding:15px 4px 13px;cursor:pointer;white-space:nowrap;
-    border-top:2px solid transparent;transition:.15s;position:relative;overflow:hidden;text-overflow:ellipsis;
+    font-size:0.74rem;font-weight:600;padding:14px 4px 16px;cursor:pointer;white-space:nowrap;
+    transition:.15s;position:relative;overflow:hidden;text-overflow:ellipsis;
   }
-  .hub-tab-btn.active{color:var(--safira-l);border-top-color:var(--safira-l);}
+  .hub-tab-btn.active{color:var(--safira-l);}
+  .hub-tab-btn.active::after{
+    content:'';position:absolute;left:50%;bottom:4px;transform:translateX(-50%);
+    width:5px;height:5px;border-radius:50%;background:var(--safira-l);
+  }
   .hub-panel{display:none;}
   .hub-panel.active{display:block;animation:fadein .25s ease;}
   @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
@@ -227,6 +231,14 @@
     padding:11px 12px;font-size:0.9rem;font-family:var(--sans);resize:vertical;min-height:70px;line-height:1.5;
   }
   .block textarea:focus, .block input:focus{outline:none;border-color:var(--safira-l);}
+  .rich-field{
+    width:100%;background:var(--carvao-3);border:1px solid var(--border);border-radius:8px;color:var(--areia);
+    padding:11px 12px;font-size:0.9rem;font-family:var(--sans);min-height:70px;line-height:1.5;
+    white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;
+  }
+  .rich-field:focus{outline:none;border-color:var(--safira-l);}
+  .rich-field:empty:before{content:attr(data-placeholder);color:var(--areia-dim);pointer-events:none;}
+  .rich-field a{color:var(--safira-l);text-decoration:underline;}
   .block-row{display:flex;gap:10px;}
   .block-row > div{flex:1;}
   .meta-row{display:flex;gap:10px;margin-top:4px;}
@@ -392,6 +404,21 @@
 </style>
 </head>
 <body>
+
+<div id="passwordGate" style="position:fixed;inset:0;z-index:999;background:var(--carvao);display:flex;
+  align-items:center;justify-content:center;padding:20px;">
+  <div style="max-width:320px;width:100%;text-align:center;">
+    <div style="font-size:2.6rem;margin-bottom:8px;">🌱</div>
+    <h2 style="font-family:var(--serif);margin:0 0 6px;color:var(--areia);">Semeador</h2>
+    <p style="color:var(--areia-dim);font-size:0.86rem;margin:0 0 18px;">Digite a senha pra continuar</p>
+    <input type="password" id="passwordInput" placeholder="Senha" autocomplete="off"
+      style="width:100%;text-align:center;font-size:1.05rem;padding:12px;border-radius:10px;border:2px solid var(--border);
+      background:var(--carvao-2);color:var(--areia);margin-bottom:10px;box-sizing:border-box;">
+    <button onclick="checkAppPassword()" style="width:100%;background:var(--safira);color:var(--on-accent);border:none;
+      border-radius:10px;padding:12px;font-weight:700;font-size:0.95rem;cursor:pointer;">Entrar</button>
+    <p id="passwordError" style="color:var(--terracota);font-size:0.82rem;margin-top:10px;display:none;">Senha incorreta, tenta de novo.</p>
+  </div>
+</div>
 <div class="wrap">
 
   <header>
@@ -438,64 +465,55 @@
       <div class="block">
         <div class="block-head"><span class="verse-badge">1</span><span class="block-title">Gancho <small style="color:var(--areia-dim);font-weight:400;">(0–15s)</small></span></div>
         <p class="block-hint">Pergunta ou curiosidade que trava o dedo.</p>
-        <textarea id="f_gancho" placeholder="Escreve o gancho aqui..." oninput="updateFieldLink('f_gancho')"></textarea>
-        <a href="#" id="link_f_gancho" target="_blank" rel="noopener" class="field-link"></a>
+        <div id="f_gancho" class="rich-field" contenteditable="true" data-placeholder="Escreve o gancho aqui..." style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
         <div class="block-head"><span class="verse-badge">2</span><span class="block-title">Identificação / história real</span></div>
         <p class="block-hint">A dor concreta que a pessoa reconhece nela mesma.</p>
-        <textarea id="f_historia" placeholder="Descreve a situação real..." oninput="updateFieldLink('f_historia')"></textarea>
-        <a href="#" id="link_f_historia" target="_blank" rel="noopener" class="field-link"></a>
+        <div id="f_historia" class="rich-field" contenteditable="true" data-placeholder="Descreve a situação real..." style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
         <div class="block-head"><span class="verse-badge">3</span><span class="block-title">A Palavra</span></div>
         <p class="block-hint">Confere na Bíblia física antes de gravar. Nunca de memória.</p>
         <input type="text" id="f_ref" placeholder="Referência (ex: Mateus 6:34)" style="margin-bottom:10px;">
-        <textarea id="f_versiculo" placeholder="Cole o versículo completo aqui" oninput="updateFieldLink('f_versiculo')"></textarea>
-        <a href="#" id="link_f_versiculo" target="_blank" rel="noopener" class="field-link"></a>
+        <div id="f_versiculo" class="rich-field" contenteditable="true" data-placeholder="Cole o versículo completo aqui" style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
         <div class="block-head"><span class="verse-badge">4</span><span class="block-title">Micro-resposta <small style="color:var(--areia-dim);font-weight:400;">— o choque</small></span></div>
         <p class="block-hint">O mundo diz uma coisa. Jesus diz outra.</p>
-        <textarea id="f_micro" placeholder="O mundo diz... Mas Jesus diz..." oninput="updateFieldLink('f_micro')"></textarea>
-        <a href="#" id="link_f_micro" target="_blank" rel="noopener" class="field-link"></a>
+        <div id="f_micro" class="rich-field" contenteditable="true" data-placeholder="O mundo diz... Mas Jesus diz..." style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
         <div class="block-head"><span class="verse-badge">5</span><span class="block-title">Ilustração</span></div>
         <p class="block-hint">Bíblica primeiro. Contemporânea só se não houver uma direta — sempre depois do versículo.</p>
-        <textarea id="f_ilustracao" placeholder="Parábola ou exemplo do cotidiano..." oninput="updateFieldLink('f_ilustracao')"></textarea>
-        <a href="#" id="link_f_ilustracao" target="_blank" rel="noopener" class="field-link"></a>
+        <div id="f_ilustracao" class="rich-field" contenteditable="true" data-placeholder="Parábola ou exemplo do cotidiano..." style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
         <div class="block-head"><span class="verse-badge">6</span><span class="block-title">Aplicação <small style="color:var(--areia-dim);font-weight:400;">— payoff / loop</small></span></div>
         <p class="block-hint">Um passo prático e imediato.</p>
-        <textarea id="f_aplicacao" placeholder="O que a pessoa faz com isso hoje..." oninput="updateFieldLink('f_aplicacao')"></textarea>
-        <a href="#" id="link_f_aplicacao" target="_blank" rel="noopener" class="field-link"></a>
+        <div id="f_aplicacao" class="rich-field" contenteditable="true" data-placeholder="O que a pessoa faz com isso hoje..." style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
         <div class="block-head"><span class="verse-badge">7</span><span class="block-title">Reflexão</span></div>
         <p class="block-hint">Pergunta específica ao tema — nunca genérica.</p>
-        <textarea id="f_reflexao" placeholder="Pergunta específica ao tema..." oninput="updateFieldLink('f_reflexao')"></textarea>
-        <a href="#" id="link_f_reflexao" target="_blank" rel="noopener" class="field-link"></a>
+        <div id="f_reflexao" class="rich-field" contenteditable="true" data-placeholder="Pergunta específica ao tema..." style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
         <div class="block-head"><span class="verse-badge">8</span><span class="block-title">Oração / Fechamento</span></div>
         <p class="block-hint">100% bíblica, tom pastoral, zero frase de efeito.</p>
-        <textarea id="f_oracao" placeholder="Oração + fechamento pastoral..." oninput="updateFieldLink('f_oracao')"></textarea>
-        <a href="#" id="link_f_oracao" target="_blank" rel="noopener" class="field-link"></a>
+        <div id="f_oracao" class="rich-field" contenteditable="true" data-placeholder="Oração + fechamento pastoral..." style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
         <div class="block-head"><span class="verse-badge">9</span><span class="block-title">Título de trabalho & formato</span></div>
-        <textarea id="f_titulo" placeholder="Título de trabalho deste roteiro" style="margin-bottom:10px;min-height:52px;" oninput="updateFieldLink('f_titulo')"></textarea>
-        <a href="#" id="link_f_titulo" target="_blank" rel="noopener" class="field-link" style="margin-bottom:10px;"></a>
+        <div id="f_titulo" class="rich-field" contenteditable="true" data-placeholder="Título de trabalho deste roteiro" style="margin-bottom:10px;min-height:52px;" onblur="linkifyRichField(this)"></div>
         <div class="meta-row">
           <div>
             <label>Formato</label>
@@ -1062,26 +1080,42 @@ function newScript(){
   persistScripts();
   openWizard(s.id);
 }
-function extractFirstUrl(text){
-  const m = (text||'').match(/https?:\/\/[^\s]+/);
-  return m ? m[0] : null;
-}
 const ALL_SCRIPT_FIELD_IDS = ["f_titulo","f_gancho","f_historia","f_versiculo","f_micro","f_ilustracao","f_aplicacao","f_reflexao","f_oracao"];
-function updateFieldLink(fieldId){
-  const field = document.getElementById(fieldId);
-  const link = document.getElementById('link_'+fieldId);
-  if(!field || !link) return;
-  const url = extractFirstUrl(field.value);
-  if(url){
-    link.href = url;
-    link.textContent = '🔗 ' + url;
-    link.style.display = 'inline-block';
-  } else {
-    link.style.display = 'none';
-  }
+
+function escapeHtmlPlain(s){
+  return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+/* getFieldValue/setFieldValue: os campos ricos guardam texto puro (com links
+   virando <a> só visualmente); o dado salvo é sempre texto simples. */
+function getFieldValue(id){
+  const el = document.getElementById(id);
+  return el ? el.innerText.trim() : '';
+}
+function setFieldValue(id, text){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = text || '';
+  linkifyRichField(el);
+}
+/* linkifyRichField: roda só quando o campo perde o foco (onblur) — assim
+   nunca mexe no cursor enquanto a pessoa ainda está digitando. Detecta
+   TODOS os links do texto (não só o primeiro) e transforma cada um em
+   link azul sublinhado, clicável, sem sair do lugar onde foi escrito. */
+function linkifyRichField(el){
+  if(!el) return;
+  const text = el.innerText;
+  if(!/https?:\/\//.test(text)){ return; }
+  const escaped = escapeHtmlPlain(text);
+  const html = escaped.replace(/(https?:\/\/[^\s<]+)/g, url =>
+    `<a href="${url}" target="_blank" rel="noopener">${url}</a>`
+  );
+  el.innerHTML = html;
 }
 function updateAllFieldLinks(){
-  ALL_SCRIPT_FIELD_IDS.forEach(updateFieldLink);
+  ALL_SCRIPT_FIELD_IDS.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) linkifyRichField(el);
+  });
 }
 function openWizard(id){
   window.scrollTo(0,0);
@@ -1090,16 +1124,16 @@ function openWizard(id){
   editingScriptId = id;
   document.getElementById('scriptListView').style.display='none';
   document.getElementById('scriptWizard').style.display='block';
-  document.getElementById('f_titulo').value = s.titulo || '';
-  document.getElementById('f_gancho').value = s.gancho || '';
-  document.getElementById('f_historia').value = s.historia || '';
+  setFieldValue('f_titulo', s.titulo || '');
+  setFieldValue('f_gancho', s.gancho || '');
+  setFieldValue('f_historia', s.historia || '');
   document.getElementById('f_ref').value = s.ref || '';
-  document.getElementById('f_versiculo').value = s.versiculo || '';
-  document.getElementById('f_micro').value = s.micro || '';
-  document.getElementById('f_ilustracao').value = s.ilustracao || '';
-  document.getElementById('f_aplicacao').value = s.aplicacao || '';
-  document.getElementById('f_reflexao').value = s.reflexao || '';
-  document.getElementById('f_oracao').value = s.oracao || '';
+  setFieldValue('f_versiculo', s.versiculo || '');
+  setFieldValue('f_micro', s.micro || '');
+  setFieldValue('f_ilustracao', s.ilustracao || '');
+  setFieldValue('f_aplicacao', s.aplicacao || '');
+  setFieldValue('f_reflexao', s.reflexao || '');
+  setFieldValue('f_oracao', s.oracao || '');
   document.getElementById('f_formato').value = s.formato || 'Short';
   document.getElementById('f_status').value = s.status || 'rascunho';
   document.getElementById('deleteBtn').style.display = 'inline-block';
@@ -1111,16 +1145,16 @@ function openWizard(id){
 function closeWizard(){ editingScriptId = null; currentAttachments = []; window.scrollTo(0,0); renderScripts(); }
 function readWizard(){
   return {
-    titulo: document.getElementById('f_titulo').value.trim(),
-    gancho: document.getElementById('f_gancho').value.trim(),
-    historia: document.getElementById('f_historia').value.trim(),
+    titulo: getFieldValue('f_titulo'),
+    gancho: getFieldValue('f_gancho'),
+    historia: getFieldValue('f_historia'),
     ref: document.getElementById('f_ref').value.trim(),
-    versiculo: document.getElementById('f_versiculo').value.trim(),
-    micro: document.getElementById('f_micro').value.trim(),
-    ilustracao: document.getElementById('f_ilustracao').value.trim(),
-    aplicacao: document.getElementById('f_aplicacao').value.trim(),
-    reflexao: document.getElementById('f_reflexao').value.trim(),
-    oracao: document.getElementById('f_oracao').value.trim(),
+    versiculo: getFieldValue('f_versiculo'),
+    micro: getFieldValue('f_micro'),
+    ilustracao: getFieldValue('f_ilustracao'),
+    aplicacao: getFieldValue('f_aplicacao'),
+    reflexao: getFieldValue('f_reflexao'),
+    oracao: getFieldValue('f_oracao'),
     formato: document.getElementById('f_formato').value,
     status: document.getElementById('f_status').value,
     anexos: currentAttachments
@@ -1971,6 +2005,41 @@ window.addEventListener('scroll', ()=>{
   if(!header) return;
   header.classList.toggle('shrunk', window.scrollY > 40);
 }, { passive: true });
+
+/* ---------- senha de entrada ---------- */
+const APP_PASSWORD = "fgm123";
+function checkAppPassword(){
+  const input = document.getElementById('passwordInput');
+  if(input.value === APP_PASSWORD){
+    sessionStorage.setItem('vej_unlocked', '1');
+    document.getElementById('passwordGate').style.display = 'none';
+  } else {
+    document.getElementById('passwordError').style.display = 'block';
+    input.value = '';
+    input.focus();
+  }
+}
+(function(){
+  const input = document.getElementById('passwordInput');
+  if(input){
+    input.addEventListener('keydown', e=>{ if(e.key==='Enter') checkAppPassword(); });
+  }
+  if(sessionStorage.getItem('vej_unlocked') === '1'){
+    const gate = document.getElementById('passwordGate');
+    if(gate) gate.style.display = 'none';
+  } else if(input){
+    setTimeout(()=>input.focus(), 100);
+  }
+})();
+
+/* ---------- links dentro dos campos ricos abrem com um toque só ---------- */
+document.addEventListener('click', function(e){
+  const link = e.target.closest('.rich-field a');
+  if(link){
+    e.preventDefault();
+    openUrl(link.getAttribute('href'));
+  }
+});
 
 /* ---------- init ---------- */
 renderIdeas();
