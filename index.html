@@ -13,35 +13,45 @@
 <meta name="mobile-web-app-capable" content="yes">
 <style>
   :root{
-    --carvao:#17171a;
-    --carvao-2:#212126;
-    --carvao-3:#2b2b31;
-    --areia:#eee4d1;
-    --areia-dim:#a49a89;
-    --safira:#1b3a6b;
-    --safira-l:#3a5f9c;
-    --vinho:#7a2436;
-    --vinho-l:#9c3448;
-    --terracota:#b5502d;
-    --esmeralda:#1f7a52;
-    --esmeralda-l:#2f9a6a;
-    --border:#38383f;
+    --carvao:#f4f6f9;
+    --carvao-2:#ffffff;
+    --carvao-3:#f1f5f9;
+    --areia:#1e293b;
+    --areia-dim:#64748b;
+    --on-accent:#ffffff;
+    --safira:#1e293b;
+    --safira-l:#3b82f6;
+    --vinho:#4338ca;
+    --vinho-l:#4f46e5;
+    --terracota:#dc2626;
+    --esmeralda:#059669;
+    --esmeralda-l:#10b981;
+    --border:#e5e7eb;
+    --success-bg:#d1fae5;
+    --success-text:#065f46;
+    --success-border:#10b981;
+    --danger-bg:#fee2e2;
+    --danger-text:#991b1b;
+    --chip-blue-bg:#e0f2fe;
+    --chip-blue-text:#0369a1;
+    --chip-gray-bg:#f1f5f9;
+    --chip-gray-text:#475569;
+    --info-bg:#eff6ff;
+    --info-text:#1e40af;
+    --info-border:#bfdbfe;
     --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Times New Roman', serif;
     --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
-    background:
-      radial-gradient(circle at 15% -10%, rgba(27,58,107,0.25), transparent 45%),
-      radial-gradient(circle at 100% 0%, rgba(122,36,54,0.15), transparent 40%),
-      var(--carvao);
+    background: var(--carvao);
     color:var(--areia);
     font-family:var(--sans);
     min-height:100vh;
     padding-bottom:env(safe-area-inset-bottom);
   }
-  .wrap{max-width:820px;margin:0 auto;padding:24px 16px 80px;}
+  .wrap{max-width:820px;margin:0 auto;padding:max(24px, env(safe-area-inset-top)) 16px 80px;}
 
   header{text-align:center;margin-bottom:18px;}
   header .mark{
@@ -63,7 +73,7 @@
   .hub-panel.active{display:block;animation:fadein .25s ease;}
   @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
   .badge-count{
-    display:inline-block;background:var(--vinho);color:var(--areia);font-size:0.68rem;
+    display:inline-block;background:var(--vinho);color:var(--on-accent);font-size:0.68rem;
     font-weight:700;border-radius:999px;padding:1px 6px;margin-left:4px;
   }
 
@@ -76,7 +86,7 @@
   }
   .capture textarea:focus{outline:none;border-color:var(--safira-l);}
   .capture button{
-    background:var(--safira);color:var(--areia);border:none;border-radius:10px;
+    background:var(--safira);color:var(--on-accent);border:none;border-radius:10px;
     padding:14px 20px;font-weight:700;font-size:0.95rem;cursor:pointer;transition:.15s;flex-shrink:0;
   }
   .capture button:hover{background:var(--safira-l);}
@@ -88,7 +98,7 @@
     background:var(--carvao-2);border:1px solid var(--border);color:var(--areia-dim);
     font-size:0.76rem;padding:6px 12px;border-radius:999px;cursor:pointer;font-weight:600;
   }
-  .chip.active{background:var(--safira);color:var(--areia);border-color:var(--safira);}
+  .chip.active{background:var(--safira);color:var(--on-accent);border-color:var(--safira);}
 
   /* ---- idea cards ---- */
   .idea{
@@ -98,7 +108,7 @@
   .idea-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
   .idea-title{font-size:1rem;font-weight:600;line-height:1.35;white-space:pre-wrap;word-break:break-word;}
   .idea-meta{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;}
-  .stars{color:#d4af5a;font-size:0.82rem;letter-spacing:1px;}
+  .stars{color:#a67c1e;font-size:0.82rem;letter-spacing:1px;}
   .pill{
     font-size:0.68rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;
     padding:2px 8px;border-radius:999px;background:var(--carvao-3);color:var(--areia-dim);
@@ -114,20 +124,24 @@
     width:100%;background:var(--carvao-3);border:1px solid var(--border);color:var(--areia);
     border-radius:8px;padding:8px 10px;font-size:0.85rem;font-family:var(--sans);
   }
-  .to-script{grid-column:1/-1;background:var(--esmeralda);color:var(--areia);border:none;border-radius:8px;
-    padding:9px;font-weight:700;font-size:0.8rem;cursor:pointer;margin-top:4px;}
+  .detail-actions{grid-column:1/-1;display:flex;gap:8px;margin-top:4px;}
+  .to-script{flex:2;background:var(--esmeralda);color:var(--on-accent);border:none;border-radius:8px;
+    padding:9px;font-weight:700;font-size:0.8rem;cursor:pointer;}
   .to-script:hover{background:var(--esmeralda-l);}
+  .to-script-secondary{flex:1;background:var(--carvao-3);color:var(--areia-dim);border:1px solid var(--border);
+    border-radius:8px;padding:9px;font-weight:700;font-size:0.8rem;cursor:pointer;}
+  .to-script-secondary:hover{color:var(--areia);border-color:var(--areia-dim);}
   .empty{text-align:center;color:var(--areia-dim);font-size:0.86rem;padding:36px 10px;border:1px dashed var(--border);border-radius:12px;}
 
   /* ---- roteiro list ---- */
-  .new-script-btn{width:100%;background:var(--vinho);color:var(--areia);border:none;border-radius:10px;
+  .new-script-btn{width:100%;background:var(--vinho);color:var(--on-accent);border:none;border-radius:10px;
     padding:13px;font-weight:700;font-size:0.92rem;cursor:pointer;margin-bottom:18px;}
   .new-script-btn:hover{background:var(--vinho-l);}
   .script-card{background:var(--carvao-2);border:1px solid var(--border);border-left:3px solid var(--vinho-l);
     border-radius:10px;padding:13px 16px;margin-bottom:10px;cursor:pointer;display:flex;
     justify-content:space-between;align-items:center;gap:10px;}
   .script-card:hover{border-color:var(--areia-dim);}
-  .script-card .st{font-size:0.66rem;text-transform:uppercase;letter-spacing:.5px;color:var(--esmeralda-l);font-weight:700;}
+  .script-card .st{font-size:0.66rem;text-transform:uppercase;letter-spacing:.5px;color:var(--esmeralda);font-weight:700;}
   .script-card .del{color:var(--terracota);background:none;border:none;cursor:pointer;font-size:0.88rem;}
 
   /* ---- wizard ---- */
@@ -153,16 +167,16 @@
   .meta-row label{font-size:0.66rem;text-transform:uppercase;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;}
   .wizard-actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;}
   .wizard-actions button{flex:1;border:none;border-radius:10px;padding:13px;font-weight:700;font-size:0.88rem;cursor:pointer;min-width:120px;}
-  .btn-save{background:var(--esmeralda);color:var(--areia);}
+  .btn-save{background:var(--esmeralda);color:var(--on-accent);}
   .btn-save:hover{background:var(--esmeralda-l);}
-  .btn-export{background:var(--safira);color:var(--areia);}
+  .btn-export{background:var(--safira);color:var(--on-accent);}
   .btn-export:hover{background:var(--safira-l);}
   .btn-delete{background:transparent;color:var(--terracota);border:1px solid var(--terracota) !important;flex:0 0 auto;padding:13px 16px;}
   .btn-delete:hover{background:rgba(181,80,45,0.12);}
 
   /* ---- PAINEL (weekly schedule) ---- */
   .panel-top-actions{display:flex;justify-content:flex-end;margin-bottom:14px;}
-  .panel-btn{background:var(--safira);color:var(--areia);border:none;border-radius:8px;padding:10px 16px;
+  .panel-btn{background:var(--safira);color:var(--on-accent);border:none;border-radius:8px;padding:10px 16px;
     font-weight:700;cursor:pointer;font-size:0.86rem;}
   .panel-btn:hover{background:var(--safira-l);}
   .controls-bar{display:flex;gap:14px;margin-bottom:14px;background:var(--carvao-2);border:1px solid var(--border);
@@ -171,34 +185,34 @@
   .layout-label{font-weight:700;color:var(--areia-dim);font-size:0.82rem;}
   .layout-btn{padding:7px 14px;border:1px solid var(--border);background:var(--carvao-3);color:var(--areia-dim);
     font-weight:600;border-radius:8px;cursor:pointer;font-size:0.82rem;}
-  .layout-btn.active{background:var(--safira);color:var(--areia);border-color:var(--safira);}
+  .layout-btn.active{background:var(--safira);color:var(--on-accent);border-color:var(--safira);}
   .platform-filter-group{display:flex;gap:8px;align-items:center;}
   .platform-select{padding:7px 10px;border:1px solid var(--border);background:var(--carvao-3);color:var(--areia);
     font-weight:600;border-radius:8px;cursor:pointer;font-size:0.82rem;}
 
   .day-tabs{display:flex;gap:8px;margin-bottom:22px;overflow-x:auto;padding-bottom:5px;}
   .day-tab-btn{padding:12px 16px;border:1px solid var(--border);background:var(--carvao-2);color:var(--areia-dim);
-    cursor:pointer;border-radius:10px;font-weight:700;font-size:0.86rem;flex:1;white-space:nowrap;text-align:center;
+    cursor:pointer;border-radius:10px;font-weight:700;font-size:0.86rem;flex:0 0 auto;white-space:nowrap;text-align:center;
     position:relative;}
-  .day-tab-btn.active{background:var(--safira);color:var(--areia);border-color:var(--safira);}
+  .day-tab-btn.active{background:var(--safira);color:var(--on-accent);border-color:var(--safira);}
   .day-tab-btn.today::after{content:'';position:absolute;top:6px;right:8px;width:7px;height:7px;
     background-color:var(--esmeralda-l);border-radius:50%;}
-  .day-tab-btn.day-finished{background-color:rgba(31,122,82,0.18) !important;color:var(--esmeralda-l) !important;
-    border-color:var(--esmeralda) !important;}
-  .day-tab-btn.day-finished.active{background-color:var(--esmeralda) !important;color:var(--areia) !important;
-    border-color:var(--esmeralda) !important;}
+  .day-tab-btn.day-finished{background-color:var(--success-bg) !important;color:var(--success-text) !important;
+    border-color:var(--success-border) !important;}
+  .day-tab-btn.day-finished.active{background-color:var(--success-border) !important;color:var(--on-accent) !important;
+    border-color:var(--success-border) !important;}
 
   .progress-container{background:var(--carvao-2);border:1px solid var(--border);padding:20px;border-radius:14px;margin-bottom:22px;}
   .progress-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:14px;}
   .progress-bar-wrapper{flex-grow:1;display:flex;align-items:center;min-width:220px;}
   .progress-bar-bg{flex-grow:1;background:var(--carvao-3);height:14px;margin-left:16px;border-radius:10px;overflow:hidden;}
   .progress-bar-fill{background:var(--esmeralda-l);height:100%;width:0%;transition:width 0.3s;}
-  .countdown-badge{background:rgba(27,58,107,0.35);color:var(--areia);padding:6px 14px;border-radius:20px;
-    font-size:0.82rem;font-weight:700;border:1px solid var(--safira-l);}
+  .countdown-badge{background:var(--info-bg);color:var(--info-text);padding:6px 14px;border-radius:20px;
+    font-size:0.82rem;font-weight:700;border:1px solid var(--info-border);}
   .archive-box{background:var(--carvao-3);border:1px solid var(--border);padding:14px;border-radius:10px;
     display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap;}
   .archive-box input{flex-grow:1;min-width:180px;}
-  .btn-archive-week{background:var(--esmeralda);color:var(--areia);border:none;padding:10px 18px;border-radius:8px;
+  .btn-archive-week{background:var(--esmeralda);color:var(--on-accent);border:none;padding:10px 18px;border-radius:8px;
     font-weight:700;cursor:pointer;font-size:0.86rem;white-space:nowrap;}
   .btn-archive-week:hover{background:var(--esmeralda-l);}
 
@@ -206,29 +220,33 @@
   .day-card.active{display:block;}
   .day-header{background:var(--carvao-3);color:var(--areia);padding:16px 20px;font-weight:700;font-size:1.1rem;
     display:flex;justify-content:space-between;align-items:center;}
-  .today-badge{background:var(--esmeralda);color:var(--areia);font-size:0.76rem;padding:4px 10px;border-radius:20px;font-weight:600;}
-  .task-table{width:100%;border-collapse:collapse;}
-  .task-table tr{border-bottom:1px solid var(--border);}
-  .task-table tr:last-child{border-bottom:none;}
-  .task-table tr.completed{background-color:rgba(31,122,82,0.08);}
-  .task-table td{padding:14px 18px;vertical-align:middle;}
-  .col-check{width:44px;text-align:center;}
-  .col-content{font-weight:600;color:var(--areia);font-size:0.95rem;}
+  .today-badge{background:var(--esmeralda);color:var(--on-accent);font-size:0.76rem;padding:4px 10px;border-radius:20px;font-weight:600;}
+  .task-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;
+    border-bottom:1px solid var(--border);}
+  .task-row:last-child{border-bottom:none;}
+  .task-row.completed{background-color:rgba(31,122,82,0.08);}
+  .task-row-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0;}
+  .task-row-info{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1;}
+  .task-row-title{font-weight:600;color:var(--areia);font-size:0.95rem;word-break:break-word;}
+  .task-row-sub{font-size:0.76rem;color:var(--areia-dim);}
+  .task-row-meta{display:grid;grid-template-columns:106px 1fr;gap:6px;align-items:center;}
+  .task-row-meta .task-platform{width:fit-content;max-width:106px;text-align:center;}
+  .task-row .status-badge{flex-shrink:0;}
   .task-checkbox{width:22px;height:22px;border:2px solid var(--border);border-radius:6px;cursor:pointer;accent-color:var(--esmeralda-l);}
-  .task-platform{background:rgba(27,58,107,0.4);color:var(--safira-l);padding:3px 12px;border-radius:20px;
+  .task-platform{background:var(--chip-blue-bg);color:var(--chip-blue-text);padding:3px 12px;border-radius:20px;
     font-size:0.82rem;font-weight:600;display:inline-block;}
-  .task-time{background:var(--carvao-3);color:var(--areia-dim);padding:3px 12px;border-radius:20px;
+  .task-time{background:var(--chip-gray-bg);color:var(--chip-gray-text);padding:3px 12px;border-radius:20px;
     font-size:0.82rem;font-weight:600;display:inline-block;white-space:nowrap;}
   .status-badge{padding:5px 14px;border-radius:8px;font-size:0.82rem;font-weight:700;text-align:center;display:inline-block;min-width:60px;}
-  .status-badge.sim{background-color:rgba(31,122,82,0.2);color:var(--esmeralda-l);}
-  .status-badge.nao{background-color:rgba(181,80,45,0.2);color:var(--terracota);}
+  .status-badge.sim{background-color:var(--success-bg);color:var(--success-text);}
+  .status-badge.nao{background-color:var(--danger-bg);color:var(--danger-text);}
 
   .ready-list-item{background:var(--carvao-3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;
     margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
   .ready-list-item .rtitle{font-weight:600;font-size:0.92rem;}
   .ready-list-item .ractions{display:flex;gap:6px;}
   .ready-list-item button{border:none;border-radius:8px;padding:7px 12px;font-size:0.76rem;font-weight:700;cursor:pointer;}
-  .btn-mark-done{background:var(--esmeralda);color:var(--areia);}
+  .btn-mark-done{background:var(--esmeralda);color:var(--on-accent);}
   .btn-open-script{background:var(--carvao-2);color:var(--areia);border:1px solid var(--border) !important;}
 
   .config-panel{background:var(--carvao-2);border:2px dashed var(--safira-l);padding:20px;border-radius:14px;
@@ -238,17 +256,17 @@
   .config-hint{font-size:0.8rem;color:var(--areia-dim);margin:0 0 12px;}
   .config-row{display:flex;gap:8px;margin-bottom:8px;align-items:center;background:var(--carvao-3);padding:8px;border-radius:8px;flex-wrap:wrap;}
   .config-row input{padding:8px;font-size:0.84rem;flex:1;min-width:90px;}
-  .btn-add-task{background:var(--safira-l);color:var(--areia);border:none;padding:7px 12px;border-radius:6px;
+  .btn-add-task{background:var(--safira-l);color:var(--on-accent);border:none;padding:7px 12px;border-radius:6px;
     cursor:pointer;font-size:0.8rem;font-weight:700;margin-top:4px;}
-  .btn-remove-task{background:var(--terracota);color:var(--areia);border:none;padding:6px 10px;border-radius:6px;
+  .btn-remove-task{background:var(--terracota);color:var(--on-accent);border:none;padding:6px 10px;border-radius:6px;
     cursor:pointer;font-weight:700;flex-shrink:0;}
-  .btn-save-config{background:var(--esmeralda);color:var(--areia);padding:12px;width:100%;border:none;border-radius:8px;
+  .btn-save-config{background:var(--esmeralda);color:var(--on-accent);padding:12px;width:100%;border:none;border-radius:8px;
     font-weight:700;cursor:pointer;margin-top:14px;}
   .btn-undo-config{background:var(--carvao-3);color:var(--areia);border:1px solid var(--border) !important;padding:10px;
     width:100%;border-radius:8px;font-weight:700;cursor:pointer;margin-top:6px;}
-  .btn-factory-reset{background:var(--terracota);color:var(--areia);padding:10px;width:100%;border:none;border-radius:8px;
+  .btn-factory-reset{background:var(--terracota);color:var(--on-accent);padding:10px;width:100%;border:none;border-radius:8px;
     font-weight:700;cursor:pointer;margin-top:6px;}
-  .reset-btn{width:100%;padding:16px;background:var(--terracota);color:var(--areia);border:none;border-radius:10px;
+  .reset-btn{width:100%;padding:16px;background:var(--terracota);color:var(--on-accent);border:none;border-radius:10px;
     margin-top:24px;font-weight:700;font-size:1rem;cursor:pointer;}
 
   .history-card{padding:0;}
@@ -291,11 +309,11 @@
     font-size:0.78rem;line-height:1.5;resize:vertical;}
   .modal-actions{display:flex;gap:8px;flex-wrap:wrap;}
   .modal-actions button{border:none;border-radius:8px;padding:11px 16px;font-weight:700;font-size:0.84rem;cursor:pointer;}
-  .modal-actions .primary{background:var(--esmeralda);color:var(--areia);}
+  .modal-actions .primary{background:var(--esmeralda);color:var(--on-accent);}
   .modal-actions .primary:hover{background:var(--esmeralda-l);}
   .modal-actions .secondary{background:var(--carvao-3);color:var(--areia);border:1px solid var(--border) !important;}
   .modal-actions .secondary:hover{border-color:var(--areia-dim) !important;}
-  .modal-actions .danger{background:var(--terracota);color:var(--areia);}
+  .modal-actions .danger{background:var(--terracota);color:var(--on-accent);}
   .modal-actions .danger:hover{background:#c96038;}
 </style>
 </head>
@@ -504,7 +522,7 @@
 </div>
 
 <div class="toast" id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
-  background:var(--esmeralda);color:var(--areia);padding:10px 20px;border-radius:999px;font-size:0.84rem;
+  background:var(--esmeralda);color:var(--on-accent);padding:10px 20px;border-radius:999px;font-size:0.84rem;
   font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;
   box-shadow:0 8px 20px rgba(0,0,0,0.35);z-index:200;"></div>
 
@@ -618,6 +636,7 @@ function switchHubTab(hub){
    =================================================================== */
 let ideas = JSON.parse(localStorage.getItem(IDEAS_KEY) || "[]");
 let currentFilter = 'todas';
+let openIdeaDetailId = null;
 function persistIdeas(){ localStorage.setItem(IDEAS_KEY, JSON.stringify(ideas)); }
 
 function quickAdd(){
@@ -676,10 +695,11 @@ function renderIdeas(){
         </div>
         <div class="idea-actions">
           <button class="icon-btn" title="Detalhes" onclick="toggleDetail('${i.id}')">✎</button>
+          <button class="icon-btn" title="Transformar em roteiro" onclick="ideaToScript('${i.id}')">📜</button>
           <button class="icon-btn" title="Excluir" onclick="deleteIdea('${i.id}')">✕</button>
         </div>
       </div>
-      <div class="idea-detail" id="detail-${i.id}">
+      <div class="idea-detail ${openIdeaDetailId===i.id ? 'open' : ''}" id="detail-${i.id}">
         <div>
           <label>Importância</label>
           <select onchange="updateIdea('${i.id}','stars',this.value)">
@@ -700,13 +720,23 @@ function renderIdeas(){
           <label>Tema ou versículo-base (opcional)</label>
           <input type="text" value="${escapeHtml(i.tema||'')}" placeholder="ex: Mateus 6:34 — ansiedade" onchange="updateIdea('${i.id}','tema',this.value)">
         </div>
-        <button class="to-script" onclick="ideaToScript('${i.id}')">Transformar em roteiro →</button>
+        <div class="detail-actions">
+          <button class="to-script-secondary" onclick="closeDetail('${i.id}')">Fechar</button>
+          <button class="to-script" onclick="ideaToScript('${i.id}')">Transformar em roteiro →</button>
+        </div>
       </div>
     </div>
   `).join('');
   updateFooter();
 }
-function toggleDetail(id){ document.getElementById('detail-'+id).classList.toggle('open'); }
+function toggleDetail(id){
+  openIdeaDetailId = (openIdeaDetailId === id) ? null : id;
+  renderIdeas();
+}
+function closeDetail(id){
+  openIdeaDetailId = null;
+  renderIdeas();
+}
 function updateIdea(id, field, value){
   const idea = ideas.find(i=>i.id===id);
   if(!idea) return;
@@ -1148,23 +1178,29 @@ function renderPanel(){
       headerHtml += `</div>`;
       card.innerHTML = headerHtml;
 
-      const table = document.createElement('table');
-      table.className = 'task-table';
+      const table = document.createElement('div');
+      table.className = 'task-rows';
       if(filteredTasks.length===0){
-        table.innerHTML = `<tr><td style="text-align:center;color:var(--areia-dim);padding:22px;">Nenhuma tarefa pra esta plataforma neste dia.</td></tr>`;
+        table.innerHTML = `<div style="text-align:center;color:var(--areia-dim);padding:22px;">Nenhuma tarefa pra esta plataforma neste dia.</div>`;
       } else {
         filteredTasks.forEach(t=>{
           const done = localStorage.getItem(t.id)==='true';
-          const tr = document.createElement('tr');
-          if(done) tr.className='completed';
-          tr.innerHTML = `
-            <td class="col-check"><input type="checkbox" class="task-checkbox" ${done?'checked':''} onchange="toggleTask('${t.id}', this.checked)"></td>
-            <td class="col-content">${escapeHtml(t.content)}</td>
-            <td><span class="task-platform">${escapeHtml(t.platform)}</span></td>
-            <td style="text-align:right;"><span class="task-time">${escapeHtml(t.time)}</span></td>
-            <td style="text-align:right;"><span class="status-badge ${done?'sim':'nao'}">${done?'SIM':'NÃO'}</span></td>
+          const row = document.createElement('div');
+          row.className = 'task-row' + (done ? ' completed' : '');
+          row.innerHTML = `
+            <div class="task-row-left">
+              <input type="checkbox" class="task-checkbox" ${done?'checked':''} onchange="toggleTask('${t.id}', this.checked)">
+              <div class="task-row-info">
+                <div class="task-row-title">${escapeHtml(t.content)}</div>
+                <div class="task-row-meta">
+                  <span class="task-platform">${escapeHtml(t.platform)}</span>
+                  <span class="task-time">${escapeHtml(t.time)}</span>
+                </div>
+              </div>
+            </div>
+            <span class="status-badge ${done?'sim':'nao'}">${done?'SIM':'NÃO'}</span>
           `;
-          table.appendChild(tr);
+          table.appendChild(row);
         });
       }
       card.appendChild(table);
@@ -1201,23 +1237,30 @@ function renderPanel(){
       headerHtml += `</div>`;
       card.innerHTML = headerHtml;
 
-      const table = document.createElement('table');
-      table.className = 'task-table';
+      const table = document.createElement('div');
+      table.className = 'task-rows';
       if(tasksList.length===0){
-        table.innerHTML = `<tr><td style="text-align:center;color:var(--areia-dim);padding:22px;">Nenhuma tarefa nesta categoria com o filtro atual.</td></tr>`;
+        table.innerHTML = `<div style="text-align:center;color:var(--areia-dim);padding:22px;">Nenhuma tarefa nesta categoria com o filtro atual.</div>`;
       } else {
         tasksList.forEach(t=>{
           const doneT = localStorage.getItem(t.id)==='true';
-          const tr = document.createElement('tr');
-          if(doneT) tr.className='completed';
-          tr.innerHTML = `
-            <td class="col-check"><input type="checkbox" class="task-checkbox" ${doneT?'checked':''} onchange="toggleTask('${t.id}', this.checked)"></td>
-            <td class="col-content">${escapeHtml(t.content)} <span style="font-size:0.76rem;color:var(--areia-dim);display:block;font-weight:400;">(${escapeHtml(t.daySource)} às ${escapeHtml(t.time)})</span></td>
-            <td><span class="task-platform">${escapeHtml(t.platform)}</span></td>
-            <td style="text-align:right;"><span class="task-time">${escapeHtml(t.time)}</span></td>
-            <td style="text-align:right;"><span class="status-badge ${doneT?'sim':'nao'}">${doneT?'SIM':'NÃO'}</span></td>
+          const row = document.createElement('div');
+          row.className = 'task-row' + (doneT ? ' completed' : '');
+          row.innerHTML = `
+            <div class="task-row-left">
+              <input type="checkbox" class="task-checkbox" ${doneT?'checked':''} onchange="toggleTask('${t.id}', this.checked)">
+              <div class="task-row-info">
+                <div class="task-row-title">${escapeHtml(t.content)}</div>
+                <div class="task-row-sub">${escapeHtml(t.daySource)} às ${escapeHtml(t.time)}</div>
+                <div class="task-row-meta">
+                  <span class="task-platform">${escapeHtml(t.platform)}</span>
+                  <span class="task-time">${escapeHtml(t.time)}</span>
+                </div>
+              </div>
+            </div>
+            <span class="status-badge ${doneT?'sim':'nao'}">${doneT?'SIM':'NÃO'}</span>
           `;
-          table.appendChild(tr);
+          table.appendChild(row);
         });
       }
       card.appendChild(table);
