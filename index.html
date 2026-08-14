@@ -42,6 +42,38 @@
     --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Times New Roman', serif;
     --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   }
+  [data-theme="noite"]{
+    --carvao:#17171a; --carvao-2:#212126; --carvao-3:#2b2b31;
+    --areia:#eee4d1; --areia-dim:#a49a89;
+    --on-accent:#faf6ea;
+    --safira:#1b3a6b; --safira-l:#3a5f9c;
+    --vinho:#7a2436; --vinho-l:#9c3448;
+    --terracota:#c96038;
+    --esmeralda:#1f7a52; --esmeralda-l:#2f9a6a;
+    --border:#38383f;
+    --success-bg:rgba(31,122,82,0.28); --success-text:#5fd399; --success-border:#2f9a6a;
+    --danger-bg:rgba(181,80,45,0.28); --danger-text:#f2a583;
+    --chip-blue-bg:rgba(58,95,156,0.35); --chip-blue-text:#9dc4ff;
+    --chip-gray-bg:#2b2b31; --chip-gray-text:#a49a89;
+    --info-bg:rgba(58,95,156,0.28); --info-text:#9dc4ff; --info-border:#3a5f9c;
+  }
+  [data-theme="pergaminho"]{
+    --carvao:#f4ecd8; --carvao-2:#fffcf5; --carvao-3:#ece0c4;
+    --areia:#2b2416; --areia-dim:#7d715a;
+    --on-accent:#faf6ea;
+    --safira:#1b3a6b; --safira-l:#3a5f9c;
+    --vinho:#7a2436; --vinho-l:#9c3448;
+    --terracota:#b5502d;
+    --esmeralda:#1f7a52; --esmeralda-l:#2f9a6a;
+    --border:#ddcfae;
+    --success-bg:#dcead9; --success-text:#1f6b45; --success-border:#1f7a52;
+    --danger-bg:#f3ded3; --danger-text:#8a3a1f;
+    --chip-blue-bg:#dbe6f2; --chip-blue-text:#1b3a6b;
+    --chip-gray-bg:#ece0c4; --chip-gray-text:#7d715a;
+    --info-bg:#e4ecf6; --info-text:#1b3a6b; --info-border:#a9c1de;
+  }
+  html{font-size:16px;}
+  html.large-text{font-size:19px;}
   *{box-sizing:border-box;}
   body{
     margin:0;
@@ -51,24 +83,51 @@
     min-height:100vh;
     padding-bottom:env(safe-area-inset-bottom);
   }
-  .wrap{max-width:820px;margin:0 auto;padding:max(24px, env(safe-area-inset-top)) 16px 80px;}
+  .wrap{max-width:820px;margin:0 auto;padding:max(24px, env(safe-area-inset-top)) 16px calc(88px + env(safe-area-inset-bottom));}
 
-  header{text-align:center;margin-bottom:18px;}
+  header{
+    text-align:center;margin-bottom:8px;position:sticky;top:0;z-index:50;
+    background:var(--carvao);padding:6px 0 10px;transition:padding .2s ease;
+  }
+  header.shrunk{padding:4px 0 6px;}
+  header .mark{transition:opacity .2s ease, max-height .2s ease, margin .2s ease;overflow:hidden;}
+  header.shrunk .mark{opacity:0;max-height:0;margin:0;}
+  header.shrunk .header-btn-row{opacity:0;max-height:0;margin:0;overflow:hidden;pointer-events:none;}
+  header h1{transition:font-size .2s ease;}
+  header.shrunk h1{font-size:1.1rem;}
+
   header .mark{
     font-family:var(--serif);font-style:italic;font-size:0.72rem;letter-spacing:2px;
     text-transform:uppercase;color:var(--areia-dim);display:block;margin-bottom:6px;
   }
   header h1{font-family:var(--serif);font-weight:700;font-size:1.55rem;margin:0;letter-spacing:0.3px;}
+  .header-btn-row{display:flex;gap:8px;justify-content:center;margin-top:12px;transition:opacity .2s ease, max-height .2s ease;}
+  .appearance-btn{
+    background:var(--carvao-2);border:1px solid var(--border);
+    color:var(--areia-dim);border-radius:999px;padding:7px 16px;font-size:0.8rem;font-weight:700;cursor:pointer;
+  }
+  .appearance-btn:hover{color:var(--areia);border-color:var(--areia-dim);}
+  .appearance-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .appearance-choice{
+    flex:1;min-width:90px;background:var(--carvao-3);border:2px solid var(--border);color:var(--areia-dim);
+    border-radius:10px;padding:12px 8px;font-size:0.84rem;font-weight:700;cursor:pointer;text-align:center;
+  }
+  .appearance-choice.active{border-color:var(--safira-l);color:var(--areia);background:var(--carvao-2);}
   header h1 em{color:var(--safira-l);font-style:italic;}
 
   /* ---- hub tabs ---- */
-  .hub-tabs{display:flex;gap:8px;margin:20px 0 20px;border-bottom:1px solid var(--border);}
+  .hub-tabs{
+    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;margin:0;
+    background:var(--carvao-2);border-top:1px solid var(--border);
+    padding-bottom:env(safe-area-inset-bottom);
+    box-shadow:0 -2px 10px rgba(0,0,0,0.06);
+  }
   .hub-tab-btn{
     flex:1;background:none;border:none;color:var(--areia-dim);font-family:var(--sans);
-    font-size:0.88rem;font-weight:600;padding:12px 4px;cursor:pointer;
-    border-bottom:2px solid transparent;transition:.15s;position:relative;
+    font-size:0.72rem;font-weight:600;padding:12px 2px 10px;cursor:pointer;white-space:nowrap;
+    border-top:2px solid transparent;transition:.15s;position:relative;overflow:hidden;text-overflow:ellipsis;
   }
-  .hub-tab-btn.active{color:var(--areia);border-bottom-color:var(--safira-l);}
+  .hub-tab-btn.active{color:var(--safira-l);border-top-color:var(--safira-l);}
   .hub-panel{display:none;}
   .hub-panel.active{display:block;animation:fadein .25s ease;}
   @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
@@ -80,9 +139,10 @@
   /* ---- capture ---- */
   .capture{display:flex;gap:8px;margin-bottom:22px;align-items:flex-end;}
   .capture textarea{
-    flex:1;background:var(--carvao-3);border:1px solid var(--border);border-radius:10px;
+    flex:1;background:var(--carvao-2);border:2px solid var(--areia-dim);border-radius:10px;
     color:var(--areia);padding:14px 16px;font-size:1rem;font-family:var(--sans);
     resize:none;overflow:hidden;line-height:1.4;max-height:220px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.08);
   }
   .capture textarea:focus{outline:none;border-color:var(--safira-l);}
   .capture button{
@@ -93,6 +153,11 @@
   .capture-hint{color:var(--areia-dim);font-size:0.76rem;margin:-14px 0 20px 4px;}
 
   /* ---- filters/chips ---- */
+  .search-input{
+    width:100%;background:var(--carvao-2);border:2px solid var(--border);border-radius:10px;
+    color:var(--areia);padding:11px 14px;font-size:0.92rem;font-family:var(--sans);margin-bottom:14px;
+  }
+  .search-input:focus{outline:none;border-color:var(--safira-l);}
   .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
   .chip{
     background:var(--carvao-2);border:1px solid var(--border);color:var(--areia-dim);
@@ -114,7 +179,8 @@
     padding:2px 8px;border-radius:999px;background:var(--carvao-3);color:var(--areia-dim);
   }
   .idea-actions{display:flex;gap:6px;flex-shrink:0;}
-  .icon-btn{background:none;border:none;color:var(--areia-dim);cursor:pointer;font-size:0.92rem;padding:4px;border-radius:6px;}
+  .icon-btn{background:none;border:none;color:var(--areia-dim);cursor:pointer;font-size:1.35rem;padding:8px;border-radius:8px;
+    min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;}
   .icon-btn:hover{color:var(--areia);background:var(--carvao-3);}
   .idea-detail{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);gap:10px;}
   .idea-detail.open{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -142,7 +208,8 @@
     justify-content:space-between;align-items:center;gap:10px;}
   .script-card:hover{border-color:var(--areia-dim);}
   .script-card .st{font-size:0.66rem;text-transform:uppercase;letter-spacing:.5px;color:var(--esmeralda);font-weight:700;}
-  .script-card .del{color:var(--terracota);background:none;border:none;cursor:pointer;font-size:0.88rem;}
+  .script-card .del{color:var(--terracota);background:none;border:none;cursor:pointer;font-size:1.2rem;
+    min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;flex-shrink:0;}
 
   /* ---- wizard ---- */
   .wizard-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
@@ -218,7 +285,7 @@
 
   .day-card{background:var(--carvao-2);border:1px solid var(--border);border-radius:14px;display:none;overflow:hidden;}
   .day-card.active{display:block;}
-  .day-header{background:var(--carvao-3);color:var(--areia);padding:16px 20px;font-weight:700;font-size:1.1rem;
+  .day-header{background:var(--safira);color:var(--on-accent);padding:16px 20px;font-weight:700;font-size:1.1rem;
     display:flex;justify-content:space-between;align-items:center;}
   .today-badge{background:var(--esmeralda);color:var(--on-accent);font-size:0.76rem;padding:4px 10px;border-radius:20px;font-weight:600;}
   .task-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;
@@ -243,7 +310,7 @@
 
   .ready-list-item{background:var(--carvao-3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;
     margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
-  .ready-list-item .rtitle{font-weight:600;font-size:0.92rem;}
+  .ready-list-item .rtitle{font-weight:600;font-size:0.92rem;word-break:break-word;overflow-wrap:break-word;min-width:0;flex:1 1 100%;}
   .ready-list-item .ractions{display:flex;gap:6px;}
   .ready-list-item button{border:none;border-radius:8px;padding:7px 12px;font-size:0.76rem;font-weight:700;cursor:pointer;}
   .btn-mark-done{background:var(--esmeralda);color:var(--on-accent);}
@@ -323,12 +390,17 @@
   <header>
     <span class="mark">Recolhe na ceifa, quem em tempo semeou</span>
     <h1>Semeador <em>·</em> Vivendo o Evangelho de Jesus</h1>
+    <div class="header-btn-row">
+      <button class="appearance-btn" onclick="openGlobalSearchModal()">🔍 Buscar</button>
+      <button class="appearance-btn" onclick="openAppearanceModal()">🎨 Aparência</button>
+    </div>
   </header>
 
   <div class="hub-tabs">
     <button class="hub-tab-btn active" data-hub="ideias" onclick="switchHubTab('ideias')">🌱 Ideias</button>
     <button class="hub-tab-btn" data-hub="roteiros" onclick="switchHubTab('roteiros')">📜 Roteiros</button>
-    <button class="hub-tab-btn" data-hub="painel" onclick="switchHubTab('painel')">📅 Painel<span class="badge-count" id="readyBadge" style="display:none;"></span></button>
+    <button class="hub-tab-btn" data-hub="prontos" onclick="switchHubTab('prontos')">🎬 Prontos<span class="badge-count" id="readyBadge" style="display:none;"></span></button>
+    <button class="hub-tab-btn" data-hub="painel" onclick="switchHubTab('painel')">📅 Painel</button>
   </div>
 
   <!-- ============ IDEIAS ============ -->
@@ -337,7 +409,9 @@
       <textarea id="quickInput" rows="1" placeholder="Escreve a ideia agora, antes que ela fuja..."></textarea>
       <button onclick="quickAdd()">Salvar</button>
     </div>
-    <div class="capture-hint">Enter salva. Shift+Enter quebra linha se a ideia for mais longa. Sem limite de tamanho.</div>
+    <div class="capture-hint">Enter quebra linha. Toca em "Salvar" quando terminar de escrever. Sem limite de tamanho.</div>
+    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Buscar por tema, chave ou palavra (ex: reino)..." oninput="setSearch(this.value)">
+    <datalist id="chavesDatalist"></datalist>
     <div class="filters" id="filters"></div>
     <div id="ideasList"></div>
   </div>
@@ -367,12 +441,11 @@
       </div>
 
       <div class="block">
-        <div class="block-head"><span class="verse-badge">3</span><span class="block-title">A Palavra <small style="color:var(--areia-dim);font-weight:400;">— NAA 2017</small></span></div>
+        <div class="block-head"><span class="verse-badge">3</span><span class="block-title">A Palavra</span></div>
         <p class="block-hint">Confere na Bíblia física antes de gravar. Nunca de memória.</p>
-        <div class="block-row">
-          <div style="flex:0 0 160px;"><input type="text" id="f_ref" placeholder="Referência (ex: Mateus 6:34)"></div>
-          <div style="flex:1;"><input type="text" id="f_versiculo" placeholder="Cole o versículo completo aqui"></div>
-        </div>
+        <input type="text" id="f_ref" placeholder="Referência (ex: Mateus 6:34)" style="margin-bottom:10px;">
+        <textarea id="f_versiculo" placeholder="Cole o versículo completo aqui" oninput="toggleOpenLinkBtn()"></textarea>
+        <a href="#" id="btnOpenVersiculoLink" target="_blank" rel="noopener" style="display:none;margin-top:8px;color:var(--safira-l);text-decoration:underline;font-size:0.85rem;word-break:break-all;">🔗 </a>
       </div>
 
       <div class="block">
@@ -407,7 +480,7 @@
 
       <div class="block">
         <div class="block-head"><span class="verse-badge">9</span><span class="block-title">Título de trabalho & formato</span></div>
-        <div class="block-row" style="margin-bottom:10px;"><input type="text" id="f_titulo" placeholder="Título de trabalho deste roteiro"></div>
+        <textarea id="f_titulo" placeholder="Título de trabalho deste roteiro" style="margin-bottom:10px;min-height:52px;"></textarea>
         <div class="meta-row">
           <div>
             <label>Formato</label>
@@ -429,11 +502,27 @@
         </div>
       </div>
 
+      <div class="block">
+        <div class="block-head"><span style="font-size:1.15rem;">📎</span><span class="block-title">Anexos <small style="color:var(--areia-dim);font-weight:400;">(opcional)</small></span></div>
+        <p class="block-hint">Foto da galeria ou documento (PDF) de referência pra esse roteiro.</p>
+        <input type="file" id="f_anexo_input" accept="image/*,application/pdf" multiple onchange="handleAttachmentInput(event)" style="margin-bottom:10px;">
+        <div id="attachmentsList"></div>
+      </div>
+
       <div class="wizard-actions">
         <button class="btn-delete" id="deleteBtn" onclick="deleteCurrentScript()" style="display:none;">Excluir</button>
         <button class="btn-export" onclick="exportScript()">📋 Gerar texto pra copiar</button>
         <button class="btn-save" onclick="saveScript()">💾 Salvar roteiro</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ============ PRONTOS PRA GRAVAR ============ -->
+  <div id="hub-prontos" class="hub-panel">
+    <div class="block" style="margin-bottom:20px;">
+      <div class="block-head"><span class="verse-badge">🎬</span><span class="block-title">Roteiros prontos pra gravar</span></div>
+      <p class="block-hint" style="margin-left:0;">Vem direto da aba Roteiros — sem precisar digitar de novo aqui.</p>
+      <div id="readyScriptsList"></div>
     </div>
   </div>
 
@@ -475,12 +564,6 @@
       <button class="btn-save-config" onclick="saveScheduleConfig()">💾 Salvar Alterações</button>
       <button class="btn-undo-config" onclick="undoLastConfig()">↩️ Voltar ao Padrão Anterior</button>
       <button class="btn-factory-reset" onclick="factoryResetConfig()">⚠️ Restaurar Padrão Original</button>
-    </div>
-
-    <div class="block" style="margin-bottom:20px;">
-      <div class="block-head"><span class="verse-badge">🎬</span><span class="block-title">Roteiros prontos pra gravar</span></div>
-      <p class="block-hint" style="margin-left:0;">Vem direto da aba Roteiros — sem precisar digitar de novo aqui.</p>
-      <div id="readyScriptsList"></div>
     </div>
 
     <div class="progress-container">
@@ -540,6 +623,17 @@
 </div>
 
 <!-- CONFIRM MODAL -->
+<!-- ATTACHMENT VIEWER MODAL -->
+<div class="modal-overlay" id="attachmentModal">
+  <div class="modal-box" style="max-width:560px;">
+    <h3 id="attachmentModalTitle">Anexo</h3>
+    <div id="attachmentModalBody" style="max-height:70vh;overflow:auto;"></div>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeAttachmentModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="confirmModal">
   <div class="modal-box" style="max-width:400px;">
     <h3 id="confirmTitle">Confirmar</h3>
@@ -547,6 +641,44 @@
     <div class="modal-actions">
       <button class="danger" id="confirmYesBtn">Sim, confirmar</button>
       <button class="secondary" onclick="closeConfirmModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- APPEARANCE MODAL -->
+<!-- GLOBAL SEARCH MODAL -->
+<div class="modal-overlay" id="globalSearchModal">
+  <div class="modal-box" style="max-width:520px;">
+    <h3>Buscar em Ideias e Roteiros</h3>
+    <input type="text" id="globalSearchInput" placeholder="Digite um tema, chave ou palavra (ex: reino)..." oninput="runGlobalSearch(this.value)" style="width:100%;background:var(--carvao-3);border:2px solid var(--border);border-radius:10px;color:var(--areia);padding:11px 14px;font-size:0.92rem;font-family:var(--sans);">
+    <div id="globalSearchResults" style="max-height:50vh;overflow:auto;"></div>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeGlobalSearchModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="appearanceModal">
+  <div class="modal-box" style="max-width:400px;">
+    <h3>Aparência</h3>
+    <p>Escolhe a cor e o tamanho da letra mais confortável pra você.</p>
+    <div>
+      <label style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:8px;">Cor</label>
+      <div class="appearance-row">
+        <button class="appearance-choice" id="themeBtn-dia" onclick="setTheme('dia')">☀️<br>Dia</button>
+        <button class="appearance-choice" id="themeBtn-noite" onclick="setTheme('noite')">🌙<br>Noite</button>
+        <button class="appearance-choice" id="themeBtn-pergaminho" onclick="setTheme('pergaminho')">📜<br>Pergaminho</button>
+      </div>
+    </div>
+    <div>
+      <label style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:8px;">Tamanho da letra</label>
+      <div class="appearance-row">
+        <button class="appearance-choice" id="fontBtn-normal" onclick="setFontSize('normal')">Normal</button>
+        <button class="appearance-choice" id="fontBtn-grande" onclick="setFontSize('grande')" style="font-size:1.05rem;">Grande</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeAppearanceModal()">Fechar</button>
     </div>
   </div>
 </div>
@@ -569,6 +701,11 @@ const PREV_SCHEDULE_KEY = "vej_prev_schedule_v1";
 
 /* ---------- shared helpers ---------- */
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function linkify(escapedHtml){
+  return escapedHtml.replace(/(https?:\/\/[^\s<]+)/g, url =>
+    `<a href="${url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--safira-l);text-decoration:underline;">${url}</a>`
+  );
+}
 function escapeHtml(s){
   return (s||"").replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -627,6 +764,7 @@ function switchHubTab(hub){
   document.getElementById('hub-'+hub).classList.add('active');
   document.querySelector(`.hub-tab-btn[data-hub="${hub}"]`).classList.add('active');
   if(hub==='roteiros'){ renderScripts(); }
+  if(hub==='prontos'){ renderReadyScripts(); }
   if(hub==='painel'){ renderPanel(); }
   updateFooter();
 }
@@ -636,6 +774,8 @@ function switchHubTab(hub){
    =================================================================== */
 let ideas = JSON.parse(localStorage.getItem(IDEAS_KEY) || "[]");
 let currentFilter = 'todas';
+let searchQuery = '';
+function setSearch(v){ searchQuery = v.trim().toLowerCase(); renderIdeas(); }
 let openIdeaDetailId = null;
 function persistIdeas(){ localStorage.setItem(IDEAS_KEY, JSON.stringify(ideas)); }
 
@@ -653,9 +793,6 @@ function quickAdd(){
 function autoGrow(el){ el.style.height='auto'; el.style.height = Math.min(el.scrollHeight, 220) + 'px'; }
 const quickInputEl = document.getElementById('quickInput');
 quickInputEl.addEventListener('input', ()=>autoGrow(quickInputEl));
-quickInputEl.addEventListener('keydown', e=>{
-  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); quickAdd(); }
-});
 
 function renderFilters(){
   const opts = [
@@ -670,23 +807,34 @@ function starString(n){ return '⭐'.repeat(Number(n)); }
 
 function renderIdeas(){
   renderFilters();
+  populateChavesDatalist();
   const list = document.getElementById('ideasList');
   let filtered = ideas;
   if(['5','3','1'].includes(currentFilter)) filtered = ideas.filter(i=>String(i.stars)===currentFilter);
   else if(currentFilter==='novo') filtered = ideas.filter(i=>i.status==='novo');
   else if(currentFilter==='roteirizada') filtered = ideas.filter(i=>i.status==='roteirizada');
 
+  if(searchQuery){
+    filtered = filtered.filter(i=>
+      (i.title||'').toLowerCase().includes(searchQuery) ||
+      (i.tema||'').toLowerCase().includes(searchQuery) ||
+      (i.chaves||'').toLowerCase().includes(searchQuery)
+    );
+  }
+
   if(filtered.length===0){
-    list.innerHTML = `<div class="empty">Nenhuma ideia aqui ainda.<br>Escreve a primeira lá em cima. 🌱</div>`;
+    list.innerHTML = searchQuery
+      ? `<div class="empty">Nenhuma ideia encontrada pra "${escapeHtml(searchQuery)}".</div>`
+      : `<div class="empty">Nenhuma ideia aqui ainda.<br>Escreve a primeira lá em cima. 🌱</div>`;
     updateFooter();
     return;
   }
 
   list.innerHTML = filtered.map(i=>`
-    <div class="idea" id="idea-${i.id}">
+    <div class="idea" id="idea-${i.id}" onclick="toggleDetail('${i.id}')">
       <div class="idea-top">
         <div>
-          <div class="idea-title">${escapeHtml(i.title)}</div>
+          <div class="idea-title">${linkify(escapeHtml(i.title))}</div>
           <div class="idea-meta">
             <span class="stars">${starString(i.stars)}</span>
             <span class="pill">${i.format}</span>
@@ -694,12 +842,12 @@ function renderIdeas(){
           </div>
         </div>
         <div class="idea-actions">
-          <button class="icon-btn" title="Detalhes" onclick="toggleDetail('${i.id}')">✎</button>
-          <button class="icon-btn" title="Transformar em roteiro" onclick="ideaToScript('${i.id}')">📜</button>
-          <button class="icon-btn" title="Excluir" onclick="deleteIdea('${i.id}')">✕</button>
+          <button class="icon-btn" title="Detalhes" onclick="event.stopPropagation(); toggleDetail('${i.id}')">✎</button>
+          <button class="icon-btn" title="Transformar em roteiro" onclick="event.stopPropagation(); ideaToScript('${i.id}')">📜</button>
+          <button class="icon-btn" title="Excluir" onclick="event.stopPropagation(); deleteIdea('${i.id}')">🗑️</button>
         </div>
       </div>
-      <div class="idea-detail ${openIdeaDetailId===i.id ? 'open' : ''}" id="detail-${i.id}">
+      <div class="idea-detail ${openIdeaDetailId===i.id ? 'open' : ''}" id="detail-${i.id}" onclick="event.stopPropagation()">
         <div>
           <label>Importância</label>
           <select onchange="updateIdea('${i.id}','stars',this.value)">
@@ -720,6 +868,10 @@ function renderIdeas(){
           <label>Tema ou versículo-base (opcional)</label>
           <input type="text" value="${escapeHtml(i.tema||'')}" placeholder="ex: Mateus 6:34 — ansiedade" onchange="updateIdea('${i.id}','tema',this.value)">
         </div>
+        <div class="full">
+          <label>Chaves 🔑 (palavras pra buscar depois, separadas por vírgula)</label>
+          <input type="text" value="${escapeHtml(i.chaves||'')}" placeholder="ex: reino dos céus, conversão" list="chavesDatalist" onchange="updateIdea('${i.id}','chaves',this.value)">
+        </div>
         <div class="detail-actions">
           <button class="to-script-secondary" onclick="closeDetail('${i.id}')">Fechar</button>
           <button class="to-script" onclick="ideaToScript('${i.id}')">Transformar em roteiro →</button>
@@ -728,6 +880,15 @@ function renderIdeas(){
     </div>
   `).join('');
   updateFooter();
+}
+function populateChavesDatalist(){
+  const dl = document.getElementById('chavesDatalist');
+  if(!dl) return;
+  const allChaves = new Set();
+  ideas.forEach(i=>{
+    (i.chaves||'').split(',').map(c=>c.trim()).filter(Boolean).forEach(c=>allChaves.add(c));
+  });
+  dl.innerHTML = Array.from(allChaves).sort().map(c=>`<option value="${escapeHtml(c)}">`).join('');
 }
 function toggleDetail(id){
   openIdeaDetailId = (openIdeaDetailId === id) ? null : id;
@@ -794,16 +955,86 @@ function renderScripts(){
   } else {
     box.innerHTML = scripts.map(s=>`
       <div class="script-card" onclick="openWizard('${s.id}')">
-        <div>
-          <div style="font-weight:600;">${escapeHtml(s.titulo || '(sem título)')}</div>
+        <div style="min-width:0;flex:1;">
+          <div style="font-weight:600;word-break:break-word;overflow-wrap:break-word;">${escapeHtml(s.titulo || '(sem título)')}</div>
           <div class="st">${statusLabel(s.status)} · ${s.formato}</div>
         </div>
-        <button class="del" onclick="event.stopPropagation(); deleteScript('${s.id}')">✕</button>
+        <button class="del" title="Excluir" onclick="event.stopPropagation(); deleteScript('${s.id}')">🗑️</button>
       </div>
     `).join('');
   }
   updateFooter();
   updateReadyBadge();
+}
+let currentAttachments = [];
+function handleAttachmentInput(event){
+  const files = Array.from(event.target.files || []);
+  let totalSize = currentAttachments.reduce((sum,a)=>sum+(a.dataUrl?a.dataUrl.length:0), 0);
+  let processed = 0;
+  files.forEach(file=>{
+    if(file.size > 4*1024*1024){
+      toast(`"${file.name}" é grande demais (máx 4MB por arquivo).`);
+      processed++;
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e=>{
+      currentAttachments.push({ name: file.name, type: file.type, dataUrl: e.target.result });
+      processed++;
+      renderAttachmentsList();
+      if(processed===files.length) toast('Anexo adicionado ✓');
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = '';
+}
+function removeAttachment(idx){
+  currentAttachments.splice(idx,1);
+  renderAttachmentsList();
+}
+function renderAttachmentsList(){
+  const box = document.getElementById('attachmentsList');
+  if(!box) return;
+  if(currentAttachments.length===0){
+    box.innerHTML = `<p style="color:var(--areia-dim);font-size:0.82rem;margin:0;">Nenhum anexo ainda.</p>`;
+    return;
+  }
+  box.innerHTML = currentAttachments.map((a, idx)=>`
+    <div onclick="openAttachment(${idx})" style="display:flex;align-items:center;gap:10px;background:var(--carvao-3);border:1px solid var(--border);
+      border-radius:8px;padding:8px 10px;margin-bottom:6px;cursor:pointer;">
+      ${a.type && a.type.startsWith('image/')
+        ? `<img src="${a.dataUrl}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;">`
+        : `<span style="font-size:1.4rem;flex-shrink:0;">📄</span>`}
+      <span style="flex:1;min-width:0;font-size:0.82rem;word-break:break-word;color:var(--safira-l);text-decoration:underline;">${escapeHtml(a.name)}</span>
+      <button onclick="event.stopPropagation(); removeAttachment(${idx})" style="background:none;border:none;color:var(--terracota);
+        cursor:pointer;font-size:1.1rem;flex-shrink:0;min-width:36px;min-height:36px;">🗑️</button>
+    </div>
+  `).join('');
+}
+function openUrl(url){
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+function openAttachment(idx){
+  const a = currentAttachments[idx];
+  if(!a) return;
+  document.getElementById('attachmentModalTitle').textContent = a.name;
+  const body = document.getElementById('attachmentModalBody');
+  if(a.type && a.type.startsWith('image/')){
+    body.innerHTML = `<img src="${a.dataUrl}" style="width:100%;height:auto;border-radius:8px;display:block;">`;
+  } else {
+    body.innerHTML = `<iframe src="${a.dataUrl}" style="border:none;width:100%;height:60vh;border-radius:8px;"></iframe>`;
+  }
+  document.getElementById('attachmentModal').classList.add('show');
+}
+function closeAttachmentModal(){
+  document.getElementById('attachmentModal').classList.remove('show');
+  document.getElementById('attachmentModalBody').innerHTML = '';
 }
 function newScript(){
   const s = { id: uid(), titulo:'', gancho:'', historia:'', ref:'', versiculo:'', micro:'', ilustracao:'',
@@ -812,7 +1043,25 @@ function newScript(){
   persistScripts();
   openWizard(s.id);
 }
+function extractFirstUrl(text){
+  const m = (text||'').match(/https?:\/\/[^\s]+/);
+  return m ? m[0] : null;
+}
+function toggleOpenLinkBtn(){
+  const field = document.getElementById('f_versiculo');
+  const link = document.getElementById('btnOpenVersiculoLink');
+  if(!field || !link) return;
+  const url = extractFirstUrl(field.value);
+  if(url){
+    link.href = url;
+    link.textContent = '🔗 ' + url;
+    link.style.display = 'inline-block';
+  } else {
+    link.style.display = 'none';
+  }
+}
 function openWizard(id){
+  window.scrollTo(0,0);
   const s = scripts.find(x=>x.id===id);
   if(!s) return;
   editingScriptId = id;
@@ -831,8 +1080,12 @@ function openWizard(id){
   document.getElementById('f_formato').value = s.formato || 'Short';
   document.getElementById('f_status').value = s.status || 'rascunho';
   document.getElementById('deleteBtn').style.display = 'inline-block';
+  currentAttachments = (s.anexos || []).slice();
+  document.getElementById('f_anexo_input').value = '';
+  renderAttachmentsList();
+  toggleOpenLinkBtn();
 }
-function closeWizard(){ editingScriptId = null; renderScripts(); }
+function closeWizard(){ editingScriptId = null; currentAttachments = []; window.scrollTo(0,0); renderScripts(); }
 function readWizard(){
   return {
     titulo: document.getElementById('f_titulo').value.trim(),
@@ -846,7 +1099,8 @@ function readWizard(){
     reflexao: document.getElementById('f_reflexao').value.trim(),
     oracao: document.getElementById('f_oracao').value.trim(),
     formato: document.getElementById('f_formato').value,
-    status: document.getElementById('f_status').value
+    status: document.getElementById('f_status').value,
+    anexos: currentAttachments
   };
 }
 function saveScript(){
@@ -856,6 +1110,7 @@ function saveScript(){
   Object.assign(s, readWizard());
   persistScripts();
   toast('Roteiro salvo ✓');
+  window.scrollTo(0,0);
   renderScripts();
   switchHubTab('roteiros');
 }
@@ -1555,12 +1810,109 @@ if('serviceWorker' in navigator){
   });
 }
 
+/* ---------- APARÊNCIA (tema de cor + tamanho de letra) ---------- */
+const THEME_KEY = "vej_theme_v1";
+const FONTSIZE_KEY = "vej_fontsize_v1";
+let currentTheme = localStorage.getItem(THEME_KEY) || "dia";
+let currentFontSize = localStorage.getItem(FONTSIZE_KEY) || "normal";
+
+function applyAppearance(){
+  if(currentTheme === "dia"){ document.documentElement.removeAttribute("data-theme"); }
+  else { document.documentElement.setAttribute("data-theme", currentTheme); }
+  document.documentElement.classList.toggle("large-text", currentFontSize === "grande");
+  ["dia","noite","pergaminho"].forEach(t=>{
+    const btn = document.getElementById("themeBtn-"+t);
+    if(btn) btn.classList.toggle("active", currentTheme===t);
+  });
+  ["normal","grande"].forEach(s=>{
+    const btn = document.getElementById("fontBtn-"+s);
+    if(btn) btn.classList.toggle("active", currentFontSize===s);
+  });
+}
+function setTheme(t){ currentTheme = t; localStorage.setItem(THEME_KEY, t); applyAppearance(); }
+function setFontSize(s){ currentFontSize = s; localStorage.setItem(FONTSIZE_KEY, s); applyAppearance(); }
+/* ---------- busca global (Ideias + Roteiros) ---------- */
+function openGlobalSearchModal(){
+  document.getElementById("globalSearchModal").classList.add("show");
+  document.getElementById("globalSearchInput").value = "";
+  document.getElementById("globalSearchResults").innerHTML = "";
+  setTimeout(()=>document.getElementById("globalSearchInput").focus(), 50);
+}
+function closeGlobalSearchModal(){
+  document.getElementById("globalSearchModal").classList.remove("show");
+}
+function runGlobalSearch(q){
+  const query = q.trim().toLowerCase();
+  const box = document.getElementById("globalSearchResults");
+  if(!query){ box.innerHTML = ""; return; }
+
+  const ideaMatches = ideas.filter(i=>
+    (i.title||"").toLowerCase().includes(query) ||
+    (i.tema||"").toLowerCase().includes(query) ||
+    (i.chaves||"").toLowerCase().includes(query)
+  );
+  const scriptFields = ["titulo","gancho","historia","ref","versiculo","micro","ilustracao","aplicacao","reflexao","oracao"];
+  const scriptMatches = scripts.filter(s=>
+    scriptFields.some(f=>(s[f]||"").toLowerCase().includes(query))
+  );
+
+  if(ideaMatches.length===0 && scriptMatches.length===0){
+    box.innerHTML = `<p style="color:var(--areia-dim);font-size:0.86rem;padding:14px 0;">Nada encontrado pra "${escapeHtml(q)}".</p>`;
+    return;
+  }
+
+  let html = "";
+  if(ideaMatches.length>0){
+    html += `<div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--areia-dim);font-weight:700;margin:14px 0 8px;">🌱 Ideias (${ideaMatches.length})</div>`;
+    html += ideaMatches.map(i=>`
+      <div onclick="goToIdeaFromSearch('${i.id}')" style="background:var(--carvao-3);border:1px solid var(--border);border-radius:8px;
+        padding:10px 12px;margin-bottom:6px;cursor:pointer;font-size:0.86rem;word-break:break-word;">
+        ${escapeHtml((i.title||"").slice(0,90))}${i.title.length>90?'…':''}
+      </div>
+    `).join("");
+  }
+  if(scriptMatches.length>0){
+    html += `<div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--areia-dim);font-weight:700;margin:14px 0 8px;">📜 Roteiros (${scriptMatches.length})</div>`;
+    html += scriptMatches.map(s=>`
+      <div onclick="goToScriptFromSearch('${s.id}')" style="background:var(--carvao-3);border:1px solid var(--border);border-radius:8px;
+        padding:10px 12px;margin-bottom:6px;cursor:pointer;font-size:0.86rem;word-break:break-word;">
+        ${escapeHtml((s.titulo || '(sem título)').slice(0,90))}
+      </div>
+    `).join("");
+  }
+  box.innerHTML = html;
+}
+function goToIdeaFromSearch(id){
+  closeGlobalSearchModal();
+  switchHubTab('ideias');
+  openIdeaDetailId = id;
+  renderIdeas();
+  const el = document.getElementById('idea-'+id);
+  if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+}
+function goToScriptFromSearch(id){
+  closeGlobalSearchModal();
+  switchHubTab('roteiros');
+  openWizard(id);
+}
+
+function openAppearanceModal(){ applyAppearance(); document.getElementById("appearanceModal").classList.add("show"); }
+function closeAppearanceModal(){ document.getElementById("appearanceModal").classList.remove("show"); }
+
+/* ---------- cabeçalho retrátil ao rolar ---------- */
+window.addEventListener('scroll', ()=>{
+  const header = document.querySelector('header');
+  if(!header) return;
+  header.classList.toggle('shrunk', window.scrollY > 40);
+}, { passive: true });
+
 /* ---------- init ---------- */
 renderIdeas();
 renderTitle();
 updateFooter();
 autoGrow(quickInputEl);
 updateReadyBadge();
+applyAppearance();
 </script>
 </body>
 </html>
