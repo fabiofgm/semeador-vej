@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Semeador — Vivendo o Evangelho de Jesus</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1b3a6b">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Semeador VEJ">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  :root{
+    --carvao:#17171a;
+    --carvao-2:#212126;
+    --carvao-3:#2b2b31;
+    --areia:#eee4d1;
+    --areia-dim:#a49a89;
+    --safira:#1b3a6b;
+    --safira-l:#3a5f9c;
+    --vinho:#7a2436;
+    --vinho-l:#9c3448;
+    --terracota:#b5502d;
+    --esmeralda:#1f7a52;
+    --esmeralda-l:#2f9a6a;
+    --border:#38383f;
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Times New Roman', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(27,58,107,0.25), transparent 45%),
+      radial-gradient(circle at 100% 0%, rgba(122,36,54,0.15), transparent 40%),
+      var(--carvao);
+    color:var(--areia);
+    font-family:var(--sans);
+    min-height:100vh;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .wrap{max-width:820px;margin:0 auto;padding:24px 16px 80px;}
+
+  header{text-align:center;margin-bottom:18px;}
+  header .mark{
+    font-family:var(--serif);font-style:italic;font-size:0.72rem;letter-spacing:2px;
+    text-transform:uppercase;color:var(--areia-dim);display:block;margin-bottom:6px;
+  }
+  header h1{font-family:var(--serif);font-weight:700;font-size:1.55rem;margin:0;letter-spacing:0.3px;}
+  header h1 em{color:var(--safira-l);font-style:italic;}
+
+  /* ---- hub tabs ---- */
+  .hub-tabs{display:flex;gap:8px;margin:20px 0 20px;border-bottom:1px solid var(--border);}
+  .hub-tab-btn{
+    flex:1;background:none;border:none;color:var(--areia-dim);font-family:var(--sans);
+    font-size:0.88rem;font-weight:600;padding:12px 4px;cursor:pointer;
+    border-bottom:2px solid transparent;transition:.15s;position:relative;
+  }
+  .hub-tab-btn.active{color:var(--areia);border-bottom-color:var(--safira-l);}
+  .hub-panel{display:none;}
+  .hub-panel.active{display:block;animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+  .badge-count{
+    display:inline-block;background:var(--vinho);color:var(--areia);font-size:0.68rem;
+    font-weight:700;border-radius:999px;padding:1px 6px;margin-left:4px;
+  }
+
+  /* ---- capture ---- */
+  .capture{display:flex;gap:8px;margin-bottom:22px;align-items:flex-end;}
+  .capture textarea{
+    flex:1;background:var(--carvao-3);border:1px solid var(--border);border-radius:10px;
+    color:var(--areia);padding:14px 16px;font-size:1rem;font-family:var(--sans);
+    resize:none;overflow:hidden;line-height:1.4;max-height:220px;
+  }
+  .capture textarea:focus{outline:none;border-color:var(--safira-l);}
+  .capture button{
+    background:var(--safira);color:var(--areia);border:none;border-radius:10px;
+    padding:14px 20px;font-weight:700;font-size:0.95rem;cursor:pointer;transition:.15s;flex-shrink:0;
+  }
+  .capture button:hover{background:var(--safira-l);}
+  .capture-hint{color:var(--areia-dim);font-size:0.76rem;margin:-14px 0 20px 4px;}
+
+  /* ---- filters/chips ---- */
+  .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
+  .chip{
+    background:var(--carvao-2);border:1px solid var(--border);color:var(--areia-dim);
+    font-size:0.76rem;padding:6px 12px;border-radius:999px;cursor:pointer;font-weight:600;
+  }
+  .chip.active{background:var(--safira);color:var(--areia);border-color:var(--safira);}
+
+  /* ---- idea cards ---- */
+  .idea{
+    background:var(--carvao-2);border:1px solid var(--border);border-left:3px solid var(--safira-l);
+    border-radius:10px;padding:14px 16px;margin-bottom:10px;
+  }
+  .idea-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .idea-title{font-size:1rem;font-weight:600;line-height:1.35;white-space:pre-wrap;word-break:break-word;}
+  .idea-meta{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;}
+  .stars{color:#d4af5a;font-size:0.82rem;letter-spacing:1px;}
+  .pill{
+    font-size:0.68rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;
+    padding:2px 8px;border-radius:999px;background:var(--carvao-3);color:var(--areia-dim);
+  }
+  .idea-actions{display:flex;gap:6px;flex-shrink:0;}
+  .icon-btn{background:none;border:none;color:var(--areia-dim);cursor:pointer;font-size:0.92rem;padding:4px;border-radius:6px;}
+  .icon-btn:hover{color:var(--areia);background:var(--carvao-3);}
+  .idea-detail{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);gap:10px;}
+  .idea-detail.open{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .idea-detail .full{grid-column:1/-1;}
+  .idea-detail label{font-size:0.66rem;text-transform:uppercase;letter-spacing:0.6px;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;}
+  select, input[type=text]{
+    width:100%;background:var(--carvao-3);border:1px solid var(--border);color:var(--areia);
+    border-radius:8px;padding:8px 10px;font-size:0.85rem;font-family:var(--sans);
+  }
+  .to-script{grid-column:1/-1;background:var(--esmeralda);color:var(--areia);border:none;border-radius:8px;
+    padding:9px;font-weight:700;font-size:0.8rem;cursor:pointer;margin-top:4px;}
+  .to-script:hover{background:var(--esmeralda-l);}
+  .empty{text-align:center;color:var(--areia-dim);font-size:0.86rem;padding:36px 10px;border:1px dashed var(--border);border-radius:12px;}
+
+  /* ---- roteiro list ---- */
+  .new-script-btn{width:100%;background:var(--vinho);color:var(--areia);border:none;border-radius:10px;
+    padding:13px;font-weight:700;font-size:0.92rem;cursor:pointer;margin-bottom:18px;}
+  .new-script-btn:hover{background:var(--vinho-l);}
+  .script-card{background:var(--carvao-2);border:1px solid var(--border);border-left:3px solid var(--vinho-l);
+    border-radius:10px;padding:13px 16px;margin-bottom:10px;cursor:pointer;display:flex;
+    justify-content:space-between;align-items:center;gap:10px;}
+  .script-card:hover{border-color:var(--areia-dim);}
+  .script-card .st{font-size:0.66rem;text-transform:uppercase;letter-spacing:.5px;color:var(--esmeralda-l);font-weight:700;}
+  .script-card .del{color:var(--terracota);background:none;border:none;cursor:pointer;font-size:0.88rem;}
+
+  /* ---- wizard ---- */
+  .wizard-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .back-link{background:none;border:none;color:var(--areia-dim);cursor:pointer;font-size:0.84rem;padding:0;}
+  .back-link:hover{color:var(--areia);}
+  .block{background:var(--carvao-2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px;}
+  .block-head{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;}
+  .verse-badge{font-family:var(--serif);font-style:italic;font-weight:700;color:var(--safira-l);font-size:0.76rem;
+    border:1px solid var(--safira-l);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;
+    justify-content:center;flex-shrink:0;}
+  .block-title{font-family:var(--serif);font-size:1rem;font-weight:700;}
+  .block-hint{font-size:0.74rem;color:var(--areia-dim);margin:0 0 10px 32px;line-height:1.5;}
+  .block textarea, .block input[type=text]{
+    width:100%;background:var(--carvao-3);border:1px solid var(--border);border-radius:8px;color:var(--areia);
+    padding:11px 12px;font-size:0.9rem;font-family:var(--sans);resize:vertical;min-height:70px;line-height:1.5;
+  }
+  .block textarea:focus, .block input:focus{outline:none;border-color:var(--safira-l);}
+  .block-row{display:flex;gap:10px;}
+  .block-row > div{flex:1;}
+  .meta-row{display:flex;gap:10px;margin-top:4px;}
+  .meta-row > div{flex:1;}
+  .meta-row label{font-size:0.66rem;text-transform:uppercase;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;}
+  .wizard-actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;}
+  .wizard-actions button{flex:1;border:none;border-radius:10px;padding:13px;font-weight:700;font-size:0.88rem;cursor:pointer;min-width:120px;}
+  .btn-save{background:var(--esmeralda);color:var(--areia);}
+  .btn-save:hover{background:var(--esmeralda-l);}
+  .btn-export{background:var(--safira);color:var(--areia);}
+  .btn-export:hover{background:var(--safira-l);}
+  .btn-delete{background:transparent;color:var(--terracota);border:1px solid var(--terracota) !important;flex:0 0 auto;padding:13px 16px;}
+  .btn-delete:hover{background:rgba(181,80,45,0.12);}
+
+  /* ---- PAINEL (weekly schedule) ---- */
+  .panel-top-actions{display:flex;justify-content:flex-end;margin-bottom:14px;}
+  .panel-btn{background:var(--safira);color:var(--areia);border:none;border-radius:8px;padding:10px 16px;
+    font-weight:700;cursor:pointer;font-size:0.86rem;}
+  .panel-btn:hover{background:var(--safira-l);}
+  .controls-bar{display:flex;gap:14px;margin-bottom:14px;background:var(--carvao-2);border:1px solid var(--border);
+    padding:10px 14px;border-radius:12px;align-items:center;flex-wrap:wrap;justify-content:space-between;}
+  .layout-switcher{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .layout-label{font-weight:700;color:var(--areia-dim);font-size:0.82rem;}
+  .layout-btn{padding:7px 14px;border:1px solid var(--border);background:var(--carvao-3);color:var(--areia-dim);
+    font-weight:600;border-radius:8px;cursor:pointer;font-size:0.82rem;}
+  .layout-btn.active{background:var(--safira);color:var(--areia);border-color:var(--safira);}
+  .platform-filter-group{display:flex;gap:8px;align-items:center;}
+  .platform-select{padding:7px 10px;border:1px solid var(--border);background:var(--carvao-3);color:var(--areia);
+    font-weight:600;border-radius:8px;cursor:pointer;font-size:0.82rem;}
+
+  .day-tabs{display:flex;gap:8px;margin-bottom:22px;overflow-x:auto;padding-bottom:5px;}
+  .day-tab-btn{padding:12px 16px;border:1px solid var(--border);background:var(--carvao-2);color:var(--areia-dim);
+    cursor:pointer;border-radius:10px;font-weight:700;font-size:0.86rem;flex:1;white-space:nowrap;text-align:center;
+    position:relative;}
+  .day-tab-btn.active{background:var(--safira);color:var(--areia);border-color:var(--safira);}
+  .day-tab-btn.today::after{content:'';position:absolute;top:6px;right:8px;width:7px;height:7px;
+    background-color:var(--esmeralda-l);border-radius:50%;}
+  .day-tab-btn.day-finished{background-color:rgba(31,122,82,0.18) !important;color:var(--esmeralda-l) !important;
+    border-color:var(--esmeralda) !important;}
+  .day-tab-btn.day-finished.active{background-color:var(--esmeralda) !important;color:var(--areia) !important;
+    border-color:var(--esmeralda) !important;}
+
+  .progress-container{background:var(--carvao-2);border:1px solid var(--border);padding:20px;border-radius:14px;margin-bottom:22px;}
+  .progress-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:14px;}
+  .progress-bar-wrapper{flex-grow:1;display:flex;align-items:center;min-width:220px;}
+  .progress-bar-bg{flex-grow:1;background:var(--carvao-3);height:14px;margin-left:16px;border-radius:10px;overflow:hidden;}
+  .progress-bar-fill{background:var(--esmeralda-l);height:100%;width:0%;transition:width 0.3s;}
+  .countdown-badge{background:rgba(27,58,107,0.35);color:var(--areia);padding:6px 14px;border-radius:20px;
+    font-size:0.82rem;font-weight:700;border:1px solid var(--safira-l);}
+  .archive-box{background:var(--carvao-3);border:1px solid var(--border);padding:14px;border-radius:10px;
+    display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap;}
+  .archive-box input{flex-grow:1;min-width:180px;}
+  .btn-archive-week{background:var(--esmeralda);color:var(--areia);border:none;padding:10px 18px;border-radius:8px;
+    font-weight:700;cursor:pointer;font-size:0.86rem;white-space:nowrap;}
+  .btn-archive-week:hover{background:var(--esmeralda-l);}
+
+  .day-card{background:var(--carvao-2);border:1px solid var(--border);border-radius:14px;display:none;overflow:hidden;}
+  .day-card.active{display:block;}
+  .day-header{background:var(--carvao-3);color:var(--areia);padding:16px 20px;font-weight:700;font-size:1.1rem;
+    display:flex;justify-content:space-between;align-items:center;}
+  .today-badge{background:var(--esmeralda);color:var(--areia);font-size:0.76rem;padding:4px 10px;border-radius:20px;font-weight:600;}
+  .task-table{width:100%;border-collapse:collapse;}
+  .task-table tr{border-bottom:1px solid var(--border);}
+  .task-table tr:last-child{border-bottom:none;}
+  .task-table tr.completed{background-color:rgba(31,122,82,0.08);}
+  .task-table td{padding:14px 18px;vertical-align:middle;}
+  .col-check{width:44px;text-align:center;}
+  .col-content{font-weight:600;color:var(--areia);font-size:0.95rem;}
+  .task-checkbox{width:22px;height:22px;border:2px solid var(--border);border-radius:6px;cursor:pointer;accent-color:var(--esmeralda-l);}
+  .task-platform{background:rgba(27,58,107,0.4);color:var(--safira-l);padding:3px 12px;border-radius:20px;
+    font-size:0.82rem;font-weight:600;display:inline-block;}
+  .task-time{background:var(--carvao-3);color:var(--areia-dim);padding:3px 12px;border-radius:20px;
+    font-size:0.82rem;font-weight:600;display:inline-block;white-space:nowrap;}
+  .status-badge{padding:5px 14px;border-radius:8px;font-size:0.82rem;font-weight:700;text-align:center;display:inline-block;min-width:60px;}
+  .status-badge.sim{background-color:rgba(31,122,82,0.2);color:var(--esmeralda-l);}
+  .status-badge.nao{background-color:rgba(181,80,45,0.2);color:var(--terracota);}
+
+  .ready-list-item{background:var(--carvao-3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;
+    margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+  .ready-list-item .rtitle{font-weight:600;font-size:0.92rem;}
+  .ready-list-item .ractions{display:flex;gap:6px;}
+  .ready-list-item button{border:none;border-radius:8px;padding:7px 12px;font-size:0.76rem;font-weight:700;cursor:pointer;}
+  .btn-mark-done{background:var(--esmeralda);color:var(--areia);}
+  .btn-open-script{background:var(--carvao-2);color:var(--areia);border:1px solid var(--border) !important;}
+
+  .config-panel{background:var(--carvao-2);border:2px dashed var(--safira-l);padding:20px;border-radius:14px;
+    margin-bottom:22px;display:none;}
+  .config-panel.open{display:block;}
+  .config-panel h3{font-family:var(--serif);margin:0 0 4px;}
+  .config-hint{font-size:0.8rem;color:var(--areia-dim);margin:0 0 12px;}
+  .config-row{display:flex;gap:8px;margin-bottom:8px;align-items:center;background:var(--carvao-3);padding:8px;border-radius:8px;flex-wrap:wrap;}
+  .config-row input{padding:8px;font-size:0.84rem;flex:1;min-width:90px;}
+  .btn-add-task{background:var(--safira-l);color:var(--areia);border:none;padding:7px 12px;border-radius:6px;
+    cursor:pointer;font-size:0.8rem;font-weight:700;margin-top:4px;}
+  .btn-remove-task{background:var(--terracota);color:var(--areia);border:none;padding:6px 10px;border-radius:6px;
+    cursor:pointer;font-weight:700;flex-shrink:0;}
+  .btn-save-config{background:var(--esmeralda);color:var(--areia);padding:12px;width:100%;border:none;border-radius:8px;
+    font-weight:700;cursor:pointer;margin-top:14px;}
+  .btn-undo-config{background:var(--carvao-3);color:var(--areia);border:1px solid var(--border) !important;padding:10px;
+    width:100%;border-radius:8px;font-weight:700;cursor:pointer;margin-top:6px;}
+  .btn-factory-reset{background:var(--terracota);color:var(--areia);padding:10px;width:100%;border:none;border-radius:8px;
+    font-weight:700;cursor:pointer;margin-top:6px;}
+  .reset-btn{width:100%;padding:16px;background:var(--terracota);color:var(--areia);border:none;border-radius:10px;
+    margin-top:24px;font-weight:700;font-size:1rem;cursor:pointer;}
+
+  .history-card{padding:0;}
+  .history-month-group{margin-bottom:20px;}
+  .history-month-title{font-size:1.05rem;color:var(--areia);border-bottom:2px solid var(--border);padding-bottom:8px;
+    margin-bottom:10px;text-transform:capitalize;font-family:var(--serif);}
+  .history-item{background:var(--carvao-3);border:1px solid var(--border);padding:13px 16px;border-radius:10px;
+    margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:0.88rem;}
+
+  .title-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;}
+  .title-row h2{margin:0;font-family:var(--serif);font-size:1.3rem;}
+  .title-edit-btn{background:none;border:1px solid var(--border);color:var(--areia-dim);border-radius:8px;
+    padding:5px 9px;cursor:pointer;font-size:0.85rem;}
+  .title-edit-btn:hover{background:var(--carvao-3);color:var(--areia);}
+  .title-input{font-size:1.3rem;font-weight:bold;color:var(--areia);text-align:center;border:2px solid var(--safira-l);
+    background:var(--carvao-3);border-radius:8px;padding:4px 12px;font-family:var(--serif);display:none;max-width:90%;}
+
+  #importFile{display:none;}
+
+  /* ---- footer ---- */
+  footer{margin-top:32px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;
+    align-items:center;flex-wrap:wrap;gap:10px;}
+  footer .count{font-size:0.74rem;color:var(--areia-dim);}
+  footer .backup{display:flex;gap:6px;flex-wrap:wrap;}
+  footer .backup button{background:none;border:1px solid var(--border);color:var(--areia-dim);font-size:0.7rem;
+    padding:6px 10px;border-radius:8px;cursor:pointer;}
+  footer .backup button:hover{color:var(--areia);border-color:var(--areia-dim);}
+  .file-input{display:none;}
+
+  /* ---- modal ---- */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;
+    padding:20px;z-index:100;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:var(--carvao-2);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:560px;
+    width:100%;max-height:85vh;display:flex;flex-direction:column;gap:12px;}
+  .modal-box h3{margin:0;font-family:var(--serif);font-size:1.02rem;}
+  .modal-box p{margin:0;font-size:0.84rem;color:var(--areia-dim);line-height:1.5;}
+  .modal-box textarea{width:100%;flex:1;min-height:260px;background:var(--carvao-3);border:1px solid var(--border);
+    color:var(--areia);border-radius:8px;padding:12px;font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:0.78rem;line-height:1.5;resize:vertical;}
+  .modal-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .modal-actions button{border:none;border-radius:8px;padding:11px 16px;font-weight:700;font-size:0.84rem;cursor:pointer;}
+  .modal-actions .primary{background:var(--esmeralda);color:var(--areia);}
+  .modal-actions .primary:hover{background:var(--esmeralda-l);}
+  .modal-actions .secondary{background:var(--carvao-3);color:var(--areia);border:1px solid var(--border) !important;}
+  .modal-actions .secondary:hover{border-color:var(--areia-dim) !important;}
+  .modal-actions .danger{background:var(--terracota);color:var(--areia);}
+  .modal-actions .danger:hover{background:#c96038;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="mark">Recolhe na ceifa, quem em tempo semeou</span>
+    <h1>Semeador <em>·</em> Vivendo o Evangelho de Jesus</h1>
+  </header>
+
+  <div class="hub-tabs">
+    <button class="hub-tab-btn active" data-hub="ideias" onclick="switchHubTab('ideias')">🌱 Ideias</button>
+    <button class="hub-tab-btn" data-hub="roteiros" onclick="switchHubTab('roteiros')">📜 Roteiros</button>
+    <button class="hub-tab-btn" data-hub="painel" onclick="switchHubTab('painel')">📅 Painel<span class="badge-count" id="readyBadge" style="display:none;"></span></button>
+  </div>
+
+  <!-- ============ IDEIAS ============ -->
+  <div id="hub-ideias" class="hub-panel active">
+    <div class="capture">
+      <textarea id="quickInput" rows="1" placeholder="Escreve a ideia agora, antes que ela fuja..."></textarea>
+      <button onclick="quickAdd()">Salvar</button>
+    </div>
+    <div class="capture-hint">Enter salva. Shift+Enter quebra linha se a ideia for mais longa. Sem limite de tamanho.</div>
+    <div class="filters" id="filters"></div>
+    <div id="ideasList"></div>
+  </div>
+
+  <!-- ============ ROTEIROS ============ -->
+  <div id="hub-roteiros" class="hub-panel">
+    <div id="scriptListView">
+      <button class="new-script-btn" onclick="newScript()">+ Novo roteiro do zero</button>
+      <div id="scriptsList"></div>
+    </div>
+
+    <div id="scriptWizard" style="display:none;">
+      <div class="wizard-header">
+        <button class="back-link" onclick="closeWizard()">← voltar pra lista</button>
+      </div>
+
+      <div class="block">
+        <div class="block-head"><span class="verse-badge">1</span><span class="block-title">Gancho <small style="color:var(--areia-dim);font-weight:400;">(0–15s)</small></span></div>
+        <p class="block-hint">Pergunta ou curiosidade que trava o dedo.</p>
+        <textarea id="f_gancho" placeholder="Escreve o gancho aqui..."></textarea>
+      </div>
+
+      <div class="block">
+        <div class="block-head"><span class="verse-badge">2</span><span class="block-title">Identificação / história real</span></div>
+        <p class="block-hint">A dor concreta que a pessoa reconhece nela mesma.</p>
+        <textarea id="f_historia" placeholder="Descreve a situação real..."></textarea>
+      </div>
+
+      <div class="block">
+        <div class="block-head"><span class="verse-badge">3</span><span class="block-title">A Palavra <small style="color:var(--areia-dim);font-weight:400;">— NAA 2017</small></span></div>
+        <p class="block-hint">Confere na Bíblia física antes de gravar. Nunca de memória.</p>
+        <div class="block-row">
+          <div style="flex:0 0 160px;"><input type="text" id="f_ref" placeholder="Referência (ex: Mateus 6:34)"></div>
+          <div style="flex:1;"><input type="text" id="f_versiculo" placeholder="Cole o versículo completo aqui"></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-head"><span class="verse-badge">4</span><span class="block-title">Micro-resposta <small style="color:var(--areia-dim);font-weight:400;">— o choque</small></span></div>
+        <p class="block-hint">O mundo diz uma coisa. Jesus diz outra.</p>
+        <textarea id="f_micro" placeholder="O mundo diz... Mas Jesus diz..."></textarea>
+      </div>
+
+      <div class="block">
+        <div class="block-head"><span class="verse-badge">5</span><span class="block-title">Ilustração</span></div>
+        <p class="block-hint">Bíblica primeiro. Contemporânea só se não houver uma direta — sempre depois do versículo.</p>
+        <textarea id="f_ilustracao" placeholder="Parábola ou exemplo do cotidiano..."></textarea>
+      </div>
+
+      <div class="block">
+        <div class="block-head"><span class="verse-badge">6</span><span class="block-title">Aplicação <small style="color:var(--areia-dim);font-weight:400;">— payoff / loop</small></span></div>
+        <p class="block-hint">Um passo prático e imediato.</p>
+        <textarea id="f_aplicacao" placeholder="O que a pessoa faz com isso hoje..."></textarea>
+      </div>
+
+      <div class="block">
+        <div class="block-head"><span class="verse-badge">7</span><span class="block-title">Reflexão</span></div>
+        <p class="block-hint">Pergunta específica ao tema — nunca genérica.</p>
+        <textarea id="f_reflexao" placeholder="Pergunta específica ao tema..."></textarea>
+      </div>
+
+      <div class="block">
+        <div class="block-head"><span class="verse-badge">8</span><span class="block-title">Oração / Fechamento</span></div>
+        <p class="block-hint">100% bíblica, tom pastoral, zero frase de efeito.</p>
+        <textarea id="f_oracao" placeholder="Oração + fechamento pastoral..."></textarea>
+      </div>
+
+      <div class="block">
+        <div class="block-head"><span class="verse-badge">9</span><span class="block-title">Título de trabalho & formato</span></div>
+        <div class="block-row" style="margin-bottom:10px;"><input type="text" id="f_titulo" placeholder="Título de trabalho deste roteiro"></div>
+        <div class="meta-row">
+          <div>
+            <label>Formato</label>
+            <select id="f_formato">
+              <option value="Short">Short / Reels</option>
+              <option value="Longo">Vídeo Longo</option>
+              <option value="Ambos">Ambos</option>
+            </select>
+          </div>
+          <div>
+            <label>Status</label>
+            <select id="f_status">
+              <option value="rascunho">Rascunho</option>
+              <option value="pronto">Pronto pra gravar</option>
+              <option value="gravado">Gravado</option>
+              <option value="publicado">Publicado</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-actions">
+        <button class="btn-delete" id="deleteBtn" onclick="deleteCurrentScript()" style="display:none;">Excluir</button>
+        <button class="btn-export" onclick="exportScript()">📋 Gerar texto pra copiar</button>
+        <button class="btn-save" onclick="saveScript()">💾 Salvar roteiro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PAINEL ============ -->
+  <div id="hub-painel" class="hub-panel">
+    <div class="title-row">
+      <h2 id="panelTitleDisplay">Painel Semanal</h2>
+      <input type="text" id="panelTitleInput" class="title-input">
+      <button class="title-edit-btn" onclick="startEditTitle()" title="Renomear painel">✏️</button>
+    </div>
+
+    <div class="panel-top-actions">
+      <button class="panel-btn" onclick="togglePanelConfig()">⚙️ Editar Horários, Tarefas e Categorias</button>
+    </div>
+
+    <div class="controls-bar">
+      <div class="layout-switcher">
+        <span class="layout-label">🔀 Ver por:</span>
+        <button class="layout-btn active" id="layout-days-btn" onclick="switchLayout('days')">📅 Dias</button>
+        <button class="layout-btn" id="layout-format-btn" onclick="switchLayout('format')">🏷️ Formato</button>
+      </div>
+      <div class="platform-filter-group">
+        <span class="layout-label">🎯 Plataforma:</span>
+        <select id="platformFilter" class="platform-select" onchange="changePlatformFilter()">
+          <option value="all">Todas</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="config-panel" id="configPanel">
+      <h3>🏷️ Categorias do Modelo/Formato</h3>
+      <p class="config-hint">A ordem importa: cada tarefa cai na PRIMEIRA categoria de cima pra baixo que bater com uma das palavras-chave.</p>
+      <div id="config-categories-container"></div>
+      <button class="btn-add-task" onclick="addNewCategory()">+ Adicionar Categoria</button>
+      <button class="btn-save-config" onclick="saveCategoryConfig()">💾 Salvar Categorias</button>
+
+      <h3 style="margin-top:26px;">⚙️ Tarefas e Horários</h3>
+      <div id="config-items-container"></div>
+      <button class="btn-save-config" onclick="saveScheduleConfig()">💾 Salvar Alterações</button>
+      <button class="btn-undo-config" onclick="undoLastConfig()">↩️ Voltar ao Padrão Anterior</button>
+      <button class="btn-factory-reset" onclick="factoryResetConfig()">⚠️ Restaurar Padrão Original</button>
+    </div>
+
+    <div class="block" style="margin-bottom:20px;">
+      <div class="block-head"><span class="verse-badge">🎬</span><span class="block-title">Roteiros prontos pra gravar</span></div>
+      <p class="block-hint" style="margin-left:0;">Vem direto da aba Roteiros — sem precisar digitar de novo aqui.</p>
+      <div id="readyScriptsList"></div>
+    </div>
+
+    <div class="progress-container">
+      <div class="progress-top">
+        <div class="progress-bar-wrapper">
+          <div id="progress-text" style="font-weight:700;font-size:1rem;">Progresso Geral: 0 / 0 (0%)</div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+        </div>
+        <div class="countdown-badge" id="countdown-badge">⏳ Calculando dias...</div>
+      </div>
+      <div class="archive-box">
+        <input type="text" id="weekNameInput" placeholder="Nome da semana (Ex: 2ª Semana de Agosto)">
+        <button class="btn-archive-week" onclick="archiveCurrentWeek()">📁 Salvar Semana no Histórico</button>
+      </div>
+    </div>
+
+    <div class="day-tabs" id="tabs-container"></div>
+    <div id="schedule-container"></div>
+
+    <div class="day-card" id="history-card-view">
+      <div class="day-header"><span>📊 Histórico de Semanas e Meses</span><span class="today-badge">Arquivo Geral</span></div>
+      <div class="history-card" id="history-content-container" style="padding:20px;"></div>
+    </div>
+
+    <button class="reset-btn" onclick="resetAllChecks()">🔄 Limpar Todas as Marcações de Check</button>
+  </div>
+
+  <footer>
+    <span class="count" id="footerCount"></span>
+    <div class="backup">
+      <button onclick="clearAllIdeas()">Excluir ideias</button>
+      <button onclick="clearAllScripts()">Excluir roteiros</button>
+      <button onclick="exportAllBackup()">Exportar backup completo</button>
+      <button onclick="document.getElementById('importFile').click()">Importar backup</button>
+      <input type="file" id="importFile" class="file-input" accept="application/json" onchange="importAllBackup(event)">
+    </div>
+  </footer>
+
+</div>
+
+<div class="toast" id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:var(--esmeralda);color:var(--areia);padding:10px 20px;border-radius:999px;font-size:0.84rem;
+  font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;
+  box-shadow:0 8px 20px rgba(0,0,0,0.35);z-index:200;"></div>
+
+<!-- COPY MODAL -->
+<div class="modal-overlay" id="copyModal">
+  <div class="modal-box">
+    <h3>Texto pronto pra copiar</h3>
+    <p>Clica em "Copiar tudo" (ou seleciona manualmente) e cola direto na outra IA.</p>
+    <textarea id="copyModalText" readonly></textarea>
+    <div class="modal-actions">
+      <button class="primary" onclick="copyModalText()">📋 Copiar tudo</button>
+      <button class="secondary" onclick="closeCopyModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box" style="max-width:400px;">
+    <h3 id="confirmTitle">Confirmar</h3>
+    <p id="confirmMsg"></p>
+    <div class="modal-actions">
+      <button class="danger" id="confirmYesBtn">Sim, confirmar</button>
+      <button class="secondary" onclick="closeConfirmModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================================================================
+   SEMEADOR + PAINEL — hub único, PWA
+   =================================================================== */
+
+/* ---------- storage keys ---------- */
+const IDEAS_KEY = "vej_ideias_v1";
+const SCRIPTS_KEY = "vej_roteiros_v1";
+const SCHEDULE_KEY = "vej_schedule_v1";
+const HISTORY_KEY = "vej_history_v1";
+const LAYOUT_KEY = "vej_layout_v1";
+const PLATFORM_KEY = "vej_platform_filter_v1";
+const TITLE_KEY = "vej_panel_title_v1";
+const FORMATS_KEY = "vej_format_groups_v1";
+const PREV_SCHEDULE_KEY = "vej_prev_schedule_v1";
+
+/* ---------- shared helpers ---------- */
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function escapeHtml(s){
+  return (s||"").replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(-6px)';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(-50%)'; }, 1800);
+}
+
+let pendingConfirmAction = null;
+function askConfirm(message, onYes, title){
+  document.getElementById('confirmTitle').textContent = title || 'Confirmar';
+  document.getElementById('confirmMsg').textContent = message;
+  pendingConfirmAction = onYes;
+  document.getElementById('confirmModal').classList.add('show');
+}
+function closeConfirmModal(){
+  document.getElementById('confirmModal').classList.remove('show');
+  pendingConfirmAction = null;
+}
+document.getElementById('confirmYesBtn').addEventListener('click', function(){
+  const action = pendingConfirmAction;
+  closeConfirmModal();
+  if(action) action();
+});
+
+function openCopyModal(text){
+  const ta = document.getElementById('copyModalText');
+  ta.value = text;
+  document.getElementById('copyModal').classList.add('show');
+  setTimeout(()=>{ ta.focus(); ta.select(); }, 50);
+}
+function closeCopyModal(){ document.getElementById('copyModal').classList.remove('show'); }
+function copyModalText(){
+  const ta = document.getElementById('copyModalText');
+  ta.focus(); ta.select();
+  let ok = false;
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(ta.value); ok = true; }
+    else { ok = document.execCommand('copy'); }
+  }catch(e){
+    try{ ok = document.execCommand('copy'); }catch(e2){ ok = false; }
+  }
+  toast(ok ? 'Copiado ✓' : 'Seleciona o texto e usa Ctrl+C (ou Cmd+C)');
+}
+
+/* ---------- hub tabs ---------- */
+let activeHub = 'ideias';
+function switchHubTab(hub){
+  activeHub = hub;
+  document.querySelectorAll('.hub-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.hub-tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('hub-'+hub).classList.add('active');
+  document.querySelector(`.hub-tab-btn[data-hub="${hub}"]`).classList.add('active');
+  if(hub==='roteiros'){ renderScripts(); }
+  if(hub==='painel'){ renderPanel(); }
+  updateFooter();
+}
+
+/* ===================================================================
+   IDEIAS
+   =================================================================== */
+let ideas = JSON.parse(localStorage.getItem(IDEAS_KEY) || "[]");
+let currentFilter = 'todas';
+function persistIdeas(){ localStorage.setItem(IDEAS_KEY, JSON.stringify(ideas)); }
+
+function quickAdd(){
+  const input = document.getElementById('quickInput');
+  const title = input.value.trim();
+  if(!title) return;
+  ideas.unshift({ id: uid(), title, stars: 3, format: 'Short', status: 'novo', tema: '', createdAt: Date.now() });
+  persistIdeas();
+  input.value = '';
+  autoGrow(input);
+  renderIdeas();
+  toast('Ideia salva ✓');
+}
+function autoGrow(el){ el.style.height='auto'; el.style.height = Math.min(el.scrollHeight, 220) + 'px'; }
+const quickInputEl = document.getElementById('quickInput');
+quickInputEl.addEventListener('input', ()=>autoGrow(quickInputEl));
+quickInputEl.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); quickAdd(); }
+});
+
+function renderFilters(){
+  const opts = [
+    {k:'todas', l:'Todas'}, {k:'5', l:'⭐⭐⭐⭐⭐'}, {k:'3', l:'⭐⭐⭐'}, {k:'1', l:'⭐'},
+    {k:'novo', l:'Novas'}, {k:'roteirizada', l:'Já viraram roteiro'}
+  ];
+  document.getElementById('filters').innerHTML = opts.map(o=>
+    `<button class="chip ${currentFilter===o.k?'active':''}" onclick="setFilter('${o.k}')">${o.l}</button>`).join('');
+}
+function setFilter(k){ currentFilter = k; renderIdeas(); }
+function starString(n){ return '⭐'.repeat(Number(n)); }
+
+function renderIdeas(){
+  renderFilters();
+  const list = document.getElementById('ideasList');
+  let filtered = ideas;
+  if(['5','3','1'].includes(currentFilter)) filtered = ideas.filter(i=>String(i.stars)===currentFilter);
+  else if(currentFilter==='novo') filtered = ideas.filter(i=>i.status==='novo');
+  else if(currentFilter==='roteirizada') filtered = ideas.filter(i=>i.status==='roteirizada');
+
+  if(filtered.length===0){
+    list.innerHTML = `<div class="empty">Nenhuma ideia aqui ainda.<br>Escreve a primeira lá em cima. 🌱</div>`;
+    updateFooter();
+    return;
+  }
+
+  list.innerHTML = filtered.map(i=>`
+    <div class="idea" id="idea-${i.id}">
+      <div class="idea-top">
+        <div>
+          <div class="idea-title">${escapeHtml(i.title)}</div>
+          <div class="idea-meta">
+            <span class="stars">${starString(i.stars)}</span>
+            <span class="pill">${i.format}</span>
+            ${i.status==='roteirizada' ? '<span class="pill" style="color:var(--safira-l)">Em roteiro</span>' : ''}
+          </div>
+        </div>
+        <div class="idea-actions">
+          <button class="icon-btn" title="Detalhes" onclick="toggleDetail('${i.id}')">✎</button>
+          <button class="icon-btn" title="Excluir" onclick="deleteIdea('${i.id}')">✕</button>
+        </div>
+      </div>
+      <div class="idea-detail" id="detail-${i.id}">
+        <div>
+          <label>Importância</label>
+          <select onchange="updateIdea('${i.id}','stars',this.value)">
+            <option value="5" ${i.stars==5?'selected':''}>⭐⭐⭐⭐⭐ Urgente</option>
+            <option value="3" ${i.stars==3?'selected':''}>⭐⭐⭐ Boa ideia</option>
+            <option value="1" ${i.stars==1?'selected':''}>⭐ Secundária</option>
+          </select>
+        </div>
+        <div>
+          <label>Formato</label>
+          <select onchange="updateIdea('${i.id}','format',this.value)">
+            <option value="Short" ${i.format==='Short'?'selected':''}>Short / Reels</option>
+            <option value="Longo" ${i.format==='Longo'?'selected':''}>Vídeo Longo</option>
+            <option value="Ambos" ${i.format==='Ambos'?'selected':''}>Ambos</option>
+          </select>
+        </div>
+        <div class="full">
+          <label>Tema ou versículo-base (opcional)</label>
+          <input type="text" value="${escapeHtml(i.tema||'')}" placeholder="ex: Mateus 6:34 — ansiedade" onchange="updateIdea('${i.id}','tema',this.value)">
+        </div>
+        <button class="to-script" onclick="ideaToScript('${i.id}')">Transformar em roteiro →</button>
+      </div>
+    </div>
+  `).join('');
+  updateFooter();
+}
+function toggleDetail(id){ document.getElementById('detail-'+id).classList.toggle('open'); }
+function updateIdea(id, field, value){
+  const idea = ideas.find(i=>i.id===id);
+  if(!idea) return;
+  idea[field] = field==='stars' ? Number(value) : value;
+  persistIdeas();
+  renderIdeas();
+}
+function deleteIdea(id){
+  askConfirm('Excluir essa ideia?', ()=>{
+    ideas = ideas.filter(i=>i.id!==id);
+    persistIdeas();
+    renderIdeas();
+  });
+}
+function clearAllIdeas(){
+  if(ideas.length===0){ toast('Não há ideias salvas.'); return; }
+  askConfirm(`Excluir TODAS as ${ideas.length} ideias? Essa ação não pode ser desfeita.`, ()=>{
+    ideas = [];
+    persistIdeas();
+    renderIdeas();
+    toast('Todas as ideias foram excluídas.');
+  });
+}
+function ideaToScript(id){
+  const idea = ideas.find(i=>i.id===id);
+  if(!idea) return;
+  idea.status = 'roteirizada';
+  persistIdeas();
+  const s = {
+    id: uid(), titulo: idea.title, gancho:'', historia:'', ref: idea.tema||'', versiculo:'',
+    micro:'', ilustracao:'', aplicacao:'', reflexao:'', oracao:'',
+    formato: idea.format==='Ambos' ? 'Ambos' : idea.format, status:'rascunho', createdAt: Date.now()
+  };
+  scripts.unshift(s);
+  persistScripts();
+  switchHubTab('roteiros');
+  openWizard(s.id);
+  toast('Ideia levada pro roteiro ✓');
+}
+
+/* ===================================================================
+   ROTEIROS
+   =================================================================== */
+let scripts = JSON.parse(localStorage.getItem(SCRIPTS_KEY) || "[]");
+let editingScriptId = null;
+function persistScripts(){ localStorage.setItem(SCRIPTS_KEY, JSON.stringify(scripts)); }
+function statusLabel(k){ return {rascunho:'Rascunho', pronto:'Pronto pra gravar', gravado:'Gravado', publicado:'Publicado'}[k] || k; }
+
+function renderScripts(){
+  document.getElementById('scriptListView').style.display='block';
+  document.getElementById('scriptWizard').style.display='none';
+  const box = document.getElementById('scriptsList');
+  if(scripts.length===0){
+    box.innerHTML = `<div class="empty">Nenhum roteiro ainda.<br>Cria um do zero ou transforma uma ideia em roteiro. 📜</div>`;
+  } else {
+    box.innerHTML = scripts.map(s=>`
+      <div class="script-card" onclick="openWizard('${s.id}')">
+        <div>
+          <div style="font-weight:600;">${escapeHtml(s.titulo || '(sem título)')}</div>
+          <div class="st">${statusLabel(s.status)} · ${s.formato}</div>
+        </div>
+        <button class="del" onclick="event.stopPropagation(); deleteScript('${s.id}')">✕</button>
+      </div>
+    `).join('');
+  }
+  updateFooter();
+  updateReadyBadge();
+}
+function newScript(){
+  const s = { id: uid(), titulo:'', gancho:'', historia:'', ref:'', versiculo:'', micro:'', ilustracao:'',
+    aplicacao:'', reflexao:'', oracao:'', formato:'Short', status:'rascunho', createdAt: Date.now() };
+  scripts.unshift(s);
+  persistScripts();
+  openWizard(s.id);
+}
+function openWizard(id){
+  const s = scripts.find(x=>x.id===id);
+  if(!s) return;
+  editingScriptId = id;
+  document.getElementById('scriptListView').style.display='none';
+  document.getElementById('scriptWizard').style.display='block';
+  document.getElementById('f_titulo').value = s.titulo || '';
+  document.getElementById('f_gancho').value = s.gancho || '';
+  document.getElementById('f_historia').value = s.historia || '';
+  document.getElementById('f_ref').value = s.ref || '';
+  document.getElementById('f_versiculo').value = s.versiculo || '';
+  document.getElementById('f_micro').value = s.micro || '';
+  document.getElementById('f_ilustracao').value = s.ilustracao || '';
+  document.getElementById('f_aplicacao').value = s.aplicacao || '';
+  document.getElementById('f_reflexao').value = s.reflexao || '';
+  document.getElementById('f_oracao').value = s.oracao || '';
+  document.getElementById('f_formato').value = s.formato || 'Short';
+  document.getElementById('f_status').value = s.status || 'rascunho';
+  document.getElementById('deleteBtn').style.display = 'inline-block';
+}
+function closeWizard(){ editingScriptId = null; renderScripts(); }
+function readWizard(){
+  return {
+    titulo: document.getElementById('f_titulo').value.trim(),
+    gancho: document.getElementById('f_gancho').value.trim(),
+    historia: document.getElementById('f_historia').value.trim(),
+    ref: document.getElementById('f_ref').value.trim(),
+    versiculo: document.getElementById('f_versiculo').value.trim(),
+    micro: document.getElementById('f_micro').value.trim(),
+    ilustracao: document.getElementById('f_ilustracao').value.trim(),
+    aplicacao: document.getElementById('f_aplicacao').value.trim(),
+    reflexao: document.getElementById('f_reflexao').value.trim(),
+    oracao: document.getElementById('f_oracao').value.trim(),
+    formato: document.getElementById('f_formato').value,
+    status: document.getElementById('f_status').value
+  };
+}
+function saveScript(){
+  if(!editingScriptId) return;
+  const s = scripts.find(x=>x.id===editingScriptId);
+  if(!s) return;
+  Object.assign(s, readWizard());
+  persistScripts();
+  toast('Roteiro salvo ✓');
+  renderScripts();
+  switchHubTab('roteiros');
+}
+function deleteCurrentScript(){
+  if(!editingScriptId) return;
+  askConfirm('Excluir esse roteiro?', ()=>{
+    scripts = scripts.filter(x=>x.id!==editingScriptId);
+    persistScripts();
+    editingScriptId = null;
+    renderScripts();
+  });
+}
+function deleteScript(id){
+  askConfirm('Excluir esse roteiro?', ()=>{
+    scripts = scripts.filter(x=>x.id!==id);
+    persistScripts();
+    renderScripts();
+  });
+}
+function clearAllScripts(){
+  if(scripts.length===0){ toast('Não há roteiros salvos.'); return; }
+  askConfirm(`Excluir TODOS os ${scripts.length} roteiros? Essa ação não pode ser desfeita.`, ()=>{
+    scripts = [];
+    persistScripts();
+    editingScriptId = null;
+    renderScripts();
+    toast('Todos os roteiros foram excluídos.');
+  });
+}
+function exportScript(){
+  const d = readWizard();
+  const txt =
+`${d.titulo || 'ROTEIRO SEM TÍTULO'}
+Formato: ${d.formato} · Status: ${statusLabel(d.status)}
+================================================
+
+INSTRUÇÃO PRA IA — LER ANTES DE MEXER NO TEXTO:
+Os blocos PREENCHIDOS abaixo já foram escritos por mim, na minha voz. NÃO
+reescreva do zero, NÃO troque meu vocabulário por sinônimos "mais bonitos",
+NÃO invente frase nova de efeito. Sua função nesses blocos é só: conectar as
+partes e ajustar pontuação/ritmo de fala, mantendo exatamente as palavras e o
+tom que eu já usei.
+Os blocos marcados como (VAZIO) eu não escrevi ainda. Nesses, pode sugerir um
+rascunho curto — mas marca claramente com [SUGESTÃO — EDITAR] antes do texto,
+nunca entrega como se fosse definitivo, e mantém o mesmo tom pastoral direto
+dos blocos que eu já escrevi acima/abaixo, sem ficar mais "bonito" ou
+"eloquente" que o resto.
+
+FORMATO DE RESPOSTA OBRIGATÓRIO:
+- Não me faça perguntas. Não converse comigo sobre o roteiro.
+- Devolva SOMENTE o roteiro final, já corrigido, usando os mesmos cabeçalhos
+  de bloco abaixo (GANCHO, IDENTIFICAÇÃO, A PALAVRA, MICRO-RESPOSTA,
+  ILUSTRAÇÃO, APLICAÇÃO, REFLEXÃO, ORAÇÃO/FECHAMENTO).
+- Sem introdução ("aqui está", "claro", etc). Sem explicação de rodapé.
+- Se houver um problema teológico sério que precise da minha atenção, coloca
+  em UMA linha só, marcada assim: ⚠️ ATENÇÃO: [problema em 1 frase] — no topo,
+  antes do roteiro. Mas devolve o roteiro completo de qualquer jeito, corrigido
+  da forma mais fiel possível ao que eu escrevi.
+- Não devolva análise, comentário linha por linha ou versões alternativas.
+  Uma versão só, pronta pra eu colar no CuePrompter.
+================================================
+
+[0-15s] GANCHO
+${d.gancho || '(VAZIO)'}
+
+IDENTIFICAÇÃO / HISTÓRIA REAL
+${d.historia || '(VAZIO)'}
+
+A PALAVRA — ${d.ref || 'referência não preenchida'} (NAA 2017 — conferir na Bíblia física)
+"${d.versiculo || '(VAZIO)'}"
+
+MICRO-RESPOSTA
+${d.micro || '(VAZIO)'}
+
+ILUSTRAÇÃO
+${d.ilustracao || '(VAZIO)'}
+
+APLICAÇÃO
+${d.aplicacao || '(VAZIO)'}
+
+REFLEXÃO
+${d.reflexao || '(VAZIO)'}
+(silêncio — 3s)
+
+ORAÇÃO / FECHAMENTO
+${d.oracao || '(VAZIO)'}
+
+================================================
+Gerado em ${new Date().toLocaleDateString('pt-BR')} — Semeador`;
+
+  openCopyModal(txt);
+  toast('Texto pronto — copia aí em cima ✓');
+}
+
+/* ===================================================================
+   PAINEL SEMANAL
+   =================================================================== */
+const defaultScheduleData = [
+  { key: "seg", day: "Seg", full: "Segunda-feira", dayOrder: 1, tasks: [
+    { id: "seg_1", content: "Post", platform: "YouTube", time: "17:00 (MS)" },
+    { id: "seg_s1", content: "Story Insta", platform: "Instagram", time: "09:00 (MS)" },
+    { id: "seg_s2", content: "Story Face", platform: "Facebook", time: "09:15 (MS)" }
+  ] },
+  { key: "ter", day: "Ter", full: "Terça-feira", dayOrder: 2, tasks: [
+    { id: "ter_1", content: "Vídeo", platform: "TikTok", time: "05:00 (MS)" },
+    { id: "ter_2", content: "Shorts (youtube)", platform: "YouTube", time: "11:20 (MS)" },
+    { id: "ter_3", content: "Reels (Insta/Face)", platform: "Meta", time: "10:30 (MS)" },
+    { id: "ter_4", content: "Post", platform: "Kwai", time: "16:00 (MS)" },
+    { id: "ter_s1", content: "Story Insta", platform: "Instagram", time: "09:00 (MS)" },
+    { id: "ter_s2", content: "Story Face", platform: "Facebook", time: "09:15 (MS)" }
+  ] },
+  { key: "qua", day: "Qua", full: "Quarta-feira", dayOrder: 3, tasks: [
+    { id: "qua_1", content: "Post", platform: "Meta/TikTok", time: "12:00 (MS)" },
+    { id: "qua_2", content: "Texto", platform: "Threads", time: "12:00 (MS)" },
+    { id: "qua_3", content: "Vídeo", platform: "Kwai", time: "14:00 (MS)" },
+    { id: "qua_4", content: "Longo", platform: "YouTube", time: "18:30 (MS)" },
+    { id: "qua_s1", content: "Story Insta", platform: "Instagram", time: "09:00 (MS)" },
+    { id: "qua_s2", content: "Story Face", platform: "Facebook", time: "09:15 (MS)" }
+  ] },
+  { key: "qui", day: "Qui", full: "Quinta-feira", dayOrder: 4, tasks: [
+    { id: "qui_1", content: "Shorts (youtube)", platform: "YouTube", time: "15:20 (MS)" },
+    { id: "qui_2", content: "Texto", platform: "Threads", time: "10:00 (MS)" },
+    { id: "qui_3", content: "Reels (Insta/Face)", platform: "Meta", time: "11:00 (MS)" },
+    { id: "qui_4", content: "Vídeo", platform: "TikTok", time: "16:00 (MS)" },
+    { id: "qui_s1", content: "Story Insta", platform: "Instagram", time: "09:00 (MS)" },
+    { id: "qui_s2", content: "Story Face", platform: "Facebook", time: "09:15 (MS)" }
+  ] },
+  { key: "sex", day: "Sex", full: "Sexta-feira", dayOrder: 5, tasks: [
+    { id: "sex_1", content: "Vídeo", platform: "TikTok", time: "16:00 (MS)" },
+    { id: "sex_2", content: "Post", platform: "Kwai", time: "16:00 (MS)" },
+    { id: "sex_3", content: "Reels (Insta/Face)", platform: "Meta", time: "17:00 (MS)" },
+    { id: "sex_4", content: "Post", platform: "YouTube", time: "17:00 (MS)" },
+    { id: "sex_s1", content: "Story Insta", platform: "Instagram", time: "09:00 (MS)" },
+    { id: "sex_s2", content: "Story Face", platform: "Facebook", time: "09:15 (MS)" }
+  ] },
+  { key: "sab", day: "Sáb", full: "Sábado", dayOrder: 6, tasks: [
+    { id: "sab_1", content: "Shorts (youtube)", platform: "YouTube", time: "19:20 (MS)" },
+    { id: "sab_2", content: "Vídeo", platform: "Kwai", time: "07:00 (MS)" },
+    { id: "sab_s1", content: "Story Insta", platform: "Instagram", time: "09:00 (MS)" },
+    { id: "sab_s2", content: "Story Face", platform: "Facebook", time: "09:15 (MS)" }
+  ] },
+  { key: "dom", day: "Dom", full: "Domingo", dayOrder: 7, tasks: [
+    { id: "dom_1", content: "Longo", platform: "YouTube", time: "17:00 (MS)" },
+    { id: "dom_2", content: "Post", platform: "Meta/TikTok", time: "18:30 (MS)" },
+    { id: "dom_3", content: "Texto", platform: "Threads", time: "19:00 (MS)" },
+    { id: "dom_s1", content: "Story Insta", platform: "Instagram", time: "09:00 (MS)" },
+    { id: "dom_s2", content: "Story Face", platform: "Facebook", time: "09:15 (MS)" }
+  ] }
+];
+
+let scheduleData = JSON.parse(localStorage.getItem(SCHEDULE_KEY)) || JSON.parse(JSON.stringify(defaultScheduleData));
+if (!scheduleData.some(d => d.key === "seg")) { scheduleData = JSON.parse(JSON.stringify(defaultScheduleData)); }
+
+const dayOrderMap = { "seg": 1, "ter": 2, "qua": 3, "qui": 4, "sex": 5, "sab": 6, "dom": 7 };
+scheduleData.forEach(g => { if (!g.dayOrder) g.dayOrder = dayOrderMap[g.key] || 99; });
+
+let historyData = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+let currentLayout = localStorage.getItem(LAYOUT_KEY) || "days";
+let selectedPlatformFilter = localStorage.getItem(PLATFORM_KEY) || "all";
+let panelTitle = localStorage.getItem(TITLE_KEY) || "Painel Semanal";
+
+let jsDay = new Date().getDay();
+const todayIndex = jsDay === 0 ? 6 : jsDay - 1;
+let activeDayTabIdx = currentLayout === 'days' ? todayIndex : 0;
+
+const defaultFormatGroups = [
+  { id: "longo", name: "Vídeo Longo", match: ["longo"] },
+  { id: "curto", name: "Vídeo Curto", match: ["shorts", "reels", "vídeo", "video"] },
+  { id: "simples", name: "Post Simples / Texto", match: ["post", "texto"] },
+  { id: "stories", name: "Stories", match: ["story", "stories"] }
+];
+let formatGroups = JSON.parse(localStorage.getItem(FORMATS_KEY)) || JSON.parse(JSON.stringify(defaultFormatGroups));
+
+function getTaskFormatId(content){
+  const c = content.toLowerCase();
+  for(const fmt of formatGroups){ if(fmt.match.some(m=>c.includes(m))) return fmt.id; }
+  return null;
+}
+
+function renderTitle(){ document.getElementById('panelTitleDisplay').innerText = panelTitle; }
+function startEditTitle(){
+  const display = document.getElementById('panelTitleDisplay');
+  const input = document.getElementById('panelTitleInput');
+  input.value = panelTitle;
+  display.style.display = 'none';
+  input.style.display = 'inline-block';
+  input.focus(); input.select();
+}
+function saveTitle(){
+  const input = document.getElementById('panelTitleInput');
+  const newTitle = input.value.trim();
+  if(newTitle){ panelTitle = newTitle; localStorage.setItem(TITLE_KEY, panelTitle); }
+  input.style.display = 'none';
+  document.getElementById('panelTitleDisplay').style.display = 'inline-block';
+  renderTitle();
+}
+document.getElementById('panelTitleInput').addEventListener('blur', saveTitle);
+document.getElementById('panelTitleInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){ e.preventDefault(); e.target.blur(); }
+});
+
+function switchLayout(layout){
+  currentLayout = layout;
+  localStorage.setItem(LAYOUT_KEY, layout);
+  document.getElementById('layout-days-btn').classList.toggle('active', layout==='days');
+  document.getElementById('layout-format-btn').classList.toggle('active', layout==='format');
+  activeDayTabIdx = 0;
+  renderPanel();
+}
+function changePlatformFilter(){
+  selectedPlatformFilter = document.getElementById('platformFilter').value;
+  localStorage.setItem(PLATFORM_KEY, selectedPlatformFilter);
+  renderPanel();
+}
+function populatePlatformDropdown(){
+  const selectEl = document.getElementById('platformFilter');
+  let platformsSet = new Set();
+  scheduleData.forEach(g=>g.tasks.forEach(t=>{ if(t.platform) t.platform.split('/').forEach(p=>platformsSet.add(p.trim())); }));
+  let currentVal = selectEl.value;
+  selectEl.innerHTML = `<option value="all">Todas</option>`;
+  Array.from(platformsSet).sort().forEach(plat=>{
+    let opt = document.createElement('option'); opt.value = plat; opt.innerText = plat; selectEl.appendChild(opt);
+  });
+  if(Array.from(platformsSet).includes(currentVal) || currentVal==='all'){ selectEl.value = currentVal; }
+  else { selectEl.value = 'all'; selectedPlatformFilter = 'all'; }
+}
+function parseTimeString(timeStr){
+  if(!timeStr) return 0;
+  const m = timeStr.match(/(\d{2}):(\d{2})/);
+  return m ? parseInt(m[1])*60+parseInt(m[2]) : 0;
+}
+function taskMatchesPlatform(taskPlatform){
+  if(selectedPlatformFilter==='all') return true;
+  if(!taskPlatform) return false;
+  return taskPlatform.toLowerCase().includes(selectedPlatformFilter.toLowerCase());
+}
+function getTasksByFormat(formatId){
+  let matched = [];
+  scheduleData.forEach(dayGroup=>{
+    dayGroup.tasks.forEach(t=>{
+      const fId = getTaskFormatId(t.content);
+      if(fId===formatId && taskMatchesPlatform(t.platform)){
+        matched.push({ ...t, daySource: dayGroup.full, dayOrder: dayGroup.dayOrder||99, timeMinutes: parseTimeString(t.time) });
+      }
+    });
+  });
+  matched.sort((a,b)=> a.dayOrder!==b.dayOrder ? a.dayOrder-b.dayOrder : a.timeMinutes-b.timeMinutes);
+  return matched;
+}
+
+function renderReadyScripts(){
+  const container = document.getElementById('readyScriptsList');
+  const ready = scripts.filter(s=>s.status==='pronto');
+  if(ready.length===0){
+    container.innerHTML = `<p style="color:var(--areia-dim);font-size:0.84rem;margin:0;">Nenhum roteiro marcado como "Pronto pra gravar" no momento.</p>`;
+  } else {
+    container.innerHTML = ready.map(s=>`
+      <div class="ready-list-item">
+        <div class="rtitle">${escapeHtml(s.titulo || '(sem título)')} <span style="color:var(--areia-dim);font-weight:400;font-size:0.78rem;">· ${s.formato}</span></div>
+        <div class="ractions">
+          <button class="btn-open-script" onclick="openScriptFromPanel('${s.id}')">Abrir</button>
+          <button class="btn-mark-done" onclick="markScriptRecorded('${s.id}')">✅ Marcar gravado</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  updateReadyBadge();
+}
+function updateReadyBadge(){
+  const badge = document.getElementById('readyBadge');
+  const n = scripts.filter(s=>s.status==='pronto').length;
+  if(n>0){ badge.style.display='inline-block'; badge.textContent = n; } else { badge.style.display='none'; }
+}
+function openScriptFromPanel(id){
+  switchHubTab('roteiros');
+  openWizard(id);
+}
+function markScriptRecorded(id){
+  const s = scripts.find(x=>x.id===id);
+  if(!s) return;
+  s.status = 'gravado';
+  persistScripts();
+  renderReadyScripts();
+  toast('Roteiro marcado como gravado ✓');
+}
+
+function renderPanel(){
+  populatePlatformDropdown();
+  document.getElementById('platformFilter').value = selectedPlatformFilter;
+  renderTitle();
+  renderReadyScripts();
+
+  const tabs = document.getElementById('tabs-container');
+  const container = document.getElementById('schedule-container');
+  const historyCard = document.getElementById('history-card-view');
+  tabs.innerHTML = "";
+  container.innerHTML = "";
+
+  if(currentLayout==='days'){
+    scheduleData.forEach((group, idx)=>{
+      const isToday = idx===todayIndex;
+      const filteredTasks = group.tasks.filter(t=>taskMatchesPlatform(t.platform));
+      let dayDone = 0;
+      filteredTasks.forEach(t=>{ if(localStorage.getItem(t.id)==='true') dayDone++; });
+      const isDayComplete = filteredTasks.length>0 && dayDone===filteredTasks.length;
+
+      const btn = document.createElement('button');
+      let cls = `day-tab-btn ${isToday?'today':''} ${activeDayTabIdx===idx?'active':''}`;
+      if(isDayComplete) cls += ' day-finished';
+      btn.className = cls;
+      btn.innerHTML = `${group.day} (${dayDone}/${filteredTasks.length})${isDayComplete?' ✅':''}`;
+      btn.onclick = ()=>switchDayTab(idx);
+      tabs.appendChild(btn);
+
+      const card = document.createElement('div');
+      card.className = `day-card ${activeDayTabIdx===idx?'active':''}`;
+      let headerHtml = `<div class="day-header"><span>${group.full}</span>`;
+      if(isDayComplete) headerHtml += `<span class="today-badge">✅ Dia Concluído!</span>`;
+      else if(isToday) headerHtml += `<span class="today-badge">📅 Hoje é o dia!</span>`;
+      headerHtml += `</div>`;
+      card.innerHTML = headerHtml;
+
+      const table = document.createElement('table');
+      table.className = 'task-table';
+      if(filteredTasks.length===0){
+        table.innerHTML = `<tr><td style="text-align:center;color:var(--areia-dim);padding:22px;">Nenhuma tarefa pra esta plataforma neste dia.</td></tr>`;
+      } else {
+        filteredTasks.forEach(t=>{
+          const done = localStorage.getItem(t.id)==='true';
+          const tr = document.createElement('tr');
+          if(done) tr.className='completed';
+          tr.innerHTML = `
+            <td class="col-check"><input type="checkbox" class="task-checkbox" ${done?'checked':''} onchange="toggleTask('${t.id}', this.checked)"></td>
+            <td class="col-content">${escapeHtml(t.content)}</td>
+            <td><span class="task-platform">${escapeHtml(t.platform)}</span></td>
+            <td style="text-align:right;"><span class="task-time">${escapeHtml(t.time)}</span></td>
+            <td style="text-align:right;"><span class="status-badge ${done?'sim':'nao'}">${done?'SIM':'NÃO'}</span></td>
+          `;
+          table.appendChild(tr);
+        });
+      }
+      card.appendChild(table);
+      container.appendChild(card);
+    });
+
+    const historyIdx = scheduleData.length;
+    const hBtn = document.createElement('button');
+    hBtn.className = `day-tab-btn ${activeDayTabIdx===historyIdx?'active':''}`;
+    hBtn.innerHTML = `📊 Histórico (${historyData.length})`;
+    hBtn.onclick = ()=>switchDayTab(historyIdx);
+    tabs.appendChild(hBtn);
+    historyCard.classList.toggle('active', activeDayTabIdx===historyIdx);
+
+  } else {
+    formatGroups.forEach((fmt, idx)=>{
+      const tasksList = getTasksByFormat(fmt.id);
+      let done = 0;
+      tasksList.forEach(t=>{ if(localStorage.getItem(t.id)==='true') done++; });
+      const isComplete = tasksList.length>0 && done===tasksList.length;
+
+      const btn = document.createElement('button');
+      let cls = `day-tab-btn ${activeDayTabIdx===idx?'active':''}`;
+      if(isComplete) cls += ' day-finished';
+      btn.className = cls;
+      btn.innerHTML = `${fmt.name} (${done}/${tasksList.length})${isComplete?' ✅':''}`;
+      btn.onclick = ()=>switchDayTab(idx);
+      tabs.appendChild(btn);
+
+      const card = document.createElement('div');
+      card.className = `day-card ${activeDayTabIdx===idx?'active':''}`;
+      let headerHtml = `<div class="day-header"><span>🏷️ ${escapeHtml(fmt.name)}</span>`;
+      if(isComplete) headerHtml += `<span class="today-badge">✅ Concluído!</span>`;
+      headerHtml += `</div>`;
+      card.innerHTML = headerHtml;
+
+      const table = document.createElement('table');
+      table.className = 'task-table';
+      if(tasksList.length===0){
+        table.innerHTML = `<tr><td style="text-align:center;color:var(--areia-dim);padding:22px;">Nenhuma tarefa nesta categoria com o filtro atual.</td></tr>`;
+      } else {
+        tasksList.forEach(t=>{
+          const doneT = localStorage.getItem(t.id)==='true';
+          const tr = document.createElement('tr');
+          if(doneT) tr.className='completed';
+          tr.innerHTML = `
+            <td class="col-check"><input type="checkbox" class="task-checkbox" ${doneT?'checked':''} onchange="toggleTask('${t.id}', this.checked)"></td>
+            <td class="col-content">${escapeHtml(t.content)} <span style="font-size:0.76rem;color:var(--areia-dim);display:block;font-weight:400;">(${escapeHtml(t.daySource)} às ${escapeHtml(t.time)})</span></td>
+            <td><span class="task-platform">${escapeHtml(t.platform)}</span></td>
+            <td style="text-align:right;"><span class="task-time">${escapeHtml(t.time)}</span></td>
+            <td style="text-align:right;"><span class="status-badge ${doneT?'sim':'nao'}">${doneT?'SIM':'NÃO'}</span></td>
+          `;
+          table.appendChild(tr);
+        });
+      }
+      card.appendChild(table);
+      container.appendChild(card);
+    });
+
+    const historyIdx = formatGroups.length;
+    const hBtn = document.createElement('button');
+    hBtn.className = `day-tab-btn ${activeDayTabIdx===historyIdx?'active':''}`;
+    hBtn.innerHTML = `📊 Histórico (${historyData.length})`;
+    hBtn.onclick = ()=>switchDayTab(historyIdx);
+    tabs.appendChild(hBtn);
+    historyCard.classList.toggle('active', activeDayTabIdx===historyIdx);
+  }
+
+  renderHistoryContent();
+  updateProgress();
+  renderScheduleConfigFields();
+  renderCategoryConfig();
+  checkDefaultWeekInputName();
+}
+
+function checkDefaultWeekInputName(){
+  const input = document.getElementById('weekNameInput');
+  if(input && !input.value){
+    const now = new Date();
+    const weekNum = Math.ceil(now.getDate()/7);
+    const monthsNames = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+    input.value = `${weekNum}ª Semana de ${monthsNames[now.getMonth()]}`;
+  }
+}
+function archiveCurrentWeek(){
+  let weekNameInput = document.getElementById('weekNameInput').value.trim();
+  if(!weekNameInput){ toast('Digite o nome da semana primeiro.'); return; }
+  let total=0, done=0;
+  scheduleData.forEach(g=>g.tasks.forEach(t=>{ total++; if(localStorage.getItem(t.id)==='true') done++; }));
+  const perc = total>0 ? Math.round((done/total)*100) : 0;
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('pt-BR');
+  const monthsNames = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+  const monthKey = `${monthsNames[now.getMonth()]} de ${now.getFullYear()}`;
+  historyData.unshift({ id: Date.now(), weekName: weekNameInput, month: monthKey, date: dateStr, done, total, percentage: perc });
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
+  toast(`"${weekNameInput}" arquivada — ${perc}%`);
+  renderPanel();
+}
+function deleteHistoryItem(id){
+  askConfirm('Apagar este registro do histórico?', ()=>{
+    historyData = historyData.filter(item=>item.id!==id);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
+    renderPanel();
+  });
+}
+function renderHistoryContent(){
+  const container = document.getElementById('history-content-container');
+  if(historyData.length===0){
+    container.innerHTML = `<p style="color:var(--areia-dim);text-align:center;padding:20px;">Nenhuma semana salva no histórico ainda.</p>`;
+    return;
+  }
+  const grouped = {};
+  historyData.forEach(item=>{
+    let wName = item.weekName || "1ª Semana";
+    if(!grouped[item.month]) grouped[item.month] = [];
+    grouped[item.month].push({...item, weekName: wName});
+  });
+  let html = "";
+  for(let month in grouped){
+    html += `<div class="history-month-group"><div class="history-month-title">📅 ${escapeHtml(month)}</div>`;
+    grouped[month].forEach(h=>{
+      html += `<div class="history-item">
+        <div><b>${escapeHtml(h.weekName)}</b> (${h.date}) — Conclusão: <b>${h.done}/${h.total} (${h.percentage}%)</b></div>
+        <button class="btn-remove-task" onclick="deleteHistoryItem(${h.id})">Excluir</button>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function togglePanelConfig(){ document.getElementById('configPanel').classList.toggle('open'); }
+
+function renderScheduleConfigFields(){
+  const container = document.getElementById('config-items-container');
+  container.innerHTML = "";
+  scheduleData.forEach((group, gIdx)=>{
+    let wrapper = document.createElement('div');
+    wrapper.style.marginBottom = "18px";
+    wrapper.style.borderBottom = "1px solid var(--border)";
+    wrapper.style.paddingBottom = "12px";
+    let title = document.createElement('h4');
+    title.innerText = group.full;
+    title.style.margin = "8px 0 6px 0";
+    title.style.color = "var(--areia)";
+    wrapper.appendChild(title);
+    group.tasks.forEach((t, tIdx)=>{
+      let row = document.createElement('div');
+      row.className = 'config-row';
+      row.innerHTML = `
+        <input type="text" id="cfg_content_${gIdx}_${tIdx}" value="${escapeHtml(t.content)}" placeholder="Tarefa">
+        <input type="text" id="cfg_platform_${gIdx}_${tIdx}" value="${escapeHtml(t.platform)}" placeholder="Plataforma">
+        <input type="text" id="cfg_time_${gIdx}_${tIdx}" value="${escapeHtml(t.time)}" placeholder="Horário">
+        <button class="btn-remove-task" onclick="removeTask(${gIdx}, ${tIdx})">✕</button>
+      `;
+      wrapper.appendChild(row);
+    });
+    let addBtn = document.createElement('button');
+    addBtn.className = 'btn-add-task';
+    addBtn.innerHTML = "+ Adicionar Tarefa em " + group.day;
+    addBtn.onclick = ()=>addNewTask(gIdx);
+    wrapper.appendChild(addBtn);
+    container.appendChild(wrapper);
+  });
+}
+function addNewTask(gIdx){
+  const newId = scheduleData[gIdx].key + "_" + Date.now();
+  scheduleData[gIdx].tasks.push({ id: newId, content: "Nova Tarefa", platform: "Plataforma", time: "00:00 (MS)" });
+  renderScheduleConfigFields();
+}
+function removeTask(gIdx, tIdx){
+  if(scheduleData[gIdx].tasks.length<=1){ toast('Cada dia precisa ter pelo menos uma tarefa.'); return; }
+  scheduleData[gIdx].tasks.splice(tIdx,1);
+  renderScheduleConfigFields();
+}
+function saveScheduleConfig(){
+  const currentState = localStorage.getItem(SCHEDULE_KEY);
+  if(currentState) localStorage.setItem(PREV_SCHEDULE_KEY, currentState);
+  scheduleData.forEach((group, gIdx)=>{
+    group.tasks.forEach((t, tIdx)=>{
+      const c = document.getElementById(`cfg_content_${gIdx}_${tIdx}`);
+      const p = document.getElementById(`cfg_platform_${gIdx}_${tIdx}`);
+      const tm = document.getElementById(`cfg_time_${gIdx}_${tIdx}`);
+      if(c) t.content = c.value;
+      if(p) t.platform = p.value;
+      if(tm) t.time = tm.value;
+    });
+  });
+  localStorage.setItem(SCHEDULE_KEY, JSON.stringify(scheduleData));
+  togglePanelConfig();
+  renderPanel();
+  toast('Alterações salvas ✓');
+}
+function undoLastConfig(){
+  const previousState = localStorage.getItem(PREV_SCHEDULE_KEY);
+  if(!previousState){ toast('Não há um padrão anterior salvo.'); return; }
+  askConfirm('Voltar exatamente para a configuração anterior?', ()=>{
+    localStorage.setItem(SCHEDULE_KEY, previousState);
+    scheduleData = JSON.parse(previousState);
+    togglePanelConfig();
+    renderPanel();
+    toast('Retornado com sucesso ✓');
+  });
+}
+function factoryResetConfig(){
+  askConfirm('Restaurar o padrão original? Isso limpa suas alterações de tarefas/horários.', ()=>{
+    localStorage.removeItem(SCHEDULE_KEY);
+    localStorage.removeItem(PREV_SCHEDULE_KEY);
+    scheduleData = JSON.parse(JSON.stringify(defaultScheduleData));
+    togglePanelConfig();
+    renderPanel();
+    toast('Painel restaurado ao padrão original ✓');
+  });
+}
+
+function renderCategoryConfig(){
+  const container = document.getElementById('config-categories-container');
+  container.innerHTML = "";
+  formatGroups.forEach((fmt, idx)=>{
+    let row = document.createElement('div');
+    row.className = 'config-row';
+    row.innerHTML = `
+      <input type="text" id="cfg_cat_name_${idx}" value="${escapeHtml(fmt.name)}" placeholder="Nome da categoria">
+      <input type="text" id="cfg_cat_match_${idx}" value="${escapeHtml(fmt.match.join(', '))}" placeholder="Palavras-chave (vírgula)">
+      <button class="btn-remove-task" onclick="removeCategory(${idx})">✕</button>
+    `;
+    container.appendChild(row);
+  });
+}
+function addNewCategory(){
+  formatGroups.push({ id: "cat_"+Date.now(), name: "Nova Categoria", match: ["palavra-chave"] });
+  renderCategoryConfig();
+}
+function removeCategory(idx){
+  if(formatGroups.length<=1){ toast('Precisa sobrar pelo menos uma categoria.'); return; }
+  formatGroups.splice(idx,1);
+  renderCategoryConfig();
+}
+function saveCategoryConfig(){
+  formatGroups.forEach((fmt, idx)=>{
+    const nameEl = document.getElementById(`cfg_cat_name_${idx}`);
+    const matchEl = document.getElementById(`cfg_cat_match_${idx}`);
+    if(nameEl && nameEl.value.trim()) fmt.name = nameEl.value.trim();
+    if(matchEl) fmt.match = matchEl.value.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+  });
+  localStorage.setItem(FORMATS_KEY, JSON.stringify(formatGroups));
+  togglePanelConfig();
+  activeDayTabIdx = 0;
+  renderPanel();
+  toast('Categorias salvas ✓');
+}
+
+function switchDayTab(idx){ activeDayTabIdx = idx; renderPanel(); }
+function toggleTask(id, checked){ localStorage.setItem(id, checked); renderPanel(); }
+
+function updateProgress(){
+  let total=0, done=0;
+  scheduleData.forEach(g=>g.tasks.forEach(t=>{ total++; if(localStorage.getItem(t.id)==='true') done++; }));
+  const perc = total>0 ? Math.round((done/total)*100) : 0;
+  document.getElementById('progress-text').innerText = `Progresso Geral: ${done} / ${total} (${perc}%)`;
+  document.getElementById('progress-fill').style.width = `${perc}%`;
+  const jsDayNow = new Date().getDay();
+  let daysLeft = jsDayNow===0 ? 0 : 7-jsDayNow;
+  const badgeEl = document.getElementById('countdown-badge');
+  badgeEl.innerText = daysLeft===0 ? "⏳ Hoje encerra a semana!" : `⏳ Faltam ${daysLeft} dia${daysLeft>1?'s':''} para o fim da semana`;
+}
+function resetAllChecks(){
+  askConfirm('Limpar todas as marcações de check desta semana?', ()=>{
+    scheduleData.forEach(g=>g.tasks.forEach(t=>localStorage.removeItem(t.id)));
+    renderPanel();
+    toast('Marcações limpas ✓');
+  });
+}
+
+/* ===================================================================
+   BACKUP UNIFICADO (Ideias + Roteiros + Painel + Histórico + Checks)
+   =================================================================== */
+function exportAllBackup(){
+  const backupObj = {
+    ideas, scripts, scheduleData, historyData, panelTitle, formatGroups,
+    layout: currentLayout, platformFilter: selectedPlatformFilter,
+    taskChecks: {}, exportedAt: new Date().toISOString(), appVersion: 1
+  };
+  scheduleData.forEach(g=>g.tasks.forEach(t=>{ backupObj.taskChecks[t.id] = localStorage.getItem(t.id); }));
+  const blob = new Blob([JSON.stringify(backupObj, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'semeador_backup_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup completo exportado ✓');
+}
+function importAllBackup(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    try{
+      const data = JSON.parse(evt.target.result);
+      askConfirm('Importar vai SUBSTITUIR todos os dados atuais (ideias, roteiros, painel). Continuar?', ()=>{
+        ideas = data.ideas || [];
+        scripts = data.scripts || [];
+        scheduleData = data.scheduleData || JSON.parse(JSON.stringify(defaultScheduleData));
+        historyData = data.historyData || [];
+        panelTitle = data.panelTitle || "Painel Semanal";
+        formatGroups = data.formatGroups || JSON.parse(JSON.stringify(defaultFormatGroups));
+        currentLayout = data.layout || "days";
+        selectedPlatformFilter = data.platformFilter || "all";
+
+        persistIdeas(); persistScripts();
+        localStorage.setItem(SCHEDULE_KEY, JSON.stringify(scheduleData));
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
+        localStorage.setItem(TITLE_KEY, panelTitle);
+        localStorage.setItem(FORMATS_KEY, JSON.stringify(formatGroups));
+        localStorage.setItem(LAYOUT_KEY, currentLayout);
+        localStorage.setItem(PLATFORM_KEY, selectedPlatformFilter);
+        if(data.taskChecks){
+          Object.keys(data.taskChecks).forEach(id=>{
+            if(data.taskChecks[id]!==null) localStorage.setItem(id, data.taskChecks[id]);
+          });
+        }
+        renderIdeas(); renderScripts(); renderPanel();
+        toast('Backup importado com sucesso ✓');
+      }, 'Importar backup');
+    }catch(err){
+      toast('Arquivo inválido.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+/* ---------- footer counters ---------- */
+function updateFooter(){
+  document.getElementById('footerCount').textContent =
+    `${ideas.length} ideia${ideas.length!==1?'s':''} · ${scripts.length} roteiro${scripts.length!==1?'s':''}`;
+}
+
+/* ---------- PWA service worker ---------- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+
+/* ---------- init ---------- */
+renderIdeas();
+renderTitle();
+updateFooter();
+autoGrow(quickInputEl);
+updateReadyBadge();
+</script>
+</body>
+</html>

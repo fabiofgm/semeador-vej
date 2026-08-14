@@ -1,0 +1,15 @@
+{
+  "name": "Semeador — Vivendo o Evangelho de Jesus",
+  "short_name": "Semeador VEJ",
+  "description": "Banco de ideias, fábrica de roteiros e painel semanal — tudo em um só lugar, offline.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#17171a",
+  "theme_color": "#1b3a6b",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
