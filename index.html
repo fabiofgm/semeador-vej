@@ -149,11 +149,11 @@
   }
 
   /* ---- capture ---- */
-  .capture{display:flex;gap:8px;margin-bottom:22px;align-items:flex-end;}
+  .capture{display:flex;gap:8px;margin-bottom:22px;align-items:flex-start;}
   .capture textarea{
     flex:1;background:var(--carvao-2);border:2px solid var(--areia-dim);border-radius:10px;
     color:var(--areia);padding:14px 16px;font-size:1rem;font-family:var(--sans);
-    resize:none;overflow:hidden;line-height:1.4;max-height:220px;
+    resize:none;overflow:hidden;line-height:1.4;max-height:220px;min-height:92px;
     box-shadow:0 1px 3px rgba(0,0,0,0.08);
   }
   .capture textarea:focus{outline:none;border-color:var(--safira-l);}
@@ -449,10 +449,17 @@
   <div id="hub-ideias" class="hub-panel active">
     <div class="capture">
       <textarea id="quickInput" rows="1" placeholder="Escreve a ideia agora, antes que ela fuja..."></textarea>
-      <button onclick="quickAdd()">Salvar</button>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <button onclick="quickAdd()">Salvar</button>
+        <button type="button" onclick="document.getElementById('ideaCameraInput').click()"
+          style="background:var(--carvao-3);color:var(--areia-dim);border:1px solid var(--border);border-radius:10px;
+          padding:8px 14px;font-weight:700;font-size:0.82rem;cursor:pointer;">📷 Foto</button>
+        <input type="file" id="ideaCameraInput" accept="image/*" capture="environment" multiple
+          style="display:none;" onchange="handleIdeaCameraInput(event)">
+      </div>
     </div>
+    <div id="pendingIdeaPhotos" style="margin:-14px 0 14px;"></div>
     <div class="capture-hint">Enter quebra linha. Toca em "Salvar" quando terminar de escrever. Sem limite de tamanho.</div>
-    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Buscar por tema, chave ou palavra (ex: reino)..." oninput="setSearch(this.value)">
     <datalist id="chavesDatalist"></datalist>
     <div class="filters" id="filters"></div>
     <div id="ideasList"></div>
@@ -819,16 +826,58 @@ function switchHubTab(hub){
    =================================================================== */
 let ideas = JSON.parse(localStorage.getItem(IDEAS_KEY) || "[]");
 let currentFilter = 'todas';
-let searchQuery = '';
-function setSearch(v){ searchQuery = v.trim().toLowerCase(); renderIdeas(); }
 let openIdeaDetailId = null;
 function persistIdeas(){ localStorage.setItem(IDEAS_KEY, JSON.stringify(ideas)); }
+
+let pendingIdeaAttachments = [];
+function handleIdeaCameraInput(event){
+  const files = Array.from(event.target.files || []);
+  let processed = 0;
+  files.forEach(file=>{
+    if(file.size > 4*1024*1024){
+      toast(`"${file.name}" é grande demais (máx 4MB).`);
+      processed++;
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e=>{
+      pendingIdeaAttachments.push({ name: file.name, type: file.type, dataUrl: e.target.result });
+      processed++;
+      renderPendingIdeaPhotos();
+      if(processed===files.length) toast('Foto anexada ✓');
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = '';
+}
+function removePendingIdeaPhoto(idx){
+  pendingIdeaAttachments.splice(idx,1);
+  renderPendingIdeaPhotos();
+}
+function renderPendingIdeaPhotos(){
+  const box = document.getElementById('pendingIdeaPhotos');
+  if(!box) return;
+  if(pendingIdeaAttachments.length===0){ box.innerHTML=''; return; }
+  box.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap;padding:10px 0;">` +
+    pendingIdeaAttachments.map((a,idx)=>`
+      <div style="position:relative;">
+        <img src="${a.dataUrl}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid var(--safira-l);">
+        <button onclick="removePendingIdeaPhoto(${idx})" style="position:absolute;top:-8px;right:-8px;background:var(--terracota);
+          color:var(--on-accent);border:none;border-radius:50%;width:22px;height:22px;font-size:0.8rem;cursor:pointer;">✕</button>
+      </div>
+    `).join('') + `</div>`;
+}
 
 function quickAdd(){
   const input = document.getElementById('quickInput');
   const title = input.value.trim();
   if(!title) return;
-  ideas.unshift({ id: uid(), title, stars: 3, format: 'Short', status: 'novo', tema: '', createdAt: Date.now() });
+  ideas.unshift({
+    id: uid(), title, stars: 3, format: 'Short', status: 'novo', tema: '', createdAt: Date.now(),
+    anexos: pendingIdeaAttachments.slice()
+  });
+  pendingIdeaAttachments = [];
+  renderPendingIdeaPhotos();
   persistIdeas();
   input.value = '';
   autoGrow(input);
@@ -859,18 +908,8 @@ function renderIdeas(){
   else if(currentFilter==='novo') filtered = ideas.filter(i=>i.status==='novo');
   else if(currentFilter==='roteirizada') filtered = ideas.filter(i=>i.status==='roteirizada');
 
-  if(searchQuery){
-    filtered = filtered.filter(i=>
-      (i.title||'').toLowerCase().includes(searchQuery) ||
-      (i.tema||'').toLowerCase().includes(searchQuery) ||
-      (i.chaves||'').toLowerCase().includes(searchQuery)
-    );
-  }
-
   if(filtered.length===0){
-    list.innerHTML = searchQuery
-      ? `<div class="empty">Nenhuma ideia encontrada pra "${escapeHtml(searchQuery)}".</div>`
-      : `<div class="empty">Nenhuma ideia aqui ainda.<br>Escreve a primeira lá em cima. 🌱</div>`;
+    list.innerHTML = `<div class="empty">Nenhuma ideia aqui ainda.<br>Escreve a primeira lá em cima. 🌱</div>`;
     updateFooter();
     return;
   }
@@ -890,6 +929,7 @@ function renderIdeas(){
           <button class="icon-btn" title="Detalhes" onclick="event.stopPropagation(); toggleDetail('${i.id}')">✎</button>
           <button class="icon-btn" title="Transformar em roteiro" onclick="event.stopPropagation(); ideaToScript('${i.id}')">📜</button>
           <button class="icon-btn" title="Excluir" onclick="event.stopPropagation(); deleteIdea('${i.id}')">🗑️</button>
+          ${(i.anexos && i.anexos.length>0) ? `<button class="icon-btn" title="Ver foto" onclick="event.stopPropagation(); openIdeaPhotos('${i.id}')">📷</button>` : ''}
         </div>
       </div>
       <div class="idea-detail ${openIdeaDetailId===i.id ? 'open' : ''}" id="detail-${i.id}" onclick="event.stopPropagation()">
@@ -974,7 +1014,8 @@ function ideaToScript(id){
   const s = {
     id: uid(), titulo: idea.title, gancho:'', historia:'', ref: idea.tema||'', versiculo:'',
     micro:'', ilustracao:'', aplicacao:'', reflexao:'', oracao:'',
-    formato: idea.format==='Ambos' ? 'Ambos' : idea.format, status:'rascunho', createdAt: Date.now()
+    formato: idea.format==='Ambos' ? 'Ambos' : idea.format, status:'rascunho', createdAt: Date.now(),
+    anexos: (idea.anexos || []).slice()
   };
   scripts.unshift(s);
   persistScripts();
@@ -1065,8 +1106,7 @@ function openUrl(url){
   a.click();
   document.body.removeChild(a);
 }
-function openAttachment(idx){
-  const a = currentAttachments[idx];
+function viewAttachment(a){
   if(!a) return;
   document.getElementById('attachmentModalTitle').textContent = a.name;
   const body = document.getElementById('attachmentModalBody');
@@ -1075,6 +1115,21 @@ function openAttachment(idx){
   } else {
     body.innerHTML = `<iframe src="${a.dataUrl}" style="border:none;width:100%;height:60vh;border-radius:8px;"></iframe>`;
   }
+  document.getElementById('attachmentModal').classList.add('show');
+}
+function openAttachment(idx){
+  viewAttachment(currentAttachments[idx]);
+}
+function openIdeaPhotos(id){
+  const idea = ideas.find(i=>i.id===id);
+  if(!idea || !idea.anexos || idea.anexos.length===0) return;
+  document.getElementById('attachmentModalTitle').textContent = idea.anexos.length>1 ? 'Fotos da ideia' : idea.anexos[0].name;
+  const body = document.getElementById('attachmentModalBody');
+  body.innerHTML = idea.anexos.map(a=>
+    a.type && a.type.startsWith('image/')
+      ? `<img src="${a.dataUrl}" style="width:100%;height:auto;border-radius:8px;display:block;margin-bottom:10px;">`
+      : `<iframe src="${a.dataUrl}" style="border:none;width:100%;height:60vh;border-radius:8px;margin-bottom:10px;"></iframe>`
+  ).join('');
   document.getElementById('attachmentModal').classList.add('show');
 }
 function closeAttachmentModal(){
@@ -2019,7 +2074,7 @@ const APP_PASSWORD = "fgm123";
 function checkAppPassword(){
   const input = document.getElementById('passwordInput');
   if(input.value === APP_PASSWORD){
-    sessionStorage.setItem('vej_unlocked', '1');
+    localStorage.setItem('vej_unlocked', '1');
     document.getElementById('passwordGate').style.display = 'none';
   } else {
     document.getElementById('passwordError').style.display = 'block';
@@ -2032,7 +2087,7 @@ function checkAppPassword(){
   if(input){
     input.addEventListener('keydown', e=>{ if(e.key==='Enter') checkAppPassword(); });
   }
-  if(sessionStorage.getItem('vej_unlocked') === '1'){
+  if(localStorage.getItem('vej_unlocked') === '1'){
     const gate = document.getElementById('passwordGate');
     if(gate) gate.style.display = 'none';
   } else if(input){
