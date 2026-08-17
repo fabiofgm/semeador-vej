@@ -827,11 +827,31 @@
     </div>
     <div>
       <label style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:8px;">🤖 Ajuda da IA (opcional)</label>
-      <p style="font-size:0.78rem;color:var(--areia-dim);margin:0 0 8px;">Cola sua própria chave da Anthropic pra ativar o botão "Ajuda da IA" nos roteiros. Fica guardada só neste aparelho.</p>
-      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="width:100%;background:var(--carvao-3);border:2px solid var(--border);
-        border-radius:10px;color:var(--areia);padding:11px 14px;font-size:0.85rem;font-family:var(--sans);box-sizing:border-box;margin-bottom:8px;">
-      <button class="appearance-choice" style="width:100%;" onclick="saveApiKey()">Salvar chave</button>
-      <p id="apiKeyStatus" style="font-size:0.78rem;color:var(--esmeralda);margin:8px 0 0;display:none;">✓ Chave salva</p>
+      <p style="font-size:0.78rem;color:var(--areia-dim);margin:0 0 10px;">Escolhe qual IA usar, e cola a chave dela. Fica guardada só neste aparelho.</p>
+
+      <div class="appearance-row" style="margin-bottom:12px;">
+        <button class="appearance-choice" id="providerBtn-claude" onclick="setAiProvider('claude')">Claude</button>
+        <button class="appearance-choice" id="providerBtn-gemini" onclick="setAiProvider('gemini')">Gemini</button>
+      </div>
+
+      <div id="claudeKeySection">
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="width:100%;background:var(--carvao-3);border:2px solid var(--border);
+          border-radius:10px;color:var(--areia);padding:11px 14px;font-size:0.85rem;font-family:var(--sans);box-sizing:border-box;margin-bottom:8px;">
+        <button class="appearance-choice" style="width:100%;" onclick="saveApiKey()">Salvar chave da Claude</button>
+        <p id="apiKeyStatus" style="font-size:0.78rem;color:var(--esmeralda);margin:8px 0 0;display:none;">✓ Chave salva</p>
+      </div>
+
+      <div id="geminiKeySection" style="display:none;">
+        <p style="font-size:0.76rem;color:var(--terracota);background:rgba(220,38,38,0.1);border:1px solid var(--terracota);
+          border-radius:8px;padding:8px 10px;margin:0 0 10px;">
+          ⚠️ Experimental. Testado e funcionando no computador — mas falhou de várias formas no iPhone (Safari) em todos os testes.
+          Se você usa iPhone, recomendamos ficar com o Claude.
+        </p>
+        <input type="password" id="geminiKeyInput" placeholder="AIzaSy..." style="width:100%;background:var(--carvao-3);border:2px solid var(--border);
+          border-radius:10px;color:var(--areia);padding:11px 14px;font-size:0.85rem;font-family:var(--sans);box-sizing:border-box;margin-bottom:8px;">
+        <button class="appearance-choice" style="width:100%;" onclick="saveGeminiKey()">Salvar chave do Gemini</button>
+        <p id="geminiKeyStatus" style="font-size:0.78rem;color:var(--esmeralda);margin:8px 0 0;display:none;">✓ Chave salva</p>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="secondary" onclick="closeAppearanceModal()">Fechar</button>
@@ -2165,24 +2185,62 @@ function goToScriptFromSearch(id, field){
 
 /* ---------- chave da IA (Anthropic API) ---------- */
 const AI_KEY_STORAGE = "vej_ai_key_v1";
+const GEMINI_KEY_STORAGE = "vej_gemini_key_v1";
+const AI_PROVIDER_STORAGE = "vej_ai_provider_v1";
+
 function getApiKey(){ return localStorage.getItem(AI_KEY_STORAGE) || ""; }
+function getGeminiKey(){ return localStorage.getItem(GEMINI_KEY_STORAGE) || ""; }
+function getAiProvider(){ return localStorage.getItem(AI_PROVIDER_STORAGE) || "claude"; }
+
+function setAiProvider(provider){
+  localStorage.setItem(AI_PROVIDER_STORAGE, provider);
+  updateProviderUI();
+}
+function updateProviderUI(){
+  const provider = getAiProvider();
+  document.getElementById('providerBtn-claude').classList.toggle('active', provider==='claude');
+  document.getElementById('providerBtn-gemini').classList.toggle('active', provider==='gemini');
+  document.getElementById('claudeKeySection').style.display = provider==='claude' ? 'block' : 'none';
+  document.getElementById('geminiKeySection').style.display = provider==='gemini' ? 'block' : 'none';
+}
+
 function saveApiKey(){
   const val = document.getElementById('apiKeyInput').value.trim();
   if(!val){ toast('Cola a chave antes de salvar.'); return; }
   localStorage.setItem(AI_KEY_STORAGE, val);
   document.getElementById('apiKeyInput').value = '';
   updateApiKeyStatus();
-  toast('Chave da IA salva ✓');
+  toast('Chave da Claude salva ✓');
+}
+function saveGeminiKey(){
+  const val = document.getElementById('geminiKeyInput').value.trim();
+  if(!val){ toast('Cola a chave antes de salvar.'); return; }
+  localStorage.setItem(GEMINI_KEY_STORAGE, val);
+  document.getElementById('geminiKeyInput').value = '';
+  updateApiKeyStatus();
+  toast('Chave do Gemini salva ✓');
 }
 function updateApiKeyStatus(){
-  const status = document.getElementById('apiKeyStatus');
-  if(!status) return;
-  status.style.display = getApiKey() ? 'block' : 'none';
+  const claudeStatus = document.getElementById('apiKeyStatus');
+  const geminiStatus = document.getElementById('geminiKeyStatus');
+  if(claudeStatus) claudeStatus.style.display = getApiKey() ? 'block' : 'none';
+  if(geminiStatus) geminiStatus.style.display = getGeminiKey() ? 'block' : 'none';
+  updateProviderUI();
 }
+
+/* callClaudeAPI: nome mantido (usado em todo o resto do código) mas agora
+   decide por dentro qual provedor usar, conforme escolha em Aparência. */
 async function callClaudeAPI(systemPrompt, userPrompt){
+  const provider = getAiProvider();
+  return provider === 'gemini'
+    ? callGeminiAPI(systemPrompt, userPrompt)
+    : callAnthropicAPI(systemPrompt, userPrompt);
+}
+
+async function callAnthropicAPI(systemPrompt, userPrompt){
   const key = getApiKey();
   if(!key){
-    toast('Cola sua chave da IA em Aparência primeiro.');
+    toast('Cola sua chave da Claude em Aparência primeiro.');
     return null;
   }
   try{
@@ -2209,6 +2267,37 @@ async function callClaudeAPI(systemPrompt, userPrompt){
     return data.content && data.content[0] ? data.content[0].text : null;
   } catch(e){
     toast('Não consegui falar com a IA. Confere sua internet e a chave.');
+    return null;
+  }
+}
+
+async function callGeminiAPI(systemPrompt, userPrompt){
+  const key = getGeminiKey();
+  if(!key){
+    toast('Cola sua chave do Gemini em Aparência primeiro.');
+    return null;
+  }
+  try{
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=${encodeURIComponent(key)}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }]
+      })
+    });
+    const data = await res.json();
+    if(data.error){
+      toast('Erro do Gemini: ' + (data.error.message || 'tenta de novo'));
+      return null;
+    }
+    if(!data.candidates || !data.candidates[0]){
+      toast('Gemini respondeu sem conteúdo (pode ter filtrado por segurança).');
+      return null;
+    }
+    return data.candidates[0].content.parts[0].text;
+  } catch(e){
+    toast('Não consegui falar com o Gemini. No iPhone isso é conhecido — considera trocar pra Claude em Aparência.');
     return null;
   }
 }
