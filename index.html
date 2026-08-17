@@ -466,6 +466,7 @@
       </div>
     </div>
     <div id="pendingIdeaPhotos" style="margin:-14px 0 14px;"></div>
+    <button class="new-script-btn" style="background:var(--esmeralda);margin-bottom:18px;" onclick="openStudyModal()">💬 Tirar dúvida / estudar um assunto com a IA</button>
     <div class="capture-hint">Enter quebra linha. Toca em "Salvar" quando terminar de escrever. Sem limite de tamanho.</div>
     <datalist id="chavesDatalist"></datalist>
     <div class="filters" id="filters"></div>
@@ -573,6 +574,7 @@
       <div class="wizard-actions">
         <button class="btn-delete" id="deleteBtn" onclick="deleteCurrentScript()" style="display:none;">Excluir</button>
         <button class="btn-export" onclick="exportScript()">📋 Gerar texto pra copiar</button>
+        <button class="btn-export" style="background:var(--vinho);" onclick="openCarouselModal()">🎨 Gerar Carrossel</button>
         <button class="btn-save" onclick="saveScript()">💾 Salvar roteiro</button>
       </div>
     </div>
@@ -687,6 +689,75 @@
 <!-- CONFIRM MODAL -->
 <!-- ATTACHMENT VIEWER MODAL -->
 <!-- AI SUGGESTION MODAL -->
+<!-- ESTUDO / DÚVIDA (CHAT) MODAL -->
+<div class="modal-overlay align-top" id="studyModal">
+  <div class="modal-box" style="max-width:560px;">
+    <h3 style="margin:0;">💬 Tirar dúvida com a IA</h3>
+    <p style="font-size:0.8rem;color:var(--areia-dim);margin:0;">Conversa à vontade sobre o assunto. Quando terminar, pede pra resumir — daí você decide guardar ou virar roteiro.</p>
+    <div id="studyConversation" style="max-height:40vh;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:4px;"></div>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="studyInput" placeholder="Digita sua pergunta ou dúvida..." style="flex:1;background:var(--carvao-3);
+        border:2px solid var(--border);border-radius:10px;color:var(--areia);padding:11px 14px;font-size:0.88rem;box-sizing:border-box;">
+      <button class="primary" onclick="sendStudyMessage()">Enviar</button>
+    </div>
+    <button class="appearance-choice" id="studySummarizeBtn" style="width:100%;display:none;" onclick="summarizeStudy()">📋 Resumir esse estudo</button>
+    <div id="studySummaryBox" style="display:none;"></div>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeStudyModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- GERAR CARROSSEL MODAL -->
+<div class="modal-overlay align-top" id="carouselModal">
+  <div class="modal-box" style="max-width:560px;">
+    <h3 style="margin:0;">🎨 Gerar Carrossel / Post</h3>
+
+    <div style="display:flex;gap:8px;">
+      <button class="appearance-choice" id="carModeAi" style="flex:1;" onclick="setCarouselMode('ai')">✨ IA cria a partir de um tema</button>
+      <button class="appearance-choice" id="carModeManual" style="flex:1;" onclick="setCarouselMode('manual')">✍️ Eu escrevo / uso o roteiro</button>
+    </div>
+
+    <div id="carAiSection" style="display:none;">
+      <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin:6px 0 4px;">Tema do post</label>
+      <input type="text" id="carTemaInput" placeholder="Ex: ansiedade, perdão, Marcos 7..." style="width:100%;background:var(--carvao-3);
+        border:2px solid var(--border);border-radius:10px;color:var(--areia);padding:10px 12px;font-size:0.88rem;box-sizing:border-box;">
+    </div>
+
+    <div>
+      <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin:10px 0 4px;">Quantas imagens? (1 a 6)</label>
+      <input type="range" id="carSlideCount" min="1" max="6" value="4" style="width:100%;" oninput="document.getElementById('carSlideCountLabel').textContent=this.value">
+      <div style="text-align:center;font-size:0.82rem;color:var(--areia-dim);">Slides: <span id="carSlideCountLabel">4</span></div>
+    </div>
+
+    <div id="carManualSlides" style="display:none;flex-direction:column;gap:8px;"></div>
+
+    <div style="display:flex;gap:8px;">
+      <div style="flex:1;">
+        <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Estilo visual</label>
+        <select id="carStyleSelect" style="width:100%;">
+          <option value="classico">📖 Clássico</option>
+          <option value="moderno">⚡ Moderno</option>
+          <option value="pergaminho">🕊️ Pergaminho</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="primary" style="width:100%;margin-top:6px;" onclick="startCarouselGeneration()">Gerar</button>
+
+    <div id="carouselProgress" style="display:none;font-size:0.82rem;color:var(--areia-dim);">Gerando...</div>
+    <div id="carSeoBox" style="display:none;"></div>
+    <div id="carouselResults" style="display:flex;flex-direction:column;gap:12px;max-height:40vh;overflow:auto;"></div>
+
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeCarouselModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- área invisível onde os slides são desenhados antes de virar imagem -->
+<div id="carouselRenderArea" style="position:fixed;left:-9999px;top:0;"></div>
+
 <!-- CORTAR SHORTS MODAL -->
 <div class="modal-overlay align-top" id="cutModal">
   <div class="modal-box" style="max-width:560px;">
@@ -762,6 +833,7 @@
       background:var(--carvao-3);border-radius:10px;padding:14px;"></div>
     <div class="modal-actions" id="aiModalActions">
       <button class="secondary" onclick="closeAiModal()">Descartar</button>
+      <button class="secondary" id="aiModalListenBtn" onclick="toggleReadAloud(document.getElementById('aiModalBody').innerText, this)">🔊 Ouvir</button>
       <button class="secondary" onclick="copyAiModalText()">📋 Copiar</button>
       <button class="primary" id="aiModalUseBtn">Usar essa versão</button>
     </div>
@@ -852,6 +924,14 @@
         <button class="appearance-choice" style="width:100%;" onclick="saveGeminiKey()">Salvar chave do Gemini</button>
         <p id="geminiKeyStatus" style="font-size:0.78rem;color:var(--esmeralda);margin:8px 0 0;display:none;">✓ Chave salva</p>
       </div>
+    </div>
+    <div style="margin-top:6px;border-top:1px solid var(--border);padding-top:14px;">
+      <label style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:8px;">🎯 Seu tom de voz (opcional)</label>
+      <p style="font-size:0.78rem;color:var(--areia-dim);margin:0 0 8px;">Descreve como você gosta de falar — isso entra automaticamente em toda geração de IA, pra você editar menos depois.</p>
+      <textarea id="tomVozInput" placeholder="Ex: linguagem simples, focada em jovens, exemplos do dia a dia, sem palavra difícil..."
+        style="width:100%;min-height:70px;background:var(--carvao-3);border:2px solid var(--border);border-radius:10px;color:var(--areia);
+        padding:11px 14px;font-size:0.85rem;font-family:var(--sans);box-sizing:border-box;margin-bottom:8px;"></textarea>
+      <button class="appearance-choice" style="width:100%;" onclick="saveTomVoz()">💾 Salvar tom de voz</button>
     </div>
     <div class="modal-actions">
       <button class="secondary" onclick="closeAppearanceModal()">Fechar</button>
@@ -2050,7 +2130,9 @@ function updateFooter(){
 /* ---------- PWA service worker ---------- */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+    navigator.serviceWorker.register('service-worker.js').then(reg=>{
+      reg.update().catch(()=>{}); // empurra checagem de versão nova, sem esperar o ciclo normal
+    }).catch(()=>{});
   });
 }
 
@@ -2232,17 +2314,24 @@ function updateApiKeyStatus(){
    decide por dentro qual provedor usar, conforme escolha em Aparência. */
 async function callClaudeAPI(systemPrompt, userPrompt){
   const provider = getAiProvider();
+  const tomVoz = getTomVoz();
+  const finalSystemPrompt = tomVoz
+    ? `${systemPrompt}\n\n[ESTILO PESSOAL DO USUÁRIO — siga isso na forma de escrever]: ${tomVoz}`
+    : systemPrompt;
   return provider === 'gemini'
-    ? callGeminiAPI(systemPrompt, userPrompt)
-    : callAnthropicAPI(systemPrompt, userPrompt);
+    ? callGeminiAPI(finalSystemPrompt, userPrompt)
+    : callAnthropicAPI(finalSystemPrompt, userPrompt);
 }
 
-async function callAnthropicAPI(systemPrompt, userPrompt){
+async function callAnthropicAPI(systemPrompt, userPromptOrMessages){
   const key = getApiKey();
   if(!key){
     toast('Cola sua chave da Claude em Aparência primeiro.');
     return null;
   }
+  const messages = Array.isArray(userPromptOrMessages)
+    ? userPromptOrMessages
+    : [{ role: 'user', content: userPromptOrMessages }];
   try{
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -2256,7 +2345,7 @@ async function callAnthropicAPI(systemPrompt, userPrompt){
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 1200,
         system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
+        messages: messages
       })
     });
     const data = await res.json();
@@ -2271,37 +2360,43 @@ async function callAnthropicAPI(systemPrompt, userPrompt){
   }
 }
 
-async function callGeminiAPI(systemPrompt, userPrompt){
+async function callGeminiAPI(systemPrompt, userPromptOrMessages){
   const key = getGeminiKey();
   if(!key){
     toast('Cola sua chave do Gemini em Aparência primeiro.');
     return null;
   }
+  // A Edge Function do Supabase espera texto simples (systemPrompt + userPrompt),
+  // então uma conversa de várias mensagens é achatada num texto único aqui.
+  const userPrompt = Array.isArray(userPromptOrMessages)
+    ? userPromptOrMessages.map(m=>`${m.role==='user'?'Pergunta':'Resposta anterior'}: ${m.content}`).join('\n\n')
+    : userPromptOrMessages;
+
+  const SUPABASE_FUNCTION_URL = 'https://awxfzqvpdjodqiwljvhk.supabase.co/functions/v1/semeador-ia';
+  const SUPABASE_ANON_KEY = 'sb_publishable_dGRMn_zG_9WxzL1iJg_Ezw_7MbGKup0';
+
   try{
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=${encodeURIComponent(key)}`;
-    const res = await fetch(url, {
+    const res = await fetch(SUPABASE_FUNCTION_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }]
-      })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'apikey': SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ systemPrompt, userPrompt })
     });
     const data = await res.json();
     if(data.error){
-      toast('Erro do Gemini: ' + (data.error.message || 'tenta de novo'));
+      toast('Erro na ponte do Gemini: ' + (data.error || 'tenta de novo'));
       return null;
     }
-    if(!data.candidates || !data.candidates[0]){
-      toast('Gemini respondeu sem conteúdo (pode ter filtrado por segurança).');
-      return null;
-    }
-    return data.candidates[0].content.parts[0].text;
+    return data.text || null;
   } catch(e){
-    toast('Não consegui falar com o Gemini. No iPhone isso é conhecido — considera trocar pra Claude em Aparência.');
+    console.error(e);
+    toast('Não consegui falar com o Gemini pela ponte. Confere sua internet.');
     return null;
   }
 }
-
 /* ---------- IA nos blocos do roteiro ---------- */
 const AI_SYSTEM_PROMPT = `Você ajuda um criador de conteúdo cristão brasileiro (canal "Vivendo o Evangelho de Jesus") a escrever roteiros de devocional. Regras que você DEVE seguir sempre:
 - Tradução bíblica: SOMENTE NAA 2017 (Nova Almeida Atualizada). NUNCA escreva um versículo com confiança total — sempre avise que o texto precisa ser conferido na Bíblia física antes de gravar, já que você pode errar palavras.
@@ -2363,6 +2458,7 @@ document.getElementById('aiModalUseBtn') && (document.getElementById('aiModalUse
   closeAiModal();
 });
 function closeAiModal(){
+  if(window.speechSynthesis && window.speechSynthesis.speaking) window.speechSynthesis.cancel();
   document.getElementById('aiModal').classList.remove('show');
   aiTargetFieldId = null;
 }
@@ -2643,6 +2739,348 @@ async function runFullScriptGeneration(tema){
   document.getElementById('aiModalUseBtn').textContent = 'Preencher todos os blocos';
 }
 
+/* ---------- Tirar dúvida / estudar (chat com IA, dentro de Ideias) ---------- */
+let studyHistory = [];
+
+const STUDY_SYSTEM_PROMPT = `Você é um assistente de estudo bíblico pra um criador de conteúdo cristão brasileiro. A pessoa vai te fazer perguntas e tirar dúvidas sobre um assunto, de forma conversada, natural — não é pra gerar roteiro, é só estudo/reflexão livre. Regras:
+- Tradução: SOMENTE NAA 2017. Se citar versículo, avise que pode errar de memória e recomenda conferir na Bíblia física.
+- ZERO citação de autor/teólogo/pastor externo — só a própria Escritura.
+- Tom natural de conversa, direto, sem enrolação, sem sermão. Responda só o que foi perguntado, sem alongar à toa.
+- Pode fazer perguntas de volta pra entender melhor o que a pessoa quer saber.`;
+
+function openStudyModal(){
+  studyHistory = [];
+  document.getElementById('studyConversation').innerHTML = '';
+  document.getElementById('studyInput').value = '';
+  document.getElementById('studySummarizeBtn').style.display = 'none';
+  document.getElementById('studySummaryBox').style.display = 'none';
+  document.getElementById('studyModal').classList.add('show');
+  setTimeout(()=>document.getElementById('studyInput').focus(), 100);
+}
+function closeStudyModal(){
+  document.getElementById('studyModal').classList.remove('show');
+}
+
+function renderStudyMessage(role, text){
+  const box = document.getElementById('studyConversation');
+  const isUser = role === 'user';
+  const bubble = document.createElement('div');
+  bubble.style.cssText = `align-self:${isUser?'flex-end':'flex-start'};max-width:85%;background:${isUser?'var(--safira)':'var(--carvao-3)'};
+    color:${isUser?'var(--on-accent)':'var(--areia)'};border-radius:12px;padding:10px 14px;font-size:0.86rem;white-space:pre-wrap;word-break:break-word;`;
+  bubble.textContent = text;
+  box.appendChild(bubble);
+  box.scrollTop = box.scrollHeight;
+}
+
+async function sendStudyMessage(){
+  const input = document.getElementById('studyInput');
+  const text = input.value.trim();
+  if(!text) return;
+  renderStudyMessage('user', text);
+  studyHistory.push({ role:'user', content: text });
+  input.value = '';
+
+  const thinking = document.createElement('div');
+  thinking.id = 'studyThinking';
+  thinking.style.cssText = 'align-self:flex-start;color:var(--areia-dim);font-size:0.82rem;padding:6px 4px;';
+  thinking.textContent = 'Pensando...';
+  document.getElementById('studyConversation').appendChild(thinking);
+
+  const result = await callClaudeAPI(STUDY_SYSTEM_PROMPT, studyHistory);
+  const thinkingEl = document.getElementById('studyThinking');
+  if(thinkingEl) thinkingEl.remove();
+
+  if(result){
+    renderStudyMessage('assistant', result);
+    studyHistory.push({ role:'assistant', content: result });
+    document.getElementById('studySummarizeBtn').style.display = 'block';
+  }
+}
+document.getElementById('studyInput') && document.getElementById('studyInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){ e.preventDefault(); sendStudyMessage(); }
+});
+
+const STUDY_SUMMARY_PROMPT = `Você recebeu uma conversa inteira de estudo/dúvida bíblica. Resuma o principal que foi discutido: os pontos-chave, respostas às perguntas feitas, e qualquer conclusão importante. Seja direto e organizado, sem repetir a conversa inteira — só o essencial, pronto pra virar anotação. NAA 2017 como referência, zero autor externo.`;
+
+async function summarizeStudy(){
+  const summaryBox = document.getElementById('studySummaryBox');
+  summaryBox.style.display = 'block';
+  summaryBox.innerHTML = `<p style="color:var(--areia-dim);font-size:0.84rem;">Resumindo...</p>`;
+  const convoText = studyHistory.map(m=>`${m.role==='user'?'Pergunta':'Resposta'}: ${m.content}`).join('\n\n');
+  const result = await callClaudeAPI(STUDY_SUMMARY_PROMPT, convoText);
+  if(!result){ summaryBox.style.display='none'; return; }
+  window.__lastStudySummary = result;
+  summaryBox.innerHTML = `
+    <label style="font-size:0.72rem;text-transform:uppercase;color:var(--areia-dim);font-weight:700;display:block;margin:10px 0 6px;">📋 Resumo do estudo</label>
+    <div style="background:var(--carvao-3);border-radius:10px;padding:12px 14px;font-size:0.85rem;white-space:pre-wrap;line-height:1.55;margin-bottom:8px;">${escapeHtmlPlain(result)}</div>
+    <div style="display:flex;gap:8px;">
+      <button class="to-script-secondary" style="flex:1;" onclick="saveStudyAsIdea()">💾 Guardar como Ideia</button>
+      <button class="to-script" style="flex:1;" onclick="studyToScript()">📜 Transformar em roteiro</button>
+    </div>
+  `;
+}
+
+function saveStudyAsIdea(){
+  const summary = window.__lastStudySummary;
+  if(!summary) return;
+  const firstLine = summary.split('\n')[0].slice(0,80);
+  ideas.unshift({
+    id: uid(), title: `[Estudo] ${firstLine}`, stars: 3, format: 'Short', status: 'novo',
+    tema: '', chaves: '', createdAt: Date.now(), anexos: [], notasCompletas: summary
+  });
+  persistIdeas();
+  renderIdeas();
+  closeStudyModal();
+  toast('Estudo guardado como ideia ✓');
+}
+
+function studyToScript(){
+  const summary = window.__lastStudySummary;
+  if(!summary) return;
+  const firstLine = summary.split('\n')[0].slice(0,80);
+  const s = {
+    id: uid(), titulo: firstLine, gancho:'', historia: summary, ref:'', versiculo:'',
+    micro:'', ilustracao:'', aplicacao:'', reflexao:'', oracao:'',
+    formato:'Short', status:'rascunho', createdAt: Date.now(), anexos: []
+  };
+  scripts.unshift(s);
+  persistScripts();
+  closeStudyModal();
+  switchHubTab('roteiros');
+  openWizard(s.id);
+  toast('Estudo levado pro roteiro (bloco Identificação) ✓');
+}
+
+/* ---------- Gerar Carrossel / Post (IA por tema OU manual, 1-6 slides, 1 estilo por vez) ---------- */
+let html2canvasLoaded = false;
+let carouselMode = 'ai';
+
+const CAROUSEL_STYLES = {
+  classico: { bg:'#1b3a6b', text:'#eee4d1', accent:'#c9a96a', fontFamily:"Georgia, 'Times New Roman', serif" },
+  moderno: { bg:'#17171a', text:'#eee4d1', accent:'#1f7a52', fontFamily:"-apple-system, 'Segoe UI', sans-serif" },
+  pergaminho: { bg:'#f4ecd8', text:'#2b2416', accent:'#7a2436', fontFamily:"Georgia, 'Palatino Linotype', serif" }
+};
+/* 4:5 — formato recomendado pelo próprio Instagram pra carrossel de feed (fixo, não é escolha) */
+const CAROUSEL_W = 1080, CAROUSEL_H = 1350;
+
+function setCarouselMode(mode){
+  carouselMode = mode;
+  document.getElementById('carModeAi').classList.toggle('active', mode==='ai');
+  document.getElementById('carModeManual').classList.toggle('active', mode==='manual');
+  document.getElementById('carAiSection').style.display = mode==='ai' ? 'block' : 'none';
+  document.getElementById('carManualSlides').style.display = mode==='manual' ? 'flex' : 'none';
+  if(mode==='manual') renderManualSlideInputs();
+}
+
+function renderManualSlideInputs(){
+  const count = Number(document.getElementById('carSlideCount').value);
+  const box = document.getElementById('carManualSlides');
+  const gancho = getFieldValue('f_gancho');
+  const historia = getFieldValue('f_historia');
+  const ref = document.getElementById('f_ref') ? document.getElementById('f_ref').value.trim() : '';
+  const versiculo = getFieldValue('f_versiculo');
+  const aplicacao = getFieldValue('f_aplicacao');
+  const prefill = [gancho, historia, (ref&&versiculo)?`${ref}: "${versiculo}"`:'', aplicacao, '', ''];
+  let html = '';
+  for(let i=0;i<count;i++){
+    html += `<div>
+      <label style="font-size:0.72rem;color:var(--areia-dim);font-weight:700;">Slide ${i+1}</label>
+      <textarea id="carManualText${i}" style="width:100%;min-height:56px;background:var(--carvao-3);border:1px solid var(--border);
+        border-radius:8px;color:var(--areia);padding:8px 10px;font-size:0.84rem;box-sizing:border-box;">${escapeHtmlPlain(prefill[i]||'')}</textarea>
+    </div>`;
+  }
+  box.innerHTML = html;
+}
+document.getElementById('carSlideCount') && document.getElementById('carSlideCount').addEventListener('input', ()=>{
+  if(carouselMode==='manual') renderManualSlideInputs();
+});
+
+function openCarouselModal(){
+  setCarouselMode('ai');
+  document.getElementById('carTemaInput').value = '';
+  document.getElementById('carSlideCount').value = 4;
+  document.getElementById('carSlideCountLabel').textContent = '4';
+  document.getElementById('carouselResults').innerHTML = '';
+  document.getElementById('carSeoBox').style.display = 'none';
+  document.getElementById('carouselProgress').style.display = 'none';
+  document.getElementById('carouselModal').classList.add('show');
+}
+function closeCarouselModal(){
+  document.getElementById('carouselModal').classList.remove('show');
+  document.getElementById('carouselRenderArea').innerHTML = '';
+}
+
+function buildSlideHTML(style, isCapa, title, body){
+  const S = CAROUSEL_STYLES[style];
+  const common = `width:${CAROUSEL_W}px;height:${CAROUSEL_H}px;box-sizing:border-box;display:flex;flex-direction:column;
+    justify-content:center;font-family:${S.fontFamily};background:${S.bg};color:${S.text};`;
+  if(style === 'classico'){
+    return `<div style="${common}padding:100px 90px;border:3px solid ${S.accent};box-sizing:border-box;text-align:center;align-items:center;">
+      ${title ? `<div style="font-size:34px;letter-spacing:3px;text-transform:uppercase;color:${S.accent};margin-bottom:40px;">${title}</div>` : ''}
+      <div style="font-size:${isCapa?64:44}px;line-height:1.45;font-style:italic;">${body}</div>
+      <div style="margin-top:50px;font-size:26px;color:${S.accent};letter-spacing:2px;">VIVENDO O EVANGELHO DE JESUS</div>
+    </div>`;
+  }
+  if(style === 'moderno'){
+    return `<div style="${common}position:relative;padding:100px 80px 100px 100px;">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:26px;background:${S.accent};"></div>
+      ${title ? `<div style="font-size:30px;font-weight:700;color:${S.accent};margin-bottom:30px;">${title.toUpperCase()}</div>` : ''}
+      <div style="font-size:${isCapa?68:46}px;line-height:1.25;font-weight:800;">${body}</div>
+      <div style="margin-top:60px;font-size:24px;font-weight:700;color:${S.accent};">@VIVENDOOEVANGELHODEJESUS</div>
+    </div>`;
+  }
+  return `<div style="${common}padding:110px 100px;text-align:center;align-items:center;">
+    ${title ? `<div style="font-size:28px;letter-spacing:2px;color:${S.accent};margin-bottom:36px;font-style:italic;">${title}</div>` : ''}
+    <div style="font-size:${isCapa?58:40}px;line-height:1.5;">${body}</div>
+    <div style="margin-top:60px;width:80px;height:2px;background:${S.accent};"></div>
+    <div style="margin-top:20px;font-size:22px;color:${S.accent};">Vivendo o Evangelho de Jesus</div>
+  </div>`;
+}
+
+const CAROUSEL_AI_SYSTEM_PROMPT = `Você cria conteúdo pra post/carrossel de Instagram de um canal cristão brasileiro (Vivendo o Evangelho de Jesus). Regras:
+- NAA 2017 como única tradução; se citar versículo, é aproximado — não afirme certeza absoluta.
+- ZERO citação de autor/teólogo externo.
+- Tom pastoral, direto, sem clichê.
+Responda SOMENTE com JSON válido, no formato exato:
+{"slides":["frase curta e impactante do slide 1","slide 2",...],"titulo":"título chamativo pro post","descricao":"legenda pronta pra colar no Instagram, 2-4 frases","hashtags":"#tag1 #tag2 #tag3 (uns 8-12 hashtags relevantes)"}
+O número de itens no array "slides" deve ser EXATAMENTE o que for pedido no prompt do usuário.`;
+
+async function startCarouselGeneration(){
+  const count = Number(document.getElementById('carSlideCount').value);
+  const style = document.getElementById('carStyleSelect').value;
+  const progress = document.getElementById('carouselProgress');
+  const results = document.getElementById('carouselResults');
+  const seoBox = document.getElementById('carSeoBox');
+  results.innerHTML = '';
+  seoBox.style.display = 'none';
+
+  let slideTexts = [];
+  let seo = null;
+
+  if(carouselMode === 'ai'){
+    const tema = document.getElementById('carTemaInput').value.trim();
+    if(!tema){ toast('Digita um tema primeiro.'); return; }
+    progress.style.display = 'block';
+    progress.textContent = 'IA criando o conteúdo...';
+    const result = await callClaudeAPI(CAROUSEL_AI_SYSTEM_PROMPT, `Tema: ${tema}. Quantidade exata de slides: ${count}.`);
+    if(!result){ progress.style.display='none'; return; }
+    let parsed;
+    try{
+      const jsonMatch = result.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : result);
+    } catch(e){
+      progress.textContent = 'A IA não devolveu formato legível. Tenta de novo.';
+      return;
+    }
+    slideTexts = parsed.slides || [];
+    seo = { titulo: parsed.titulo, descricao: parsed.descricao, hashtags: parsed.hashtags };
+  } else {
+    for(let i=0;i<count;i++){
+      const el = document.getElementById('carManualText'+i);
+      slideTexts.push(el ? el.value.trim() : '');
+    }
+    if(slideTexts.every(t=>!t)){ toast('Escreve pelo menos um slide.'); return; }
+  }
+
+  await renderCarouselImages(style, slideTexts);
+
+  if(seo){
+    seoBox.style.display = 'block';
+    const seoText = `${seo.titulo}\n\n${seo.descricao}\n\n${seo.hashtags}`;
+    seoBox.innerHTML = `
+      <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin:10px 0 4px;">📝 Título, descrição e hashtags (texto — copia e cola)</label>
+      <textarea readonly style="width:100%;min-height:100px;background:var(--carvao-3);border:1px solid var(--border);border-radius:8px;
+        color:var(--areia);padding:10px;font-size:0.82rem;box-sizing:border-box;">${escapeHtmlPlain(seoText)}</textarea>
+      <button class="appearance-choice" style="width:100%;margin-top:6px;" onclick="copySeoText(this)">📋 Copiar texto do SEO</button>
+    `;
+    seoBox.dataset.seoText = seoText;
+  }
+  progress.style.display = 'none';
+  toast('Pronto ✓');
+}
+
+function copySeoText(btn){
+  const text = document.getElementById('carSeoBox').dataset.seoText || '';
+  navigator.clipboard.writeText(text).then(()=>toast('Copiado ✓')).catch(()=>toast('Seleciona e copia manualmente.'));
+}
+
+async function renderCarouselImages(style, slideTexts){
+  const progress = document.getElementById('carouselProgress');
+  const results = document.getElementById('carouselResults');
+  const renderArea = document.getElementById('carouselRenderArea');
+  progress.style.display = 'block';
+
+  try{
+    if(!html2canvasLoaded){
+      progress.textContent = 'Carregando ferramenta de imagem...';
+      await new Promise((resolve, reject)=>{
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+      html2canvasLoaded = true;
+    }
+
+    const titles = ['', 'IDENTIFICAÇÃO', 'A PALAVRA', 'APLICAÇÃO', 'REFLEXÃO', ''];
+    for(let i=0;i<slideTexts.length;i++){
+      if(!slideTexts[i]) continue;
+      progress.textContent = `Gerando slide ${i+1} de ${slideTexts.length}...`;
+      renderArea.innerHTML = buildSlideHTML(style, i===0, titles[i]||'', escapeHtmlPlain(slideTexts[i]));
+      const el = renderArea.firstElementChild;
+      const canvas = await html2canvas(el, { width:CAROUSEL_W, height:CAROUSEL_H, scale:1 });
+      const dataUrl = canvas.toDataURL('image/png');
+      const card = document.createElement('div');
+      card.style.cssText = 'background:var(--carvao-3);border:1px solid var(--border);border-radius:10px;padding:10px;';
+      card.innerHTML = `
+        <img src="${dataUrl}" style="width:100%;border-radius:6px;display:block;margin-bottom:8px;">
+        <a href="${dataUrl}" download="slide-${i+1}-${style}.png" style="display:block;text-align:center;background:var(--esmeralda);
+          color:var(--on-accent);padding:9px;border-radius:8px;font-weight:700;font-size:0.82rem;text-decoration:none;">⬇️ Baixar Slide ${i+1}</a>
+      `;
+      results.appendChild(card);
+    }
+  } catch(e){
+    progress.textContent = 'Não consegui gerar as imagens. Confere sua internet e tenta de novo.';
+    console.error(e);
+  }
+}
+
+/* ---------- Ouvir com voz nativa (speechSynthesis) ---------- */
+let vozesCarregadas = [];
+if('speechSynthesis' in window){
+  const carregarVozes = ()=>{ vozesCarregadas = window.speechSynthesis.getVoices(); };
+  carregarVozes();
+  window.speechSynthesis.onvoiceschanged = carregarVozes;
+}
+function toggleReadAloud(text, btn){
+  if(window.speechSynthesis.speaking){
+    window.speechSynthesis.cancel();
+    if(btn) btn.textContent = '🔊 Ouvir';
+    return;
+  }
+  if(!text || !text.trim()){ toast('Nada pra ler ainda.'); return; }
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'pt-BR';
+  utter.rate = 1.0;
+  const vozes = vozesCarregadas.length ? vozesCarregadas : window.speechSynthesis.getVoices();
+  const vozPt = vozes.find(v=>v.lang && v.lang.includes('pt-BR')) || vozes.find(v=>v.lang && v.lang.includes('pt'));
+  if(vozPt) utter.voice = vozPt;
+  utter.onend = ()=>{ if(btn) btn.textContent = '🔊 Ouvir'; };
+  if(btn) btn.textContent = '⏸️ Parar';
+  window.speechSynthesis.speak(utter);
+}
+
+/* ---------- Tom de voz pessoal (injetado em toda chamada de IA) ---------- */
+const TOM_VOZ_STORAGE = 'vej_tom_voz_v1';
+function getTomVoz(){ return localStorage.getItem(TOM_VOZ_STORAGE) || ''; }
+function saveTomVoz(){
+  const val = document.getElementById('tomVozInput').value.trim();
+  localStorage.setItem(TOM_VOZ_STORAGE, val);
+  toast('Tom de voz salvo ✓');
+}
+
+/* ---------- estudo do versículo (referência, não vai pro roteiro sozinho) ---------- */
 /* ---------- estudo do versículo (referência, não vai pro roteiro sozinho) ---------- */
 const VERSE_STUDY_SYSTEM_PROMPT = `Você ajuda um criador de conteúdo cristão a estudar um versículo antes de gravar um devocional. Regras:
 - Tradução: SOMENTE NAA 2017. Sempre avise no início que o texto do versículo precisa ser conferido na Bíblia física, porque você pode errar palavras de memória.
@@ -2672,7 +3110,12 @@ async function aiVerseStudy(){
   }
 }
 
-function openAppearanceModal(){ applyAppearance(); updateApiKeyStatus(); document.getElementById("appearanceModal").classList.add("show"); }
+function openAppearanceModal(){
+  applyAppearance();
+  updateApiKeyStatus();
+  document.getElementById('tomVozInput').value = getTomVoz();
+  document.getElementById("appearanceModal").classList.add("show");
+}
 function closeAppearanceModal(){ document.getElementById("appearanceModal").classList.remove("show"); }
 
 /* ---------- cabeçalho retrátil ao rolar ---------- */
