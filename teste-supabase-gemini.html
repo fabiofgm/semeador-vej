@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teste isolado — Supabase → Gemini</title>
+<style>
+  body{font-family:sans-serif;max-width:600px;margin:40px auto;padding:0 16px;line-height:1.6;}
+  input,textarea{width:100%;padding:8px;box-sizing:border-box;}
+  textarea{height:60px;}
+  #resultado{white-space:pre-wrap;background:#f1f1f1;padding:12px;border-radius:8px;margin-top:12px;min-height:40px;}
+  button{padding:10px 20px;font-size:1rem;cursor:pointer;margin-top:10px;}
+</style>
+</head>
+<body>
+  <h2>Teste isolado: Supabase → Gemini</h2>
+  <p>Esse arquivo testa a ponte inteira: seu app manda a pergunta pro Supabase, o Supabase esconde a chave e conversa com o Gemini, e devolve a resposta.</p>
+
+  <textarea id="pergunta">Explica em 1 frase o que é fé.</textarea>
+  <br>
+  <button onclick="testar()">Testar chamada real (via Supabase)</button>
+  <div id="resultado">O resultado (ou o erro) aparece aqui.</div>
+
+<script>
+const SUPABASE_FUNCTION_URL = 'https://awxfzqvpdjodqiwljvhk.supabase.co/functions/v1/semeador-ia';
+const SUPABASE_ANON_KEY = 'sb_publishable_dGRMn_zG_9WxzL1iJg_Ezw_7MbGKup0';
+
+async function testar(){
+  const pergunta = document.getElementById('pergunta').value.trim();
+  const resultado = document.getElementById('resultado');
+
+  resultado.textContent = 'Testando... (iPhone manda pro Supabase, Supabase manda pro Gemini)';
+
+  try{
+    const response = await fetch(SUPABASE_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'apikey': SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({
+        systemPrompt: 'Você é um assistente cristão.',
+        userPrompt: pergunta
+      })
+    });
+
+    const data = await response.json();
+
+    if(!response.ok || data.error){
+      resultado.textContent = '❌ ERRO:\n\n' + (data.error || `Status ${response.status}`);
+      console.error('ERRO COMPLETO:', data);
+      return;
+    }
+
+    resultado.textContent = '✅ FUNCIONOU (via Supabase):\n\n' + data.text;
+
+  } catch(e){
+    resultado.textContent = '❌ ERRO DE REDE:\n\n' + e.message;
+    console.error(e);
+  }
+}
+</script>
+</body>
+</html>
