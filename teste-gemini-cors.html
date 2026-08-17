@@ -46,6 +46,9 @@ async function callGeminiAPI(systemPrompt, userPrompt, key){
   }
 
   const data = await response.json();
+  if(!data.candidates || !data.candidates[0]){
+    throw new Error('O Gemini respondeu, mas sem conteúdo de texto (pode ter filtrado por segurança). Resposta bruta: ' + JSON.stringify(data));
+  }
   return data.candidates[0].content.parts[0].text;
 }
 
@@ -61,8 +64,12 @@ async function testar(){
     const texto = await callGeminiAPI('Você é um assistente cristão.', pergunta, key);
     resultado.textContent = '✅ FUNCIONOU:\n\n' + texto;
   } catch(e){
-    resultado.textContent = '❌ ERRO:\n\n' + e.message + '\n\n(Se o erro mencionar CORS ou "Failed to fetch", é a barreira que expliquei — não é bug de sintaxe, é o Google bloqueando chamada direta do navegador.)';
-    console.error(e);
+    // Diagnóstico mais detalhado, já que o Safari às vezes esconde o erro real
+    let detalhe = e.message || 'sem mensagem';
+    if(e.stack) detalhe += '\n\nDetalhe técnico (stack):\n' + e.stack;
+    if(e.name) detalhe = `[${e.name}] ` + detalhe;
+    resultado.textContent = '❌ ERRO:\n\n' + detalhe + '\n\n(Se mencionar CORS ou "Failed to fetch", é bloqueio de rede. Se mencionar "undefined" ou "Cannot read", é a resposta do Gemini vindo num formato diferente do esperado — não é bloqueio, é outra coisa.)';
+    console.error('ERRO COMPLETO:', e);
   }
 }
 </script>
