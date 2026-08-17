@@ -228,7 +228,13 @@
   .back-link{background:none;border:none;color:var(--areia-dim);cursor:pointer;font-size:0.84rem;padding:0;}
   .back-link:hover{color:var(--areia);}
   .block{background:var(--carvao-2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px;}
-  .block-head{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;}
+  .block-head{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;justify-content:space-between;}
+  .block-head-left{display:flex;align-items:baseline;gap:10px;}
+  .ai-assist-btn{
+    background:var(--carvao-3);border:1px solid var(--border);color:var(--areia-dim);
+    border-radius:999px;padding:5px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;
+  }
+  .ai-assist-btn:hover{color:var(--areia);border-color:var(--areia-dim);}
   .verse-badge{font-family:var(--serif);font-style:italic;font-weight:700;color:var(--safira-l);font-size:0.76rem;
     border:1px solid var(--safira-l);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;
     justify-content:center;flex-shrink:0;}
@@ -435,6 +441,7 @@
     <div class="header-btn-row">
       <button class="appearance-btn" onclick="openGlobalSearchModal()">🔍 Buscar</button>
       <button class="appearance-btn" onclick="openAppearanceModal()">🎨 Aparência</button>
+      <button class="appearance-btn" onclick="openVerifyModal()">✅ Checar</button>
     </div>
   </header>
 
@@ -469,6 +476,7 @@
   <div id="hub-roteiros" class="hub-panel">
     <div id="scriptListView">
       <button class="new-script-btn" onclick="newScript()">+ Novo roteiro do zero</button>
+      <button class="new-script-btn" style="background:var(--vinho);margin-top:8px;" onclick="openCutModal()">🎬 Cortar Shorts de um vídeo longo</button>
       <div id="scriptsList"></div>
     </div>
 
@@ -477,51 +485,56 @@
         <button class="back-link" onclick="closeWizard()">← voltar pra lista</button>
       </div>
 
+      <button type="button" onclick="aiGenerateFullScript()" style="width:100%;background:var(--esmeralda);color:var(--on-accent);
+        border:none;border-radius:10px;padding:13px;font-weight:700;font-size:0.92rem;cursor:pointer;margin-bottom:16px;">
+        ✨ Gerar roteiro completo a partir de um tema
+      </button>
+
       <div class="block">
-        <div class="block-head"><span class="verse-badge">1</span><span class="block-title">Gancho <small style="color:var(--areia-dim);font-weight:400;">(0–15s)</small></span></div>
+        <div class="block-head"><div class="block-head-left"><span class="verse-badge">1</span><span class="block-title">Gancho <small style="color:var(--areia-dim);font-weight:400;">(0–15s)</small></span></div><button type="button" class="ai-assist-btn" onclick="aiAssistField('f_gancho')">✨ IA</button></div>
         <p class="block-hint">Pergunta ou curiosidade que trava o dedo.</p>
         <div id="f_gancho" class="rich-field" contenteditable="true" data-placeholder="Escreve o gancho aqui..." style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
-        <div class="block-head"><span class="verse-badge">2</span><span class="block-title">Identificação / história real</span></div>
+        <div class="block-head"><div class="block-head-left"><span class="verse-badge">2</span><span class="block-title">Identificação / história real</span></div><button type="button" class="ai-assist-btn" onclick="aiAssistField('f_historia')">✨ IA</button></div>
         <p class="block-hint">A dor concreta que a pessoa reconhece nela mesma.</p>
         <div id="f_historia" class="rich-field" contenteditable="true" data-placeholder="Descreve a situação real..." style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
-        <div class="block-head"><span class="verse-badge">3</span><span class="block-title">A Palavra</span></div>
+        <div class="block-head"><div class="block-head-left"><span class="verse-badge">3</span><span class="block-title">A Palavra</span></div><button type="button" class="ai-assist-btn" onclick="aiVerseStudy()">📖 Estudo do versículo</button></div>
         <p class="block-hint">Confere na Bíblia física antes de gravar. Nunca de memória.</p>
         <input type="text" id="f_ref" placeholder="Referência (ex: Mateus 6:34)" style="margin-bottom:10px;">
         <div id="f_versiculo" class="rich-field" contenteditable="true" data-placeholder="Cole o versículo completo aqui" style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
-        <div class="block-head"><span class="verse-badge">4</span><span class="block-title">Micro-resposta <small style="color:var(--areia-dim);font-weight:400;">— o choque</small></span></div>
+        <div class="block-head"><div class="block-head-left"><span class="verse-badge">4</span><span class="block-title">Micro-resposta <small style="color:var(--areia-dim);font-weight:400;">— o choque</small></span></div><button type="button" class="ai-assist-btn" onclick="aiAssistField('f_micro')">✨ IA</button></div>
         <p class="block-hint">O mundo diz uma coisa. Jesus diz outra.</p>
         <div id="f_micro" class="rich-field" contenteditable="true" data-placeholder="O mundo diz... Mas Jesus diz..." style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
-        <div class="block-head"><span class="verse-badge">5</span><span class="block-title">Ilustração</span></div>
+        <div class="block-head"><div class="block-head-left"><span class="verse-badge">5</span><span class="block-title">Ilustração</span></div><button type="button" class="ai-assist-btn" onclick="aiAssistField('f_ilustracao')">✨ IA</button></div>
         <p class="block-hint">Bíblica primeiro. Contemporânea só se não houver uma direta — sempre depois do versículo.</p>
         <div id="f_ilustracao" class="rich-field" contenteditable="true" data-placeholder="Parábola ou exemplo do cotidiano..." style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
-        <div class="block-head"><span class="verse-badge">6</span><span class="block-title">Aplicação <small style="color:var(--areia-dim);font-weight:400;">— payoff / loop</small></span></div>
+        <div class="block-head"><div class="block-head-left"><span class="verse-badge">6</span><span class="block-title">Aplicação <small style="color:var(--areia-dim);font-weight:400;">— payoff / loop</small></span></div><button type="button" class="ai-assist-btn" onclick="aiAssistField('f_aplicacao')">✨ IA</button></div>
         <p class="block-hint">Um passo prático e imediato.</p>
         <div id="f_aplicacao" class="rich-field" contenteditable="true" data-placeholder="O que a pessoa faz com isso hoje..." style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
-        <div class="block-head"><span class="verse-badge">7</span><span class="block-title">Reflexão</span></div>
+        <div class="block-head"><div class="block-head-left"><span class="verse-badge">7</span><span class="block-title">Reflexão</span></div><button type="button" class="ai-assist-btn" onclick="aiAssistField('f_reflexao')">✨ IA</button></div>
         <p class="block-hint">Pergunta específica ao tema — nunca genérica.</p>
         <div id="f_reflexao" class="rich-field" contenteditable="true" data-placeholder="Pergunta específica ao tema..." style="" onblur="linkifyRichField(this)"></div>
       </div>
 
       <div class="block">
-        <div class="block-head"><span class="verse-badge">8</span><span class="block-title">Oração / Fechamento</span></div>
+        <div class="block-head"><div class="block-head-left"><span class="verse-badge">8</span><span class="block-title">Oração / Fechamento</span></div><button type="button" class="ai-assist-btn" onclick="aiAssistField('f_oracao')">✨ IA</button></div>
         <p class="block-hint">100% bíblica, tom pastoral, zero frase de efeito.</p>
         <div id="f_oracao" class="rich-field" contenteditable="true" data-placeholder="Oração + fechamento pastoral..." style="" onblur="linkifyRichField(this)"></div>
       </div>
@@ -672,6 +685,88 @@
 
 <!-- CONFIRM MODAL -->
 <!-- ATTACHMENT VIEWER MODAL -->
+<!-- AI SUGGESTION MODAL -->
+<!-- CORTAR SHORTS MODAL -->
+<div class="modal-overlay align-top" id="cutModal">
+  <div class="modal-box" style="max-width:560px;">
+    <h3 style="margin:0;">🎬 Cortar Shorts de um vídeo longo</h3>
+    <p style="font-size:0.82rem;color:var(--areia-dim);margin:0;">
+      Sobe só o <b>áudio</b> do vídeo longo (exporta só o áudio no CapCut, fica bem mais leve). A transcrição roda aqui no seu aparelho, sem custo.
+    </p>
+    <input type="file" id="cutAudioInput" accept="audio/*,video/*" style="width:100%;font-size:0.82rem;color:var(--areia-dim);">
+    <button class="primary" style="width:100%;" onclick="startTranscription()" id="cutTranscribeBtn">Transcrever</button>
+    <div id="cutProgress" style="font-size:0.82rem;color:var(--areia-dim);display:none;"></div>
+    <textarea id="cutTranscript" readonly placeholder="A transcrição aparece aqui..." style="width:100%;min-height:120px;
+      background:var(--carvao-3);border:2px solid var(--border);border-radius:10px;color:var(--areia);
+      padding:12px 14px;font-size:0.84rem;font-family:var(--sans);box-sizing:border-box;display:none;"></textarea>
+    <button class="primary" style="width:100%;display:none;" id="cutAnalyzeBtn" onclick="analyzeForCuts()">✨ Encontrar os melhores cortes</button>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeCutModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHECAR DEPOIS MODAL -->
+<div class="modal-overlay align-top" id="verifyModal">
+  <div class="modal-box" style="max-width:520px;">
+    <h3 style="margin:0;">✅ Checar Depois</h3>
+    <p style="font-size:0.82rem;color:var(--areia-dim);margin:0;">Duvidou de algo que ouviu? Cola o link ou anota rápido antes de perder.</p>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="verifyQuickInput" placeholder="Cola o link ou escreve o que ouviu..." style="flex:1;
+        background:var(--carvao-3);border:2px solid var(--border);border-radius:10px;color:var(--areia);
+        padding:11px 14px;font-size:0.88rem;font-family:var(--sans);">
+      <button class="primary" onclick="addVerifyItem()">Salvar</button>
+    </div>
+    <div id="verifyList" style="max-height:45vh;overflow:auto;"></div>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeVerifyModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- COLAR TRANSCRIÇÃO MODAL -->
+<div class="modal-overlay" id="pasteTranscriptModal">
+  <div class="modal-box" style="max-width:520px;">
+    <h3 style="margin:0;">📖 Analisar com a Bíblia</h3>
+    <p style="font-size:0.82rem;color:var(--areia-dim);margin:0;">Cola aqui a legenda/transcrição do vídeo (ou o que você lembra que foi dito).</p>
+    <textarea id="pasteTranscriptInput" placeholder="Cola o texto aqui..." style="width:100%;min-height:140px;
+      background:var(--carvao-3);border:2px solid var(--border);border-radius:10px;color:var(--areia);
+      padding:12px 14px;font-size:0.88rem;font-family:var(--sans);box-sizing:border-box;resize:vertical;"></textarea>
+    <div class="modal-actions">
+      <button class="secondary" onclick="document.getElementById('pasteTranscriptModal').classList.remove('show')">Cancelar</button>
+      <button class="primary" onclick="runVerifyAnalysis()">Analisar</button>
+    </div>
+  </div>
+</div>
+
+<!-- THEME PROMPT MODAL (pra gerar roteiro completo) -->
+<div class="modal-overlay" id="themeModal">
+  <div class="modal-box" style="max-width:420px;">
+    <h3>✨ Gerar roteiro completo</h3>
+    <p style="font-size:0.85rem;color:var(--areia-dim);">Qual o tema ou história bíblica? (ex: "Parábola do rico e Lázaro", "ansiedade")</p>
+    <input type="text" id="themeModalInput" placeholder="Digita o tema aqui..." style="width:100%;background:var(--carvao-3);
+      border:2px solid var(--border);border-radius:10px;color:var(--areia);padding:11px 14px;font-size:0.92rem;
+      font-family:var(--sans);box-sizing:border-box;">
+    <div class="modal-actions">
+      <button class="secondary" onclick="document.getElementById('themeModal').classList.remove('show')">Cancelar</button>
+      <button class="primary" onclick="confirmThemeAndGenerate()">Gerar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="aiModal">
+  <div class="modal-box" style="max-width:560px;">
+    <h3 id="aiModalTitle">✨ Sugestão da IA</h3>
+    <div id="aiModalBody" style="max-height:55vh;overflow:auto;white-space:pre-wrap;font-size:0.88rem;line-height:1.55;
+      background:var(--carvao-3);border-radius:10px;padding:14px;"></div>
+    <div class="modal-actions" id="aiModalActions">
+      <button class="secondary" onclick="closeAiModal()">Descartar</button>
+      <button class="secondary" onclick="copyAiModalText()">📋 Copiar</button>
+      <button class="primary" id="aiModalUseBtn">Usar essa versão</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="attachmentModal">
   <div class="modal-box" style="max-width:560px;">
     <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -728,6 +823,14 @@
         <button class="appearance-choice" id="fontBtn-normal" onclick="setFontSize('normal')">Normal</button>
         <button class="appearance-choice" id="fontBtn-grande" onclick="setFontSize('grande')" style="font-size:1.05rem;">Grande</button>
       </div>
+    </div>
+    <div>
+      <label style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:8px;">🤖 Ajuda da IA (opcional)</label>
+      <p style="font-size:0.78rem;color:var(--areia-dim);margin:0 0 8px;">Cola sua própria chave da Anthropic pra ativar o botão "Ajuda da IA" nos roteiros. Fica guardada só neste aparelho.</p>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="width:100%;background:var(--carvao-3);border:2px solid var(--border);
+        border-radius:10px;color:var(--areia);padding:11px 14px;font-size:0.85rem;font-family:var(--sans);box-sizing:border-box;margin-bottom:8px;">
+      <button class="appearance-choice" style="width:100%;" onclick="saveApiKey()">Salvar chave</button>
+      <p id="apiKeyStatus" style="font-size:0.78rem;color:var(--esmeralda);margin:8px 0 0;display:none;">✓ Chave salva</p>
     </div>
     <div class="modal-actions">
       <button class="secondary" onclick="closeAppearanceModal()">Fechar</button>
@@ -2059,7 +2162,427 @@ function goToScriptFromSearch(id, field){
   }, 150);
 }
 
-function openAppearanceModal(){ applyAppearance(); document.getElementById("appearanceModal").classList.add("show"); }
+/* ---------- chave da IA (Anthropic API) ---------- */
+const AI_KEY_STORAGE = "vej_ai_key_v1";
+function getApiKey(){ return localStorage.getItem(AI_KEY_STORAGE) || ""; }
+function saveApiKey(){
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if(!val){ toast('Cola a chave antes de salvar.'); return; }
+  localStorage.setItem(AI_KEY_STORAGE, val);
+  document.getElementById('apiKeyInput').value = '';
+  updateApiKeyStatus();
+  toast('Chave da IA salva ✓');
+}
+function updateApiKeyStatus(){
+  const status = document.getElementById('apiKeyStatus');
+  if(!status) return;
+  status.style.display = getApiKey() ? 'block' : 'none';
+}
+async function callClaudeAPI(systemPrompt, userPrompt){
+  const key = getApiKey();
+  if(!key){
+    toast('Cola sua chave da IA em Aparência primeiro.');
+    return null;
+  }
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1200,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+    const data = await res.json();
+    if(data.error){
+      toast('Erro da IA: ' + (data.error.message || 'tenta de novo'));
+      return null;
+    }
+    return data.content && data.content[0] ? data.content[0].text : null;
+  } catch(e){
+    toast('Não consegui falar com a IA. Confere sua internet e a chave.');
+    return null;
+  }
+}
+
+/* ---------- IA nos blocos do roteiro ---------- */
+const AI_SYSTEM_PROMPT = `Você ajuda um criador de conteúdo cristão brasileiro (canal "Vivendo o Evangelho de Jesus") a escrever roteiros de devocional. Regras que você DEVE seguir sempre:
+- Tradução bíblica: SOMENTE NAA 2017 (Nova Almeida Atualizada). NUNCA escreva um versículo com confiança total — sempre avise que o texto precisa ser conferido na Bíblia física antes de gravar, já que você pode errar palavras.
+- ZERO citação de autores, teólogos, pastores ou filósofos externos (nem Agostinho, C.S. Lewis, etc). Só Escritura e linguagem própria.
+- Tom: pastoral, acolhedor, direto, sem clichê gospel vazio, sem frases de efeito motivacionais. Linguagem simples, de conversa, não de sermão.
+- Ilustração sempre depois do versículo, nunca antes. Prioridade: ilustração bíblica (parábolas, exemplos do próprio texto) antes de ilustração do cotidiano.
+- Seja breve e direto na resposta — o texto é pra ser falado em vídeo curto, não lido.
+Responda só com o texto sugerido para o bloco pedido, sem introdução tipo "Aqui está" — direto ao conteúdo.`;
+
+const BLOCK_LABELS = {
+  gancho:'Gancho', historia:'Identificação/história real', micro:'Micro-resposta',
+  ilustracao:'Ilustração', aplicacao:'Aplicação', reflexao:'Reflexão', oracao:'Oração', titulo:'Título de trabalho'
+};
+
+let aiTargetFieldId = null;
+
+async function aiAssistField(fieldId){
+  const label = BLOCK_LABELS[fieldId.replace('f_','')] || fieldId;
+  const currentText = getFieldValue(fieldId);
+  const versiculo = getFieldValue('f_versiculo');
+  const ref = document.getElementById('f_ref').value;
+  const tema = ref ? `Referência bíblica: ${ref}. ` : '';
+  const versiculoContext = versiculo ? `Texto do versículo já colado (conferir com a Bíblia física): "${versiculo}". ` : '';
+
+  aiTargetFieldId = fieldId;
+  document.getElementById('aiModalTitle').textContent = '✨ Sugestão pra: ' + label;
+  document.getElementById('aiModalBody').textContent = 'Pensando...';
+  document.getElementById('aiModal').classList.add('show');
+
+  const userPrompt = `${tema}${versiculoContext}Bloco a escrever: "${label}".${currentText ? ' Rascunho atual do usuário: "'+currentText+'". Melhore ou complete isso.' : ' Ainda não tem nada escrito, sugira um texto do zero.'}`;
+
+  const result = await callClaudeAPI(AI_SYSTEM_PROMPT, userPrompt);
+  if(result){
+    document.getElementById('aiModalBody').textContent = result;
+    document.getElementById('aiModalUseBtn').style.display = 'inline-block';
+  } else {
+    closeAiModal();
+  }
+}
+document.getElementById('aiModalUseBtn') && (document.getElementById('aiModalUseBtn').onclick = function(){
+  if(aiTargetFieldId === '__FULL_SCRIPT__' && window.__pendingFullScript){
+    const p = window.__pendingFullScript;
+    setFieldValue('f_gancho', p.gancho || '');
+    setFieldValue('f_historia', p.historia || '');
+    document.getElementById('f_ref').value = p.ref || '';
+    setFieldValue('f_versiculo', p.versiculo || '');
+    setFieldValue('f_micro', p.micro || '');
+    setFieldValue('f_ilustracao', p.ilustracao || '');
+    setFieldValue('f_aplicacao', p.aplicacao || '');
+    setFieldValue('f_reflexao', p.reflexao || '');
+    setFieldValue('f_oracao', p.oracao || '');
+    window.__pendingFullScript = null;
+    toast('Roteiro completo preenchido ✓ — confere o versículo na Bíblia física!');
+  } else if(aiTargetFieldId){
+    setFieldValue(aiTargetFieldId, document.getElementById('aiModalBody').textContent);
+    toast('Texto aplicado ✓');
+  }
+  document.getElementById('aiModalUseBtn').textContent = 'Usar essa versão';
+  closeAiModal();
+});
+function closeAiModal(){
+  document.getElementById('aiModal').classList.remove('show');
+  aiTargetFieldId = null;
+}
+async function copyAiModalText(){
+  const text = document.getElementById('aiModalBody').textContent;
+  try{
+    await navigator.clipboard.writeText(text);
+    toast('Copiado ✓');
+  } catch(e){
+    toast('Não consegui copiar. Seleciona o texto manualmente.');
+  }
+}
+
+/* ---------- Cortar Shorts de vídeo longo (Whisper local + IA) ---------- */
+let cutTranscriberPipeline = null;
+
+function openCutModal(){
+  document.getElementById('cutModal').classList.add('show');
+  document.getElementById('cutAudioInput').value = '';
+  document.getElementById('cutProgress').style.display = 'none';
+  document.getElementById('cutTranscript').style.display = 'none';
+  document.getElementById('cutTranscript').value = '';
+  document.getElementById('cutAnalyzeBtn').style.display = 'none';
+}
+function closeCutModal(){ document.getElementById('cutModal').classList.remove('show'); }
+
+function formatTimestamp(sec){
+  const m = Math.floor(sec/60);
+  const s = Math.floor(sec%60);
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+async function startTranscription(){
+  const fileInput = document.getElementById('cutAudioInput');
+  const file = fileInput.files[0];
+  if(!file){ toast('Escolhe o arquivo de áudio primeiro.'); return; }
+
+  const progress = document.getElementById('cutProgress');
+  const transcriptBox = document.getElementById('cutTranscript');
+  progress.style.display = 'block';
+  transcriptBox.style.display = 'none';
+  document.getElementById('cutAnalyzeBtn').style.display = 'none';
+  document.getElementById('cutTranscribeBtn').disabled = true;
+
+  try{
+    if(!cutTranscriberPipeline){
+      progress.textContent = 'Baixando o modelo de transcrição (só na primeira vez, precisa de internet)...';
+      const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.2.4');
+      cutTranscriberPipeline = await pipeline('automatic-speech-recognition', 'onnx-community/whisper-base', {
+        progress_callback: (p)=>{
+          if(p.status === 'progress' && p.progress){
+            progress.textContent = `Baixando modelo... ${Math.round(p.progress)}%`;
+          }
+        }
+      });
+    }
+
+    progress.textContent = 'Transcrevendo o áudio — pode levar alguns minutos, deixa a tela aberta...';
+    const audioUrl = URL.createObjectURL(file);
+    const result = await cutTranscriberPipeline(audioUrl, {
+      language: 'portuguese',
+      chunk_length_s: 30,
+      stride_length_s: 5,
+      return_timestamps: true
+    });
+
+    let formatted = '';
+    if(result.chunks && result.chunks.length){
+      formatted = result.chunks.map(c=>{
+        const start = c.timestamp && c.timestamp[0]!=null ? formatTimestamp(c.timestamp[0]) : '??:??';
+        return `[${start}] ${c.text.trim()}`;
+      }).join('\n');
+    } else {
+      formatted = result.text || '';
+    }
+
+    transcriptBox.value = formatted;
+    transcriptBox.style.display = 'block';
+    progress.style.display = 'none';
+    document.getElementById('cutAnalyzeBtn').style.display = 'inline-block';
+    toast('Transcrição pronta ✓');
+  } catch(e){
+    progress.textContent = 'Não consegui transcrever. Confere se o arquivo é áudio/vídeo válido e sua internet (pra baixar o modelo na 1ª vez).';
+    console.error(e);
+  } finally {
+    document.getElementById('cutTranscribeBtn').disabled = false;
+  }
+}
+
+const CUT_ANALYSIS_SYSTEM_PROMPT = `Você é um editor-chefe de Shorts cristãos, especialista no "Padrão Mestre" validado por dados reais de retenção do canal "Vivendo o Evangelho de Jesus":
+- Padrão A (Objeto/Metáfora) — validado com 122% de retenção, é o mais forte.
+- Padrão B (Versículo-resposta).
+- Padrão C (Personagem Bíblico).
+
+Você recebe a transcrição com marcação de tempo [MM:SS] de um vídeo longo. Sua tarefa: encontrar os 3 a 5 melhores trechos pra virar Shorts separados, seguindo esses padrões.
+
+Para cada corte sugerido, identifique:
+- Em que padrão (A, B ou C) o trecho se encaixa
+- O timestamp de início e fim aproximado (baseado nas marcações [MM:SS] do texto)
+- O gancho (frase de abertura que trava o dedo, 0-15s)
+- O ponto de maior tensão/retenção (onde não pode cortar, senão perde o efeito)
+- Um título chamativo pra tela
+
+Regras: NÃO invente conteúdo que não está na transcrição. NÃO cite versículo com confiança total — avise "conferir na Bíblia física" se aparecer referência bíblica. ZERO citação de autor externo.
+
+Responda SOMENTE com JSON válido nesse formato exato:
+{"cortes":[{"padrao":"A/B/C","inicio":"MM:SS","fim":"MM:SS","gancho":"...","pico_retencao":"...","titulo":"..."}]}`;
+
+async function analyzeForCuts(){
+  const transcript = document.getElementById('cutTranscript').value.trim();
+  if(!transcript){ toast('Transcreve o áudio primeiro.'); return; }
+
+  document.getElementById('aiModalTitle').textContent = '✨ Melhores cortes pra Shorts';
+  document.getElementById('aiModalBody').textContent = 'Analisando os pontos de corte...';
+  document.getElementById('aiModalUseBtn').style.display = 'none';
+  aiTargetFieldId = null;
+  document.getElementById('aiModal').classList.add('show');
+
+  const result = await callClaudeAPI(CUT_ANALYSIS_SYSTEM_PROMPT, transcript);
+  if(!result){ closeAiModal(); return; }
+
+  let parsed;
+  try{
+    const jsonMatch = result.match(/\{[\s\S]*\}/);
+    parsed = JSON.parse(jsonMatch ? jsonMatch[0] : result);
+  } catch(e){
+    document.getElementById('aiModalBody').textContent = 'A IA não devolveu um formato legível. Tenta de novo.\n\n' + result;
+    return;
+  }
+
+  const preview = (parsed.cortes || []).map((c,i)=>
+    `【Corte ${i+1} — Padrão ${c.padrao}】\n⏱ ${c.inicio} → ${c.fim}\n🎣 Gancho: ${c.gancho}\n🔥 Pico de retenção: ${c.pico_retencao}\n📝 Título: ${c.titulo}`
+  ).join('\n\n');
+
+  document.getElementById('aiModalBody').textContent = preview || 'Nenhum corte identificado.';
+}
+
+/* ---------- Checar Depois (links/notas pra verificar biblicamente) ---------- */
+let verifyItems = JSON.parse(localStorage.getItem('vej_verify_v1') || '[]');
+let verifyTargetId = null;
+
+function persistVerifyItems(){ localStorage.setItem('vej_verify_v1', JSON.stringify(verifyItems)); }
+
+function openVerifyModal(){
+  document.getElementById('verifyModal').classList.add('show');
+  document.getElementById('verifyQuickInput').value = '';
+  renderVerifyList();
+}
+function closeVerifyModal(){ document.getElementById('verifyModal').classList.remove('show'); }
+
+function addVerifyItem(){
+  const input = document.getElementById('verifyQuickInput');
+  const text = input.value.trim();
+  if(!text) return;
+  verifyItems.unshift({ id: uid(), text, createdAt: Date.now() });
+  persistVerifyItems();
+  input.value = '';
+  renderVerifyList();
+  toast('Salvo pra checar depois ✓');
+}
+function deleteVerifyItem(id){
+  verifyItems = verifyItems.filter(v=>v.id!==id);
+  persistVerifyItems();
+  renderVerifyList();
+}
+function renderVerifyList(){
+  const box = document.getElementById('verifyList');
+  if(verifyItems.length===0){
+    box.innerHTML = `<p style="color:var(--areia-dim);font-size:0.85rem;padding:16px 0;text-align:center;">Nada guardado ainda.</p>`;
+    return;
+  }
+  box.innerHTML = verifyItems.map(v=>`
+    <div style="background:var(--carvao-3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:8px;">
+      <div style="font-size:0.86rem;word-break:break-word;margin-bottom:8px;">${linkify(escapeHtml(v.text))}</div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="openPasteModal('${v.id}')" style="flex:1;background:var(--safira);color:var(--on-accent);border:none;
+          border-radius:8px;padding:8px;font-size:0.78rem;font-weight:700;cursor:pointer;">📖 Analisar com IA</button>
+        <button onclick="deleteVerifyItem('${v.id}')" style="background:none;border:none;color:var(--terracota);
+          font-size:1rem;cursor:pointer;padding:0 6px;">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+function openPasteModal(itemId){
+  verifyTargetId = itemId;
+  document.getElementById('pasteTranscriptInput').value = '';
+  document.getElementById('pasteTranscriptModal').classList.add('show');
+}
+
+const VERIFY_SYSTEM_PROMPT = `Você ajuda um criador de conteúdo cristão a checar se algo que ouviu em um vídeo é biblicamente correto. Regras:
+- Tradução de referência: NAA 2017. Se você citar um versículo, avise que precisa ser conferido na Bíblia física.
+- Analise as afirmações do texto uma por uma: aponte quais batem com a Escritura, quais são discutíveis/sem consenso entre cristãos, e quais parecem contradizer a Bíblia diretamente.
+- Seja honesto e direto — não amoleça uma contradição real só para ser gentil, mas também não invente problema onde não há.
+- ZERO citação de teólogo/autor externo — só compare com a própria Escritura.
+- Se não houver base bíblica suficiente pra avaliar algo, diga isso claramente em vez de arriscar um chute.
+- Formato: lista curta das afirmações principais + veredito de cada uma + conclusão geral em 1-2 frases.`;
+
+async function runVerifyAnalysis(){
+  const transcript = document.getElementById('pasteTranscriptInput').value.trim();
+  if(!transcript){ toast('Cola o texto antes de analisar.'); return; }
+  const item = verifyItems.find(v=>v.id===verifyTargetId);
+  const context = item ? `Contexto/link original: "${item.text}". ` : '';
+
+  document.getElementById('pasteTranscriptModal').classList.remove('show');
+  aiTargetFieldId = null;
+  document.getElementById('aiModalTitle').textContent = '📖 Análise bíblica';
+  document.getElementById('aiModalBody').textContent = 'Analisando...';
+  document.getElementById('aiModalUseBtn').style.display = 'none';
+  document.getElementById('aiModal').classList.add('show');
+
+  const result = await callClaudeAPI(VERIFY_SYSTEM_PROMPT, `${context}Texto a analisar:\n"${transcript}"`);
+  if(result){
+    document.getElementById('aiModalBody').textContent = result;
+  } else {
+    closeAiModal();
+  }
+}
+
+/* ---------- gerar roteiro completo a partir de um tema ---------- */
+const FULL_SCRIPT_SYSTEM_PROMPT = `Você ajuda um criador de conteúdo cristão brasileiro (canal "Vivendo o Evangelho de Jesus") a montar um roteiro completo de devocional a partir de um tema.
+
+Regras que você DEVE seguir sempre:
+- Tradução bíblica: SOMENTE NAA 2017 (Nova Almeida Atualizada). Você pode errar o texto exato de memória — por isso o campo "versiculo" deve vir com o aviso "[CONFERIR NA BÍBLIA FÍSICA]" logo antes do texto sugerido.
+- ZERO citação de autores, teólogos, pastores ou filósofos externos.
+- Tom pastoral, acolhedor, direto, sem clichê gospel vazio, linguagem de conversa.
+- Ilustração sempre depois do versículo. Prioridade: ilustração bíblica antes de contemporânea.
+- Reflexão específica ao tema, nunca genérica.
+- Oração 100% bíblica, sem frase de efeito.
+
+Responda SOMENTE com um JSON válido, sem nenhum texto antes ou depois, no formato exato:
+{"gancho":"...","historia":"...","ref":"Livro Capítulo:Versículo","versiculo":"[CONFERIR NA BÍBLIA FÍSICA] texto do versículo","micro":"...","ilustracao":"...","aplicacao":"...","reflexao":"...","oracao":"..."}`;
+
+function aiGenerateFullScript(){
+  const tituloAtual = getFieldValue('f_titulo');
+  if(tituloAtual){
+    runFullScriptGeneration(tituloAtual);
+  } else {
+    document.getElementById('themeModalInput').value = '';
+    document.getElementById('themeModal').classList.add('show');
+    setTimeout(()=>document.getElementById('themeModalInput').focus(), 100);
+  }
+}
+function confirmThemeAndGenerate(){
+  const tema = document.getElementById('themeModalInput').value.trim();
+  if(!tema){ toast('Digita um tema primeiro.'); return; }
+  document.getElementById('themeModal').classList.remove('show');
+  setFieldValue('f_titulo', tema);
+  runFullScriptGeneration(tema);
+}
+async function runFullScriptGeneration(tema){
+  aiTargetFieldId = '__FULL_SCRIPT__';
+  document.getElementById('aiModalTitle').textContent = '✨ Roteiro completo: ' + tema;
+  document.getElementById('aiModalBody').textContent = 'Gerando os 8 blocos...';
+  document.getElementById('aiModalUseBtn').style.display = 'none';
+  document.getElementById('aiModal').classList.add('show');
+
+  const result = await callClaudeAPI(FULL_SCRIPT_SYSTEM_PROMPT, `Tema: ${tema}`);
+  if(!result){ closeAiModal(); return; }
+
+  let parsed;
+  try{
+    const jsonMatch = result.match(/\{[\s\S]*\}/);
+    parsed = JSON.parse(jsonMatch ? jsonMatch[0] : result);
+  } catch(e){
+    document.getElementById('aiModalBody').textContent = 'A IA não devolveu um formato que eu consegui ler. Tenta de novo.\n\n' + result;
+    return;
+  }
+
+  window.__pendingFullScript = parsed;
+  const preview = Object.entries({
+    'Gancho': parsed.gancho, 'Identificação': parsed.historia, 'Referência': parsed.ref,
+    'A Palavra': parsed.versiculo, 'Micro-resposta': parsed.micro, 'Ilustração': parsed.ilustracao,
+    'Aplicação': parsed.aplicacao, 'Reflexão': parsed.reflexao, 'Oração': parsed.oracao
+  }).map(([label, text]) => `【${label}】\n${text || '(vazio)'}`).join('\n\n');
+
+  document.getElementById('aiModalBody').textContent = preview;
+  document.getElementById('aiModalUseBtn').style.display = 'inline-block';
+  document.getElementById('aiModalUseBtn').textContent = 'Preencher todos os blocos';
+}
+
+/* ---------- estudo do versículo (referência, não vai pro roteiro sozinho) ---------- */
+const VERSE_STUDY_SYSTEM_PROMPT = `Você ajuda um criador de conteúdo cristão a estudar um versículo antes de gravar um devocional. Regras:
+- Tradução: SOMENTE NAA 2017. Sempre avise no início que o texto do versículo precisa ser conferido na Bíblia física, porque você pode errar palavras de memória.
+- ZERO citação de autores/teólogos/pastores externos — só a própria Escritura, contexto histórico geral e referências cruzadas bíblicas.
+- Formato: contexto do capítulo, pontos principais, 2-3 perguntas de reflexão, sem oração pronta (o usuário escreve a oração dele mesmo, com as próprias regras).
+- Seja objetivo — isso é material de apoio pra pesquisa, não o roteiro final.`;
+
+async function aiVerseStudy(){
+  const ref = document.getElementById('f_ref').value.trim();
+  const versiculo = getFieldValue('f_versiculo');
+  if(!ref && !versiculo){
+    toast('Preenche a referência ou cola o versículo primeiro.');
+    return;
+  }
+  document.getElementById('aiModalTitle').textContent = '📖 Estudo do versículo';
+  document.getElementById('aiModalBody').textContent = 'Pesquisando...';
+  document.getElementById('aiModalUseBtn').style.display = 'none';
+  aiTargetFieldId = null;
+  document.getElementById('aiModal').classList.add('show');
+
+  const userPrompt = `Referência: ${ref || '(não informada)'}. ${versiculo ? 'Texto colado pelo usuário (conferir na física): "'+versiculo+'"' : ''}`;
+  const result = await callClaudeAPI(VERSE_STUDY_SYSTEM_PROMPT, userPrompt);
+  if(result){
+    document.getElementById('aiModalBody').textContent = result;
+  } else {
+    closeAiModal();
+  }
+}
+
+function openAppearanceModal(){ applyAppearance(); updateApiKeyStatus(); document.getElementById("appearanceModal").classList.add("show"); }
 function closeAppearanceModal(){ document.getElementById("appearanceModal").classList.remove("show"); }
 
 /* ---------- cabeçalho retrátil ao rolar ---------- */
