@@ -22,8 +22,8 @@
 
 <script>
 async function callGeminiAPI(systemPrompt, userPrompt, key){
-  // URL CORRIGIDA — endereço real, documentado, correto de verdade
-  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+  // Modelo atualizado (gemini-1.5-flash está aposentado) + autenticação via header, como a documentação atual recomenda
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent`;
 
   const requestBody = {
     contents: [{
@@ -33,7 +33,10 @@ async function callGeminiAPI(systemPrompt, userPrompt, key){
 
   const response = await fetch(GEMINI_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": key
+    },
     body: JSON.stringify(requestBody)
   });
 
