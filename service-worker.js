@@ -16,6 +16,15 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
+  const url = new URL(event.request.url);
+
+  // Só cuida de arquivos do próprio site (mesmo domínio, método GET).
+  // Chamadas de API (POST, PUT, ou pra domínio de fora, tipo Anthropic/Google) passam direto,
+  // sem o Service Worker se meter no meio.
+  if (event.request.method !== "GET" || url.origin !== self.location.origin) {
+    return; // deixa passar sem interceptar
+  }
+
   event.respondWith(
     caches.match(event.request).then(cached => {
       const fetchPromise = fetch(event.request).then(response => {
