@@ -467,6 +467,7 @@
     </div>
     <div id="pendingIdeaPhotos" style="margin:-14px 0 14px;"></div>
     <button class="new-script-btn" style="background:var(--esmeralda);margin-bottom:18px;" onclick="openStudyModal()">💬 Tirar dúvida / estudar um assunto com a IA</button>
+    <button class="new-script-btn" style="background:var(--vinho);margin-bottom:18px;" onclick="openImageGenModal()">🖼️ Gerar imagem com IA (Gemini)</button>
     <div class="capture-hint">Enter quebra linha. Toca em "Salvar" quando terminar de escrever. Sem limite de tamanho.</div>
     <datalist id="chavesDatalist"></datalist>
     <div class="filters" id="filters"></div>
@@ -689,6 +690,31 @@
 <!-- CONFIRM MODAL -->
 <!-- ATTACHMENT VIEWER MODAL -->
 <!-- AI SUGGESTION MODAL -->
+<!-- GERAR IMAGEM COM IA MODAL -->
+<div class="modal-overlay align-top" id="imageGenModal">
+  <div class="modal-box" style="max-width:520px;">
+    <h3 style="margin:0;">🖼️ Gerar imagem com IA</h3>
+    <p style="font-size:0.8rem;color:var(--areia-dim);margin:0;">
+      Requer que "Gemini" esteja escolhido em Aparência (a mesma ponte que já usamos pra texto). Sem letra na imagem — a IA erra texto, você adiciona depois se quiser.
+    </p>
+    <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;">Tema / cena</label>
+    <input type="text" id="imageGenTema" placeholder="Ex: ansiedade e confiança em Deus" style="width:100%;background:var(--carvao-3);
+      border:2px solid var(--border);border-radius:10px;color:var(--areia);padding:10px 12px;font-size:0.88rem;box-sizing:border-box;">
+    <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;">Estilo</label>
+    <select id="imageGenEstilo" style="width:100%;">
+      <option value="ilustracao serena, tons de azul marinho e dourado suave, composição simbólica e contemplativa">🎨 Ilustração serena (azul/dourado)</option>
+      <option value="pintura digital quente, tons terracota e areia, estilo aquarela suave">🖌️ Aquarela quente (terracota/areia)</option>
+      <option value="fotografia conceitual minimalista, luz natural suave, tons neutros e esmeralda">📷 Fotografia minimalista (neutro/esmeralda)</option>
+    </select>
+    <button class="primary" style="width:100%;" onclick="generateAiImage()">Gerar imagem</button>
+    <div id="imageGenProgress" style="display:none;font-size:0.82rem;color:var(--areia-dim);">Gerando...</div>
+    <div id="imageGenResult" style="display:none;"></div>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeImageGenModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ESTUDO / DÚVIDA (CHAT) MODAL -->
 <div class="modal-overlay align-top" id="studyModal">
   <div class="modal-box" style="max-width:560px;">
@@ -914,15 +940,10 @@
       </div>
 
       <div id="geminiKeySection" style="display:none;">
-        <p style="font-size:0.76rem;color:var(--terracota);background:rgba(220,38,38,0.1);border:1px solid var(--terracota);
-          border-radius:8px;padding:8px 10px;margin:0 0 10px;">
-          ⚠️ Experimental. Testado e funcionando no computador — mas falhou de várias formas no iPhone (Safari) em todos os testes.
-          Se você usa iPhone, recomendamos ficar com o Claude.
+        <p style="font-size:0.76rem;color:var(--esmeralda);background:rgba(16,185,129,0.1);border:1px solid var(--esmeralda);
+          border-radius:8px;padding:8px 10px;margin:0;">
+          ✓ Não precisa colar chave aqui — já está conectado via ponte segura (Supabase). Só escolher e usar.
         </p>
-        <input type="password" id="geminiKeyInput" placeholder="AIzaSy..." style="width:100%;background:var(--carvao-3);border:2px solid var(--border);
-          border-radius:10px;color:var(--areia);padding:11px 14px;font-size:0.85rem;font-family:var(--sans);box-sizing:border-box;margin-bottom:8px;">
-        <button class="appearance-choice" style="width:100%;" onclick="saveGeminiKey()">Salvar chave do Gemini</button>
-        <p id="geminiKeyStatus" style="font-size:0.78rem;color:var(--esmeralda);margin:8px 0 0;display:none;">✓ Chave salva</p>
       </div>
     </div>
     <div style="margin-top:6px;border-top:1px solid var(--border);padding-top:14px;">
@@ -2294,19 +2315,9 @@ function saveApiKey(){
   updateApiKeyStatus();
   toast('Chave da Claude salva ✓');
 }
-function saveGeminiKey(){
-  const val = document.getElementById('geminiKeyInput').value.trim();
-  if(!val){ toast('Cola a chave antes de salvar.'); return; }
-  localStorage.setItem(GEMINI_KEY_STORAGE, val);
-  document.getElementById('geminiKeyInput').value = '';
-  updateApiKeyStatus();
-  toast('Chave do Gemini salva ✓');
-}
 function updateApiKeyStatus(){
   const claudeStatus = document.getElementById('apiKeyStatus');
-  const geminiStatus = document.getElementById('geminiKeyStatus');
   if(claudeStatus) claudeStatus.style.display = getApiKey() ? 'block' : 'none';
-  if(geminiStatus) geminiStatus.style.display = getGeminiKey() ? 'block' : 'none';
   updateProviderUI();
 }
 
@@ -2361,11 +2372,7 @@ async function callAnthropicAPI(systemPrompt, userPromptOrMessages){
 }
 
 async function callGeminiAPI(systemPrompt, userPromptOrMessages){
-  const key = getGeminiKey();
-  if(!key){
-    toast('Cola sua chave do Gemini em Aparência primeiro.');
-    return null;
-  }
+  // A chave de verdade fica guardada no Supabase (servidor), não precisa de nada local aqui.
   // A Edge Function do Supabase espera texto simples (systemPrompt + userPrompt),
   // então uma conversa de várias mensagens é achatada num texto único aqui.
   const userPrompt = Array.isArray(userPromptOrMessages)
@@ -2737,6 +2744,75 @@ async function runFullScriptGeneration(tema){
   document.getElementById('aiModalBody').textContent = preview;
   document.getElementById('aiModalUseBtn').style.display = 'inline-block';
   document.getElementById('aiModalUseBtn').textContent = 'Preencher todos os blocos';
+}
+
+/* ---------- Gerar imagem com IA (só Gemini, via ponte Supabase) ---------- */
+function openImageGenModal(){
+  document.getElementById('imageGenTema').value = '';
+  document.getElementById('imageGenResult').style.display = 'none';
+  document.getElementById('imageGenResult').innerHTML = '';
+  document.getElementById('imageGenProgress').style.display = 'none';
+  document.getElementById('imageGenModal').classList.add('show');
+}
+function closeImageGenModal(){
+  document.getElementById('imageGenModal').classList.remove('show');
+}
+
+async function generateAiImage(){
+  if(getAiProvider() !== 'gemini'){
+    toast('Escolhe "Gemini" em Aparência primeiro — geração de imagem só funciona por ele.');
+    return;
+  }
+  const tema = document.getElementById('imageGenTema').value.trim();
+  if(!tema){ toast('Digita um tema primeiro.'); return; }
+  const estilo = document.getElementById('imageGenEstilo').value;
+
+  const progress = document.getElementById('imageGenProgress');
+  const result = document.getElementById('imageGenResult');
+  progress.style.display = 'block';
+  progress.textContent = 'Gerando imagem...';
+  result.style.display = 'none';
+
+  const prompt = `Crie uma imagem para post de rede social sobre o tema "${tema}". Estilo: ${estilo}. Regras importantes: NÃO inclua nenhum texto ou letra escrita na imagem. Evite rosto humano em close/detalhado. Composição vertical, sensação pacífica e reverente, adequada para conteúdo cristão devocional.`;
+
+  const SUPABASE_FUNCTION_URL = 'https://awxfzqvpdjodqiwljvhk.supabase.co/functions/v1/semeador-ia';
+  const SUPABASE_ANON_KEY = 'sb_publishable_dGRMn_zG_9WxzL1iJg_Ezw_7MbGKup0';
+
+  try{
+    const res = await fetch(SUPABASE_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'apikey': SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ mode: 'image', prompt })
+    });
+    const data = await res.json();
+    progress.style.display = 'none';
+
+    if(data.error){
+      toast('Erro: ' + data.error);
+      return;
+    }
+    if(!data.imageBase64){
+      toast('Não veio imagem na resposta. Tenta de novo.');
+      return;
+    }
+
+    const dataUrl = `data:${data.mimeType};base64,${data.imageBase64}`;
+    result.style.display = 'block';
+    result.innerHTML = `
+      <img src="${dataUrl}" style="width:100%;border-radius:10px;display:block;margin-bottom:8px;">
+      <a href="${dataUrl}" download="imagem-ia-${Date.now()}.png" style="display:block;text-align:center;background:var(--esmeralda);
+        color:var(--on-accent);padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;text-decoration:none;">⬇️ Baixar imagem</a>
+    `;
+    toast('Imagem gerada ✓');
+  } catch(e){
+    progress.style.display = 'none';
+    console.error(e);
+    toast('Não consegui gerar. Confere sua internet e tenta de novo.');
+  }
 }
 
 /* ---------- Tirar dúvida / estudar (chat com IA, dentro de Ideias) ---------- */
