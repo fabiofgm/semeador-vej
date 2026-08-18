@@ -695,7 +695,7 @@
   <div class="modal-box" style="max-width:520px;">
     <h3 style="margin:0;">🖼️ Gerar imagem com IA</h3>
     <p style="font-size:0.8rem;color:var(--areia-dim);margin:0;">
-      Requer que "Gemini" esteja escolhido em Aparência (a mesma ponte que já usamos pra texto). Sem letra na imagem — a IA erra texto, você adiciona depois se quiser.
+      Grátis, sem chave, sem escolher IA — usa um serviço separado (Pollinations). Sem letra na imagem — a IA erra texto, você adiciona depois se quiser.
     </p>
     <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;">Tema / cena</label>
     <input type="text" id="imageGenTema" placeholder="Ex: ansiedade e confiança em Deus" style="width:100%;background:var(--carvao-3);
@@ -719,6 +719,8 @@
 <div class="modal-overlay align-top" id="studyModal">
   <div class="modal-box" style="max-width:560px;">
     <h3 style="margin:0;">💬 Tirar dúvida com a IA</h3>
+    <div id="studyProviderBadge" style="font-size:0.74rem;font-weight:700;padding:4px 10px;border-radius:999px;
+      background:var(--carvao-3);color:var(--areia-dim);width:fit-content;"></div>
     <p style="font-size:0.8rem;color:var(--areia-dim);margin:0;">Conversa à vontade sobre o assunto. Quando terminar, pede pra resumir — daí você decide guardar ou virar roteiro.</p>
     <div id="studyConversation" style="max-height:40vh;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:4px;"></div>
     <div style="display:flex;gap:8px;">
@@ -738,6 +740,8 @@
 <div class="modal-overlay align-top" id="carouselModal">
   <div class="modal-box" style="max-width:560px;">
     <h3 style="margin:0;">🎨 Gerar Carrossel / Post</h3>
+    <div id="carProviderBadge" style="font-size:0.74rem;font-weight:700;padding:4px 10px;border-radius:999px;
+      background:var(--carvao-3);color:var(--areia-dim);width:fit-content;"></div>
 
     <div style="display:flex;gap:8px;">
       <button class="appearance-choice" id="carModeAi" style="flex:1;" onclick="setCarouselMode('ai')">✨ IA cria a partir de um tema</button>
@@ -2296,6 +2300,12 @@ const AI_PROVIDER_STORAGE = "vej_ai_provider_v1";
 function getApiKey(){ return localStorage.getItem(AI_KEY_STORAGE) || ""; }
 function getGeminiKey(){ return localStorage.getItem(GEMINI_KEY_STORAGE) || ""; }
 function getAiProvider(){ return localStorage.getItem(AI_PROVIDER_STORAGE) || "claude"; }
+function showProviderBadge(elementId){
+  const el = document.getElementById(elementId);
+  if(!el) return;
+  const provider = getAiProvider();
+  el.textContent = provider === 'gemini' ? '🔵 Usando: Gemini' : '🟣 Usando: Claude';
+}
 
 function setAiProvider(provider){
   localStorage.setItem(AI_PROVIDER_STORAGE, provider);
@@ -2761,10 +2771,6 @@ function closeImageGenModal(){
 }
 
 async function generateAiImage(){
-  if(getAiProvider() !== 'gemini'){
-    toast('Escolhe "Gemini" em Aparência primeiro — geração de imagem só funciona por ele.');
-    return;
-  }
   const tema = document.getElementById('imageGenTema').value.trim();
   if(!tema){ toast('Digita um tema primeiro.'); return; }
   const estilo = document.getElementById('imageGenEstilo').value;
@@ -2775,46 +2781,27 @@ async function generateAiImage(){
   progress.textContent = 'Gerando imagem...';
   result.style.display = 'none';
 
-  const prompt = `Crie uma imagem para post de rede social sobre o tema "${tema}". Estilo: ${estilo}. Regras importantes: NÃO inclua nenhum texto ou letra escrita na imagem. Evite rosto humano em close/detalhado. Composição vertical, sensação pacífica e reverente, adequada para conteúdo cristão devocional.`;
+  const promptTexto = `${estilo}, cena representando ${tema}, sem texto, sem letras, sem rosto humano em close, composição vertical, sensação pacífica e reverente, arte devocional cristã`;
+  const promptCodificado = encodeURIComponent(promptTexto);
+  const seedAleatoria = Math.floor(Math.random() * 999999);
+  const imageUrl = `https://gen.pollinations.ai/image/${promptCodificado}?width=1080&height=1350&seed=${seedAleatoria}&nologo=true`;
 
-  const SUPABASE_FUNCTION_URL = 'https://awxfzqvpdjodqiwljvhk.supabase.co/functions/v1/semeador-ia';
-  const SUPABASE_ANON_KEY = 'sb_publishable_dGRMn_zG_9WxzL1iJg_Ezw_7MbGKup0';
-
-  try{
-    const res = await fetch(SUPABASE_FUNCTION_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'apikey': SUPABASE_ANON_KEY
-      },
-      body: JSON.stringify({ mode: 'image', prompt })
-    });
-    const data = await res.json();
+  const img = new Image();
+  img.onload = ()=>{
     progress.style.display = 'none';
-
-    if(data.error){
-      toast('Erro: ' + data.error);
-      return;
-    }
-    if(!data.imageBase64){
-      toast('Não veio imagem na resposta. Tenta de novo.');
-      return;
-    }
-
-    const dataUrl = `data:${data.mimeType};base64,${data.imageBase64}`;
     result.style.display = 'block';
     result.innerHTML = `
-      <img src="${dataUrl}" style="width:100%;border-radius:10px;display:block;margin-bottom:8px;">
-      <a href="${dataUrl}" download="imagem-ia-${Date.now()}.png" style="display:block;text-align:center;background:var(--esmeralda);
-        color:var(--on-accent);padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;text-decoration:none;">⬇️ Baixar imagem</a>
+      <img src="${imageUrl}" style="width:100%;border-radius:10px;display:block;margin-bottom:8px;">
+      <a href="${imageUrl}" download="imagem-ia-${Date.now()}.png" target="_blank" style="display:block;text-align:center;background:var(--esmeralda);
+        color:var(--on-accent);padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;text-decoration:none;">⬇️ Abrir / baixar imagem</a>
     `;
     toast('Imagem gerada ✓');
-  } catch(e){
+  };
+  img.onerror = ()=>{
     progress.style.display = 'none';
-    console.error(e);
-    toast('Não consegui gerar. Confere sua internet e tenta de novo.');
-  }
+    toast('Não consegui gerar. Tenta simplificar o tema ou tenta de novo em alguns segundos.');
+  };
+  img.src = imageUrl;
 }
 
 /* ---------- Tirar dúvida / estudar (chat com IA, dentro de Ideias) ---------- */
@@ -2827,6 +2814,7 @@ const STUDY_SYSTEM_PROMPT = `Você é um assistente de estudo bíblico pra um cr
 - Pode fazer perguntas de volta pra entender melhor o que a pessoa quer saber.`;
 
 function openStudyModal(){
+  showProviderBadge('studyProviderBadge');
   studyHistory = [];
   document.getElementById('studyConversation').innerHTML = '';
   document.getElementById('studyInput').value = '';
@@ -3008,6 +2996,7 @@ document.getElementById('carSlideCount') && document.getElementById('carSlideCou
 });
 
 function openCarouselModal(){
+  showProviderBadge('carProviderBadge');
   setCarouselMode('ai');
   document.getElementById('carTemaInput').value = '';
   document.getElementById('carSlideCount').value = 4;
