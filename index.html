@@ -449,6 +449,7 @@
       <button class="appearance-btn" onclick="openAppearanceModal()">🎨 Aparência</button>
       <button class="appearance-btn" onclick="openVerifyModal()">✅ Checar</button>
       <button class="appearance-btn" onclick="openTrashModal()">🗑️ Limpar</button>
+      <button class="appearance-btn" onclick="openBancoFotosModal()">🖼️ Banco</button>
     </div>
   </header>
 
@@ -709,6 +710,23 @@
 <!-- CONFIRM MODAL -->
 <!-- ATTACHMENT VIEWER MODAL -->
 <!-- AI SUGGESTION MODAL -->
+<!-- BANCO DE FOTOS MODAL (persistente, via IndexedDB) -->
+<div class="modal-overlay align-top" id="bancoFotosModal">
+  <button class="modal-close-float" onclick="closeBancoFotosModal()">✕</button>
+  <div class="modal-box" style="max-width:560px;">
+    <h3 style="margin:0;">🖼️ Banco de Fotos</h3>
+    <p style="font-size:0.82rem;color:var(--areia-dim);margin:0;">
+      Sobe suas imagens uma vez, ficam guardadas aqui sempre — sem precisar procurar nas Fotos toda vez. Usa direto na hora de gerar carrossel.
+    </p>
+    <input type="file" id="bancoFotosInput" accept="image/*" multiple style="width:100%;font-size:0.82rem;color:var(--areia-dim);" onchange="handleBancoFotosUpload(event)">
+    <div id="bancoFotosProgress" style="display:none;font-size:0.82rem;color:var(--areia-dim);"></div>
+    <div id="bancoFotosGrid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(90px, 1fr));gap:8px;max-height:50vh;overflow:auto;"></div>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeBancoFotosModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- LIMPAR/LIXEIRA GERAL MODAL -->
 <div class="modal-overlay" id="trashModal">
   <div class="modal-box" style="max-width:420px;">
@@ -804,10 +822,19 @@
     <div id="carManualSlides" style="display:none;flex-direction:column;gap:8px;"></div>
 
     <div>
-      <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Fundo próprio (opcional — 1 a 6 fotos do seu banco)</label>
-      <input type="file" id="carBgImagesInput" accept="image/*" multiple style="width:100%;font-size:0.8rem;color:var(--areia-dim);" onchange="handleCarBgImages(event)">
+      <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Fundo próprio (opcional — 1 a 6 fotos)</label>
+      <div style="display:flex;gap:8px;">
+        <input type="file" id="carBgImagesInput" accept="image/*" multiple style="flex:1;font-size:0.8rem;color:var(--areia-dim);" onchange="handleCarBgImages(event)">
+        <button class="appearance-choice" style="white-space:nowrap;padding:8px 12px;" onclick="abrirEscolherDoBanco()">🖼️ Do Banco</button>
+      </div>
       <div id="carBgImagesPreview" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
       <p style="font-size:0.72rem;color:var(--areia-dim);margin:6px 0 0;">Se subir fotos, cada uma vira o fundo de um slide (na ordem), com uma leve escurecida por trás pro texto ficar legível. Sem foto = usa a cor do estilo escolhido, normal.</p>
+    </div>
+
+    <div id="carBgBankPicker" style="display:none;background:var(--carvao-3);border-radius:10px;padding:10px;">
+      <p style="font-size:0.76rem;color:var(--areia-dim);margin:0 0 8px;">Toca nas fotos que quiser usar (até 6):</p>
+      <div id="carBgBankGrid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(70px, 1fr));gap:6px;max-height:200px;overflow:auto;"></div>
+      <button class="appearance-choice" style="width:100%;margin-top:8px;" onclick="document.getElementById('carBgBankPicker').style.display='none';">Fechar seleção</button>
     </div>
 
     <div style="display:flex;gap:8px;">
@@ -3254,6 +3281,34 @@ function removeCarBgImage(idx){
   renderCarBgPreview();
   toast('Foto removida ✓');
 }
+async function abrirEscolherDoBanco(){
+  const picker = document.getElementById('carBgBankPicker');
+  const grid = document.getElementById('carBgBankGrid');
+  picker.style.display = 'block';
+  grid.innerHTML = `<p style="grid-column:1/-1;font-size:0.78rem;color:var(--areia-dim);">Carregando...</p>`;
+  const fotos = await listarFotosDoBanco();
+  window.__bancoFotosTemp = fotos; // guarda pra referenciar por índice, não pelo dado inteiro
+  if(fotos.length===0){
+    grid.innerHTML = `<p style="grid-column:1/-1;font-size:0.78rem;color:var(--areia-dim);">Banco vazio. Sobe fotos em "🖼️ Banco" no topo do app primeiro.</p>`;
+    return;
+  }
+  grid.innerHTML = fotos.map((f,idx)=>`
+    <img src="${f.dataUrl}" onclick="escolherFotoDoBanco(${idx}, this)"
+      style="width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:6px;border:2px solid var(--border);cursor:pointer;">
+  `).join('');
+}
+
+function escolherFotoDoBanco(idx, imgEl){
+  const foto = (window.__bancoFotosTemp || [])[idx];
+  if(!foto) return;
+  window.__carBgImages = window.__carBgImages || [];
+  if(window.__carBgImages.length >= 6){ toast('Máximo de 6 fotos já selecionadas.'); return; }
+  window.__carBgImages.push(foto.dataUrl);
+  renderCarBgPreview();
+  imgEl.style.opacity = '0.35'; // sinaliza visualmente que já foi escolhida
+  toast('Foto adicionada ✓');
+}
+
 function handleCarBgImages(event){
   const files = Array.from(event.target.files || []).slice(0, 6);
   if(event.target.files.length > 6){
@@ -3575,6 +3630,109 @@ function saveTomVoz(){
   const val = document.getElementById('tomVozInput').value.trim();
   localStorage.setItem(TOM_VOZ_STORAGE, val);
   toast('Tom de voz salvo ✓');
+}
+
+/* ---------- Banco de Fotos (persistente, via IndexedDB — aguenta muito mais que localStorage) ---------- */
+let bancoFotosDB = null;
+
+function abrirBancoFotosDB(){
+  return new Promise((resolve, reject)=>{
+    if(bancoFotosDB){ resolve(bancoFotosDB); return; }
+    const req = indexedDB.open('semeador_banco_fotos', 1);
+    req.onupgradeneeded = (e)=>{
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains('fotos')){
+        db.createObjectStore('fotos', { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = (e)=>{ bancoFotosDB = e.target.result; resolve(bancoFotosDB); };
+    req.onerror = (e)=>{ reject(e); };
+  });
+}
+
+async function salvarFotoNoBanco(foto){
+  const db = await abrirBancoFotosDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction('fotos', 'readwrite');
+    tx.objectStore('fotos').put(foto);
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = (e)=>reject(e);
+  });
+}
+
+async function listarFotosDoBanco(){
+  const db = await abrirBancoFotosDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction('fotos', 'readonly');
+    const req = tx.objectStore('fotos').getAll();
+    req.onsuccess = ()=>resolve(req.result.sort((a,b)=>b.criadoEm - a.criadoEm));
+    req.onerror = (e)=>reject(e);
+  });
+}
+
+async function excluirFotoDoBanco(id){
+  const db = await abrirBancoFotosDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction('fotos', 'readwrite');
+    tx.objectStore('fotos').delete(id);
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = (e)=>reject(e);
+  });
+}
+
+function openBancoFotosModal(){
+  posicionarXFlutuante('bancoFotosModal');
+  document.getElementById('bancoFotosInput').value = '';
+  document.getElementById('bancoFotosModal').classList.add('show');
+  renderBancoFotosGrid();
+}
+function closeBancoFotosModal(){ document.getElementById('bancoFotosModal').classList.remove('show'); }
+
+async function renderBancoFotosGrid(){
+  const grid = document.getElementById('bancoFotosGrid');
+  grid.innerHTML = `<p style="grid-column:1/-1;color:var(--areia-dim);font-size:0.82rem;">Carregando...</p>`;
+  const fotos = await listarFotosDoBanco();
+  if(fotos.length===0){
+    grid.innerHTML = `<p style="grid-column:1/-1;color:var(--areia-dim);font-size:0.82rem;">Nenhuma foto salva ainda — sobe suas imagens acima.</p>`;
+    return;
+  }
+  grid.innerHTML = fotos.map(f => `
+    <div style="position:relative;">
+      <img src="${f.dataUrl}" style="width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:8px;border:2px solid var(--border);">
+      <button onclick="excluirFotoDoBancoUI('${f.id}')" style="position:absolute;top:-6px;right:-6px;background:var(--terracota);color:var(--on-accent);
+        border:none;border-radius:50%;width:22px;height:22px;font-size:0.75rem;cursor:pointer;">✕</button>
+    </div>
+  `).join('');
+}
+
+async function excluirFotoDoBancoUI(id){
+  await excluirFotoDoBanco(id);
+  renderBancoFotosGrid();
+  toast('Foto removida do banco ✓');
+}
+
+async function handleBancoFotosUpload(event){
+  const files = Array.from(event.target.files || []);
+  if(files.length===0) return;
+  const progress = document.getElementById('bancoFotosProgress');
+  progress.style.display = 'block';
+  let salvas = 0;
+  for(const file of files){
+    progress.textContent = `Salvando ${salvas+1} de ${files.length}...`;
+    await new Promise((resolve)=>{
+      const reader = new FileReader();
+      reader.onload = async (e)=>{
+        await salvarFotoNoBanco({ id: uid(), nome: file.name, dataUrl: e.target.result, criadoEm: Date.now() });
+        salvas++;
+        resolve();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  progress.style.display = 'none';
+  event.target.value = '';
+  renderBancoFotosGrid();
+  toast(`${salvas} foto${salvas>1?'s':''} salva${salvas>1?'s':''} no banco ✓`);
 }
 
 /* ---------- Meus Modelos (vários modelos nomeados, escolhe qual usar) ---------- */
