@@ -786,6 +786,13 @@
 
     <div id="carManualSlides" style="display:none;flex-direction:column;gap:8px;"></div>
 
+    <div>
+      <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Fundo próprio (opcional — 1 a 6 fotos do seu banco)</label>
+      <input type="file" id="carBgImagesInput" accept="image/*" multiple style="width:100%;font-size:0.8rem;color:var(--areia-dim);" onchange="handleCarBgImages(event)">
+      <div id="carBgImagesPreview" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
+      <p style="font-size:0.72rem;color:var(--areia-dim);margin:6px 0 0;">Se subir fotos, cada uma vira o fundo de um slide (na ordem), com uma leve escurecida por trás pro texto ficar legível. Sem foto = usa a cor do estilo escolhido, normal.</p>
+    </div>
+
     <div style="display:flex;gap:8px;">
       <div style="flex:1;">
         <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Estilo visual</label>
@@ -853,6 +860,12 @@
           <option value="#b5502d">🟠 Laranja queimado</option>
         </select>
       </div>
+    </div>
+
+    <div>
+      <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Nome abaixo do @ (opcional)</label>
+      <input type="text" id="carNomeInput" placeholder="Ex: Fábio Miguel" style="width:100%;background:var(--carvao-3);
+        border:2px solid var(--border);border-radius:10px;color:var(--areia);padding:9px 12px;font-size:0.85rem;box-sizing:border-box;">
     </div>
 
     <p style="font-size:0.74rem;color:var(--areia-dim);margin:0;">
@@ -2879,16 +2892,28 @@ async function generateAiImage(){
   const progress = document.getElementById('imageGenProgress');
   const result = document.getElementById('imageGenResult');
   progress.style.display = 'block';
-  progress.textContent = 'Gerando imagem...';
+  progress.textContent = 'Gerando imagem... (pode levar até 20-30s)';
   result.style.display = 'none';
 
-  const promptTexto = `${estilo}, cena representando ${tema}, sem texto, sem letras, sem rosto humano em close, composição vertical, sensação pacífica e reverente, arte devocional cristã`;
+  const promptTexto = `${estilo}, cena representando ${tema}, sem texto, sem letras, sem rosto humano em close, composicao vertical, sensacao pacifica e reverente, arte devocional crista`;
   const promptCodificado = encodeURIComponent(promptTexto);
   const seedAleatoria = Math.floor(Math.random() * 999999);
-  const imageUrl = `https://gen.pollinations.ai/image/${promptCodificado}?width=1080&height=1350&seed=${seedAleatoria}&nologo=true`;
+  // Formato simplificado, batendo exatamente com a documentação oficial atual
+  const imageUrl = `https://gen.pollinations.ai/image/${promptCodificado}?width=1080&height=1350&seed=${seedAleatoria}`;
 
+  let jaResolveu = false;
   const img = new Image();
+
+  const timeoutId = setTimeout(()=>{
+    if(jaResolveu) return;
+    jaResolveu = true;
+    progress.textContent = 'Demorou demais e não respondeu. O serviço pode estar instável agora — tenta de novo em 1 minuto.';
+  }, 30000);
+
   img.onload = ()=>{
+    if(jaResolveu) return;
+    jaResolveu = true;
+    clearTimeout(timeoutId);
     progress.style.display = 'none';
     result.style.display = 'block';
     result.innerHTML = `
@@ -2899,8 +2924,11 @@ async function generateAiImage(){
     toast('Imagem gerada ✓');
   };
   img.onerror = ()=>{
-    progress.style.display = 'none';
-    toast('Não consegui gerar. Tenta simplificar o tema ou tenta de novo em alguns segundos.');
+    if(jaResolveu) return;
+    jaResolveu = true;
+    clearTimeout(timeoutId);
+    progress.textContent = 'Não consegui gerar agora. O serviço externo pode estar temporariamente fora — tenta de novo em alguns segundos.';
+    console.error('Falha ao carregar:', imageUrl);
   };
   img.src = imageUrl;
 }
@@ -3107,9 +3135,37 @@ document.getElementById('carSlideCount') && document.getElementById('carSlideCou
   if(carouselMode==='manual') renderManualSlideInputs();
 });
 
+function handleCarBgImages(event){
+  const files = Array.from(event.target.files || []).slice(0, 6);
+  if(event.target.files.length > 6){
+    toast('Máximo de 6 fotos — usando só as 6 primeiras.');
+  }
+  window.__carBgImages = [];
+  const preview = document.getElementById('carBgImagesPreview');
+  preview.innerHTML = '';
+  let carregadas = 0;
+  files.forEach((file, idx)=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      window.__carBgImages[idx] = e.target.result;
+      const thumb = document.createElement('img');
+      thumb.src = e.target.result;
+      thumb.style.cssText = 'width:50px;height:62px;object-fit:cover;border-radius:6px;border:2px solid var(--border);';
+      preview.appendChild(thumb);
+      carregadas++;
+      if(carregadas === files.length) toast(`${files.length} foto${files.length>1?'s':''} carregada${files.length>1?'s':''} ✓`);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function openCarouselModal(){
   showProviderBadge('carProviderBadge');
   window.__carouselGeradas = [];
+  window.__carBgImages = [];
+  document.getElementById('carBgImagesPreview').innerHTML = '';
+  document.getElementById('carBgImagesInput').value = '';
+  document.getElementById('carNomeInput').value = '';
   setCarouselMode('ai');
   document.getElementById('carTemaInput').value = '';
   document.getElementById('carSlideCount').value = 4;
@@ -3131,7 +3187,12 @@ function buildSlideHTML(style, isCapa, title, body, customizacao){
   const fontWeight = (customizacao.fontWeight && customizacao.fontWeight !== 'default') ? customizacao.fontWeight : S.fontWeight;
   const corTexto = (customizacao.color && customizacao.color !== 'default') ? customizacao.color : S.text;
   const posicao = customizacao.position || 'center';
-  const bgProp = S.bg.startsWith('linear-gradient') ? `background:${S.bg};` : `background:${S.bg};`;
+  const temFoto = customizacao.bgImage && customizacao.bgImage.startsWith('data:image');
+  const bgProp = temFoto
+    ? `background-image:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.55)), url('${customizacao.bgImage}');background-size:cover;background-position:center;`
+    : `background:${S.bg};`;
+  // Com foto de fundo, texto e handle sempre em branco/dourado — garante leitura em qualquer imagem
+  const corTextoFinal = temFoto ? '#ffffff' : corTexto;
 
   // Destaque de palavra: **palavra** vira <span> colorido com a cor de detalhe do estilo
   function aplicarDestaque(texto){
@@ -3159,9 +3220,12 @@ function buildSlideHTML(style, isCapa, title, body, customizacao){
     }
   }
 
-  const handleHtml = `<div style="font-family:-apple-system,sans-serif;font-weight:700;font-size:32px;color:${S.handle};letter-spacing:0.5px;">@VIVENDOOEVANGELHODEJESUS</div>`;
+  const nomeCanal = (customizacao.nome && customizacao.nome.trim())
+    ? `<div style="font-family:${fontFamily};font-weight:600;font-size:24px;color:${S.accent};letter-spacing:0.5px;margin-top:4px;">${escapeHtmlPlain(customizacao.nome.trim())}</div>`
+    : '';
+  const handleHtml = `<div style="font-family:-apple-system,sans-serif;font-weight:700;font-size:32px;color:${S.handle};letter-spacing:0.5px;">@VIVENDOEVANGELHODEJESUS</div>${nomeCanal}`;
   const refHtml = title ? `<div style="font-family:${fontFamily};font-weight:700;font-size:42px;color:${S.accent};margin-top:28px;">${title}</div>` : '';
-  const textoHtml = `<div style="font-family:${fontFamily};font-weight:${fontWeight};font-size:${fontSize}px;color:${corTexto};line-height:1.35;text-align:center;max-width:${larguraUtil}px;">${bodyComDestaque}</div>`;
+  const textoHtml = `<div style="font-family:${fontFamily};font-weight:${fontWeight};font-size:${fontSize}px;color:${corTextoFinal};line-height:1.35;text-align:center;max-width:${larguraUtil}px;">${bodyComDestaque}</div>`;
 
   if(style === 'aspas'){
     return `<div style="width:${CAROUSEL_W}px;height:${CAROUSEL_H}px;box-sizing:border-box;${bgProp}display:flex;flex-direction:column;
@@ -3185,7 +3249,7 @@ function buildSlideHTML(style, isCapa, title, body, customizacao){
       display:flex;flex-direction:column;justify-content:${posicao};padding:100px 80px 100px 110px;">
       <div style="position:absolute;left:0;top:0;bottom:0;width:28px;background:${S.accent};"></div>
       <div style="margin-bottom:30px;">${handleHtml}</div>
-      <div style="font-family:${fontFamily};font-weight:${fontWeight};font-size:${fontSize}px;color:${corTexto};line-height:1.2;text-align:left;">${bodyComDestaque}</div>
+      <div style="font-family:${fontFamily};font-weight:${fontWeight};font-size:${fontSize}px;color:${corTextoFinal};line-height:1.2;text-align:left;">${bodyComDestaque}</div>
       ${title ? `<div style="font-family:${fontFamily};font-weight:700;font-size:38px;color:${S.accent};margin-top:26px;">${title}</div>` : ''}
     </div>`;
   }
@@ -3307,12 +3371,15 @@ async function renderCarouselImages(style, slideTexts){
     for(let i=0;i<slideTexts.length;i++){
       if(!slideTexts[i]) continue;
       progress.textContent = `Gerando slide ${i+1} de ${slideTexts.length}...`;
+      const fotosDeFundo = window.__carBgImages || [];
       const customizacao = {
         fontFamily: document.getElementById('carFontSelect') ? document.getElementById('carFontSelect').value : 'default',
         fontWeight: document.getElementById('carWeightSelect') ? document.getElementById('carWeightSelect').value : 'default',
         position: document.getElementById('carPositionSelect') ? document.getElementById('carPositionSelect').value : 'center',
         fontSize: document.getElementById('carFontSizeSlider') ? document.getElementById('carFontSizeSlider').value : 0,
-        color: document.getElementById('carColorSelect') ? document.getElementById('carColorSelect').value : 'default'
+        color: document.getElementById('carColorSelect') ? document.getElementById('carColorSelect').value : 'default',
+        nome: document.getElementById('carNomeInput') ? document.getElementById('carNomeInput').value : '',
+        bgImage: fotosDeFundo.length ? fotosDeFundo[i % fotosDeFundo.length] : null
       };
       renderArea.innerHTML = buildSlideHTML(style, i===0, titles[i]||'', escapeHtmlPlain(slideTexts[i]), customizacao);
       const el = renderArea.firstElementChild;
