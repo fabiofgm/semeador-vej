@@ -109,7 +109,7 @@
     text-transform:uppercase;color:var(--areia-dim);display:block;margin-bottom:6px;
   }
   header h1{font-family:var(--serif);font-weight:700;font-size:1.55rem;margin:0;letter-spacing:0.3px;}
-  .header-btn-row{display:flex;gap:8px;justify-content:center;margin-top:12px;transition:opacity .2s ease, max-height .2s ease;}
+  .header-btn-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px;transition:opacity .2s ease, max-height .2s ease;}
   .appearance-btn{
     background:var(--carvao-2);border:1px solid var(--border);
     color:var(--areia-dim);border-radius:999px;padding:7px 16px;font-size:0.8rem;font-weight:700;cursor:pointer;
@@ -729,12 +729,9 @@
 
 <!-- LIMPAR/LIXEIRA GERAL MODAL -->
 <div class="modal-overlay" id="trashModal">
+  <button class="modal-close-float" onclick="closeTrashModal()">✕</button>
   <div class="modal-box" style="max-width:420px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;">🗑️ Limpar dados</h3>
-      <button onclick="closeTrashModal()" style="background:var(--carvao-3);border:1px solid var(--border);color:var(--areia);
-        width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;flex-shrink:0;">✕</button>
-    </div>
+    <h3 style="margin:0;">🗑️ Limpar dados</h3>
     <p style="font-size:0.82rem;color:var(--areia-dim);margin:0;">Escolhe o que quer apagar. Cada ação pede confirmação separada.</p>
     <button class="to-script-secondary" style="width:100%;padding:12px;" onclick="closeTrashModal(); clearAllIdeas();">🌱 Excluir todas as Ideias</button>
     <button class="to-script-secondary" style="width:100%;padding:12px;" onclick="closeTrashModal(); clearAllScripts();">📜 Excluir todos os Roteiros</button>
@@ -823,9 +820,9 @@
 
     <div>
       <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Fundo próprio (opcional — 1 a 6 fotos)</label>
-      <div style="display:flex;gap:8px;">
-        <input type="file" id="carBgImagesInput" accept="image/*" multiple style="flex:1;font-size:0.8rem;color:var(--areia-dim);" onchange="handleCarBgImages(event)">
-        <button class="appearance-choice" style="white-space:nowrap;padding:8px 12px;" onclick="abrirEscolherDoBanco()">🖼️ Do Banco</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input type="file" id="carBgImagesInput" accept="image/*" multiple style="flex:1;min-width:0;font-size:0.8rem;color:var(--areia-dim);" onchange="handleCarBgImages(event)">
+        <button class="appearance-choice" style="white-space:nowrap;padding:8px 12px;flex-shrink:0;" onclick="abrirEscolherDoBanco()">🖼️ Do Banco</button>
       </div>
       <div id="carBgImagesPreview" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
       <p style="font-size:0.72rem;color:var(--areia-dim);margin:6px 0 0;">Se subir fotos, cada uma vira o fundo de um slide (na ordem), com uma leve escurecida por trás pro texto ficar legível. Sem foto = usa a cor do estilo escolhido, normal.</p>
@@ -1399,7 +1396,7 @@ function deleteIdea(id){
     renderIdeas();
   });
 }
-function openTrashModal(){ document.getElementById('trashModal').classList.add('show'); }
+function openTrashModal(){ posicionarXFlutuante('trashModal'); document.getElementById('trashModal').classList.add('show'); }
 function closeTrashModal(){ document.getElementById('trashModal').classList.remove('show'); }
 function clearAllIdeas(){
   if(ideas.length===0){ toast('Não há ideias salvas.'); return; }
@@ -3027,6 +3024,31 @@ function closeImageGenModal(){
   document.getElementById('imageGenModal').classList.remove('show');
 }
 
+function tentarCarregarImagem(url, timeoutMs){
+  return new Promise((resolve, reject)=>{
+    let resolvido = false;
+    const img = new Image();
+    const timeoutId = setTimeout(()=>{
+      if(resolvido) return;
+      resolvido = true;
+      reject(new Error('timeout'));
+    }, timeoutMs);
+    img.onload = ()=>{
+      if(resolvido) return;
+      resolvido = true;
+      clearTimeout(timeoutId);
+      resolve();
+    };
+    img.onerror = ()=>{
+      if(resolvido) return;
+      resolvido = true;
+      clearTimeout(timeoutId);
+      reject(new Error('erro'));
+    };
+    img.src = url;
+  });
+}
+
 async function generateAiImage(){
   const tema = document.getElementById('imageGenTema').value.trim();
   if(!tema){ toast('Digita um tema primeiro.'); return; }
@@ -3035,46 +3057,38 @@ async function generateAiImage(){
   const progress = document.getElementById('imageGenProgress');
   const result = document.getElementById('imageGenResult');
   progress.style.display = 'block';
-  progress.textContent = 'Gerando imagem... (pode levar até 20-30s)';
   result.style.display = 'none';
 
   const promptTexto = `${estilo}, cena representando ${tema}, sem texto, sem letras, sem rosto humano em close, composicao vertical, sensacao pacifica e reverente, arte devocional crista`;
   const promptCodificado = encodeURIComponent(promptTexto);
-  const seedAleatoria = Math.floor(Math.random() * 999999);
-  // Formato simplificado, batendo exatamente com a documentação oficial atual
-  const imageUrl = `https://gen.pollinations.ai/image/${promptCodificado}?width=1080&height=1350&seed=${seedAleatoria}`;
 
-  let jaResolveu = false;
-  const img = new Image();
-
-  const timeoutId = setTimeout(()=>{
-    if(jaResolveu) return;
-    jaResolveu = true;
-    progress.textContent = 'Demorou demais e não respondeu. O serviço pode estar instável agora — tenta de novo em 1 minuto.';
-  }, 30000);
-
-  img.onload = ()=>{
-    if(jaResolveu) return;
-    jaResolveu = true;
-    clearTimeout(timeoutId);
-    progress.style.display = 'none';
-    result.style.display = 'block';
-    result.innerHTML = `
-      <img src="${imageUrl}" style="width:100%;border-radius:10px;display:block;margin-bottom:8px;">
-      <a href="${imageUrl}" download="imagem-ia-${Date.now()}.png" target="_blank" style="display:block;text-align:center;background:var(--esmeralda);
-        color:var(--on-accent);padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;text-decoration:none;">⬇️ Abrir / baixar imagem</a>
-    `;
-    toast('Imagem gerada ✓');
-  };
-  img.onerror = ()=>{
-    if(jaResolveu) return;
-    jaResolveu = true;
-    clearTimeout(timeoutId);
-    progress.textContent = 'Não consegui gerar agora. O serviço externo pode estar temporariamente fora — tenta de novo em alguns segundos.';
-    console.error('Falha ao carregar:', imageUrl);
-  };
-  img.src = imageUrl;
+  // O serviço (Pollinations) é gratuito de verdade, mas roda em infraestrutura instável — tenta 2 vezes antes de desistir
+  const tentativas = 2;
+  for(let i=1; i<=tentativas; i++){
+    progress.textContent = i===1
+      ? 'Gerando imagem... (pode levar até 30s)'
+      : 'Primeira tentativa falhou (servidor gratuito instável) — tentando de novo...';
+    const seedAleatoria = Math.floor(Math.random() * 999999);
+    const imageUrl = `https://gen.pollinations.ai/image/${promptCodificado}?width=1080&height=1350&seed=${seedAleatoria}`;
+    try{
+      await tentarCarregarImagem(imageUrl, 25000);
+      progress.style.display = 'none';
+      result.style.display = 'block';
+      result.innerHTML = `
+        <img src="${imageUrl}" style="width:100%;border-radius:10px;display:block;margin-bottom:8px;">
+        <a href="${imageUrl}" download="imagem-ia-${Date.now()}.png" target="_blank" style="display:block;text-align:center;background:var(--esmeralda);
+          color:var(--on-accent);padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;text-decoration:none;">⬇️ Abrir / baixar imagem</a>
+      `;
+      toast('Imagem gerada ✓');
+      return;
+    } catch(e){
+      if(i===tentativas){
+        progress.textContent = 'O serviço gratuito de imagem está instável agora mesmo (problema documentado deles, não é você) — tenta de novo daqui a pouco, ou usa suas próprias fotos no "🖼️ Banco".';
+      }
+    }
+  }
 }
+
 
 /* ---------- Tirar dúvida / estudar (chat com IA, dentro de Ideias) ---------- */
 let studyHistory = [];
