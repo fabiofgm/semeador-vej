@@ -404,6 +404,12 @@
     width:100%;max-height:85vh;display:flex;flex-direction:column;gap:12px;overflow-y:auto;}
   .modal-box h3{margin:0;font-family:var(--serif);font-size:1.02rem;}
   .modal-box p{margin:0;font-size:0.84rem;color:var(--areia-dim);line-height:1.5;}
+  .modal-close-float{
+    position:fixed;top:max(16px, env(safe-area-inset-top)); right:16px;z-index:110;
+    background:var(--carvao-2);border:1px solid var(--border);color:var(--areia);
+    width:40px;height:40px;border-radius:50%;font-size:1.15rem;cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;
+  }
   .modal-box textarea{width:100%;flex:1;min-height:260px;background:var(--carvao-3);border:1px solid var(--border);
     color:var(--areia);border-radius:8px;padding:12px;font-family:ui-monospace,Menlo,Consolas,monospace;
     font-size:0.78rem;line-height:1.5;resize:vertical;}
@@ -722,12 +728,9 @@
 
 <!-- GERAR IMAGEM COM IA MODAL -->
 <div class="modal-overlay align-top" id="imageGenModal">
+  <button class="modal-close-float" onclick="closeImageGenModal()">✕</button>
   <div class="modal-box" style="max-width:520px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;">🖼️ Gerar imagem com IA</h3>
-      <button onclick="closeImageGenModal()" style="background:var(--carvao-3);border:1px solid var(--border);color:var(--areia);
-        width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;flex-shrink:0;">✕</button>
-    </div>
+    <h3 style="margin:0;">🖼️ Gerar imagem com IA</h3>
     <p style="font-size:0.8rem;color:var(--areia-dim);margin:0;">
       Grátis, sem chave, sem escolher IA — usa um serviço separado (Pollinations). Sem letra na imagem — a IA erra texto, você adiciona depois se quiser.
     </p>
@@ -751,12 +754,9 @@
 
 <!-- ESTUDO / DÚVIDA (CHAT) MODAL -->
 <div class="modal-overlay align-top" id="studyModal">
+  <button class="modal-close-float" onclick="closeStudyModal()">✕</button>
   <div class="modal-box" style="max-width:560px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;">💬 Tirar dúvida com a IA</h3>
-      <button onclick="closeStudyModal()" style="background:var(--carvao-3);border:1px solid var(--border);color:var(--areia);
-        width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;flex-shrink:0;">✕</button>
-    </div>
+    <h3 style="margin:0;">💬 Tirar dúvida com a IA</h3>
     <div id="studyProviderBadge" onclick="openAppearanceModal()" style="font-size:0.74rem;font-weight:700;padding:4px 10px;border-radius:999px;
       cursor:pointer;border:1px solid var(--border);
       background:var(--carvao-3);color:var(--areia-dim);width:fit-content;"></div>
@@ -777,12 +777,9 @@
 
 <!-- GERAR CARROSSEL MODAL -->
 <div class="modal-overlay align-top" id="carouselModal">
+  <button class="modal-close-float" onclick="closeCarouselModal()">✕</button>
   <div class="modal-box" style="max-width:560px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;">🎨 Gerar Carrossel / Post</h3>
-      <button onclick="closeCarouselModal()" style="background:var(--carvao-3);border:1px solid var(--border);color:var(--areia);
-        width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;flex-shrink:0;">✕</button>
-    </div>
+    <h3 style="margin:0;">🎨 Gerar Carrossel / Post</h3>
     <div id="carProviderBadge" onclick="openAppearanceModal()" style="font-size:0.74rem;font-weight:700;padding:4px 10px;border-radius:999px;
       cursor:pointer;border:1px solid var(--border);
       background:var(--carvao-3);color:var(--areia-dim);width:fit-content;"></div>
@@ -912,12 +909,9 @@
 
 <!-- CORTAR SHORTS MODAL -->
 <div class="modal-overlay align-top" id="cutModal">
+  <button class="modal-close-float" onclick="closeCutModal()">✕</button>
   <div class="modal-box" style="max-width:560px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;">🎬 Cortar Shorts de um vídeo longo</h3>
-      <button onclick="closeCutModal()" style="background:var(--carvao-3);border:1px solid var(--border);color:var(--areia);
-        width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;flex-shrink:0;">✕</button>
-    </div>
+    <h3 style="margin:0;">🎬 Cortar Shorts de um vídeo longo</h3>
     <p style="font-size:0.82rem;color:var(--areia-dim);margin:0;">
       Sobe só o <b>áudio</b> do vídeo longo (exporta só o áudio no CapCut, fica bem mais leve). A transcrição roda aqui no seu aparelho, sem custo.
     </p>
@@ -936,12 +930,9 @@
 
 <!-- CHECAR DEPOIS MODAL -->
 <div class="modal-overlay align-top" id="verifyModal">
+  <button class="modal-close-float" onclick="closeVerifyModal()">✕</button>
   <div class="modal-box" style="max-width:520px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;">✅ Checar Depois</h3>
-      <button onclick="closeVerifyModal()" style="background:var(--carvao-3);border:1px solid var(--border);color:var(--areia);
-        width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;flex-shrink:0;">✕</button>
-    </div>
+    <h3 style="margin:0;">✅ Checar Depois</h3>
     <p style="font-size:0.82rem;color:var(--areia-dim);margin:0;">Duvidou de algo que ouviu? Cola o link ou anota rápido antes de perder.</p>
     <div style="display:flex;gap:8px;">
       <input type="text" id="verifyQuickInput" placeholder="Cola o link ou escreve o que ouviu..." style="flex:1;
@@ -1040,12 +1031,9 @@
 <!-- APPEARANCE MODAL -->
 <!-- GLOBAL SEARCH MODAL -->
 <div class="modal-overlay align-top" id="globalSearchModal">
+  <button class="modal-close-float" onclick="closeGlobalSearchModal()">✕</button>
   <div class="modal-box" style="max-width:520px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;">Buscar em Ideias e Roteiros</h3>
-      <button onclick="closeGlobalSearchModal()" style="background:var(--carvao-3);border:1px solid var(--border);color:var(--areia);
-        width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;flex-shrink:0;">✕</button>
-    </div>
+    <h3 style="margin:0;">Buscar em Ideias e Roteiros</h3>
     <input type="text" id="globalSearchInput" placeholder="Digite um tema, chave ou palavra (ex: reino)..." oninput="runGlobalSearch(this.value)" style="position:sticky;top:0;z-index:2;width:100%;background:var(--carvao-3);border:2px solid var(--safira-l);border-radius:10px;color:var(--areia);padding:12px 14px;font-size:0.95rem;font-family:var(--sans);">
     <div id="globalSearchResults" style="max-height:42vh;overflow:auto;"></div>
     <div class="modal-actions">
@@ -1055,12 +1043,9 @@
 </div>
 
 <div class="modal-overlay" id="appearanceModal">
+  <button class="modal-close-float" onclick="closeAppearanceModal()">✕</button>
   <div class="modal-box" style="max-width:400px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;">Aparência</h3>
-      <button onclick="closeAppearanceModal()" style="background:var(--carvao-3);border:1px solid var(--border);color:var(--areia);
-        width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;flex-shrink:0;">✕</button>
-    </div>
+    <h3 style="margin:0;">Aparência</h3>
     <p>Escolhe a cor e o tamanho da letra mais confortável pra você.</p>
     <div>
       <label style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:8px;">Cor</label>
@@ -1107,6 +1092,17 @@
         style="width:100%;min-height:70px;background:var(--carvao-3);border:2px solid var(--border);border-radius:10px;color:var(--areia);
         padding:11px 14px;font-size:0.85rem;font-family:var(--sans);box-sizing:border-box;margin-bottom:8px;"></textarea>
       <button class="appearance-choice" style="width:100%;" onclick="saveTomVoz()">💾 Salvar tom de voz</button>
+    </div>
+    <div style="margin-top:6px;border-top:1px solid var(--border);padding-top:14px;">
+      <label style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:8px;">📐 Meus Modelos (vários, com nome)</label>
+      <p style="font-size:0.78rem;color:var(--areia-dim);margin:0 0 8px;">Guarda modelos que você desenvolveu (formato de estudo, jeito de escrever pra criança, etc). Escolhe qual usar na hora de gerar qualquer coisa.</p>
+      <div id="meusModelosLista" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div>
+      <input type="text" id="novoModeloNome" placeholder="Nome do modelo (ex: Estudo Profundo)" style="width:100%;background:var(--carvao-3);
+        border:2px solid var(--border);border-radius:10px;color:var(--areia);padding:9px 12px;font-size:0.85rem;box-sizing:border-box;margin-bottom:6px;">
+      <textarea id="novoModeloTexto" placeholder="Cola aqui o modelo/instrução completa que você desenvolveu..." style="width:100%;min-height:80px;
+        background:var(--carvao-3);border:2px solid var(--border);border-radius:10px;color:var(--areia);padding:11px 14px;font-size:0.85rem;
+        font-family:var(--sans);box-sizing:border-box;margin-bottom:8px;"></textarea>
+      <button class="appearance-choice" style="width:100%;" onclick="salvarNovoModelo()">➕ Salvar novo modelo</button>
     </div>
     <div class="modal-actions">
       <button class="secondary" onclick="closeAppearanceModal()">Fechar</button>
@@ -2516,9 +2512,10 @@ function updateApiKeyStatus(){
 async function callClaudeAPI(systemPrompt, userPrompt){
   const provider = getAiProvider();
   const tomVoz = getTomVoz();
-  const finalSystemPrompt = tomVoz
-    ? `${systemPrompt}\n\n[ESTILO PESSOAL DO USUÁRIO — siga isso na forma de escrever]: ${tomVoz}`
-    : systemPrompt;
+  const modeloAtivo = getModeloAtivoTexto();
+  let finalSystemPrompt = systemPrompt;
+  if(tomVoz) finalSystemPrompt += `\n\n[ESTILO PESSOAL DO USUÁRIO — siga isso na forma de escrever]: ${tomVoz}`;
+  if(modeloAtivo) finalSystemPrompt += `\n\n[MODELO/FORMATO QUE O USUÁRIO QUER QUE VOCÊ SIGA NESSA GERAÇÃO — use esse padrão como referência de estrutura e estilo]: ${modeloAtivo}`;
   return provider === 'gemini'
     ? callGeminiAPI(finalSystemPrompt, userPrompt)
     : callAnthropicAPI(finalSystemPrompt, userPrompt);
@@ -3557,7 +3554,68 @@ function saveTomVoz(){
   toast('Tom de voz salvo ✓');
 }
 
-/* ---------- estudo do versículo (referência, não vai pro roteiro sozinho) ---------- */
+/* ---------- Meus Modelos (vários modelos nomeados, escolhe qual usar) ---------- */
+const MODELOS_STORAGE = 'vej_modelos_v1';
+const MODELO_ATIVO_STORAGE = 'vej_modelo_ativo_v1';
+
+function getModelos(){ return JSON.parse(localStorage.getItem(MODELOS_STORAGE) || '[]'); }
+function saveModelos(lista){ localStorage.setItem(MODELOS_STORAGE, JSON.stringify(lista)); }
+function getModeloAtivoId(){ return localStorage.getItem(MODELO_ATIVO_STORAGE) || ''; }
+function getModeloAtivoTexto(){
+  const id = getModeloAtivoId();
+  if(!id) return '';
+  const modelo = getModelos().find(m=>m.id===id);
+  return modelo ? modelo.texto : '';
+}
+
+function salvarNovoModelo(){
+  const nome = document.getElementById('novoModeloNome').value.trim();
+  const texto = document.getElementById('novoModeloTexto').value.trim();
+  if(!nome || !texto){ toast('Preenche o nome e o texto do modelo.'); return; }
+  const lista = getModelos();
+  lista.unshift({ id: uid(), nome, texto });
+  saveModelos(lista);
+  document.getElementById('novoModeloNome').value = '';
+  document.getElementById('novoModeloTexto').value = '';
+  renderModelosLista();
+  toast('Modelo salvo ✓');
+}
+
+function ativarModelo(id){
+  const atual = getModeloAtivoId();
+  localStorage.setItem(MODELO_ATIVO_STORAGE, atual === id ? '' : id); // toca de novo no mesmo = desativa
+  renderModelosLista();
+}
+
+function excluirModelo(id){
+  askConfirm('Excluir este modelo salvo?', ()=>{
+    const lista = getModelos().filter(m=>m.id!==id);
+    saveModelos(lista);
+    if(getModeloAtivoId()===id) localStorage.setItem(MODELO_ATIVO_STORAGE, '');
+    renderModelosLista();
+  });
+}
+
+function renderModelosLista(){
+  const box = document.getElementById('meusModelosLista');
+  if(!box) return;
+  const lista = getModelos();
+  const ativoId = getModeloAtivoId();
+  if(lista.length===0){
+    box.innerHTML = `<p style="font-size:0.78rem;color:var(--areia-dim);margin:0;">Nenhum modelo salvo ainda.</p>`;
+    return;
+  }
+  box.innerHTML = lista.map(m=>`
+    <div style="display:flex;gap:6px;align-items:center;background:var(--carvao-3);border:1px solid ${m.id===ativoId?'var(--safira-l)':'var(--border)'};
+      border-radius:8px;padding:8px 10px;">
+      <span style="flex:1;font-size:0.84rem;font-weight:600;${m.id===ativoId?'color:var(--safira-l);':''}">${m.id===ativoId?'✓ ':''}${escapeHtmlPlain(m.nome)}</span>
+      <button onclick="ativarModelo('${m.id}')" style="background:none;border:1px solid var(--border);color:var(--areia-dim);border-radius:6px;
+        padding:4px 10px;font-size:0.72rem;cursor:pointer;">${m.id===ativoId?'Desativar':'Usar'}</button>
+      <button onclick="excluirModelo('${m.id}')" style="background:none;border:none;color:var(--terracota);cursor:pointer;font-size:0.9rem;">🗑️</button>
+    </div>
+  `).join('');
+}
+
 /* ---------- estudo do versículo (referência, não vai pro roteiro sozinho) ---------- */
 const VERSE_STUDY_SYSTEM_PROMPT = `Você ajuda um criador de conteúdo cristão a estudar um versículo antes de gravar um devocional. Regras:
 - Tradução: SOMENTE NAA 2017. Sempre avise no início que o texto do versículo precisa ser conferido na Bíblia física, porque você pode errar palavras de memória.
@@ -3591,6 +3649,7 @@ function openAppearanceModal(){
   applyAppearance();
   updateApiKeyStatus();
   document.getElementById('tomVozInput').value = getTomVoz();
+  renderModelosLista();
   document.getElementById("appearanceModal").classList.add("show");
 }
 function closeAppearanceModal(){
