@@ -932,6 +932,7 @@
 
     <div class="modal-actions" style="justify-content:flex-end;">
       <button class="secondary" onclick="closeCarouselModal()">Fechar</button>
+      <button class="appearance-choice" onclick="baixarTodosSlides()">⬇️ Baixar Todas</button>
       <button class="primary" onclick="compartilharTodosSlides()">📤 Compartilhar Todas</button>
     </div>
   </div>
@@ -3217,8 +3218,11 @@ function studyToScript(){
 let html2canvasLoaded = false;
 let carouselMode = 'ai';
 
-/* 4:5 — formato recomendado pra carrossel de feed (fixo, não é escolha) */
-const CAROUSEL_W = 1080, CAROUSEL_H = 1350;
+/* Tamanho por plataforma: Meta usa 4:5 (feed), TikTok/Kwai/Snapchat usam 9:16 (vertical, validado com dado real) */
+const CAROUSEL_DIMENSOES = {
+  meta: { largura: 1080, altura: 1350 },
+  tiktok: { largura: 1080, altura: 1920 }
+};
 
 /* Cor por categoria de versículo — mesmo sistema já validado */
 const CATEGORIA_CORES = {
@@ -3370,7 +3374,9 @@ function openCarouselModal(){
   posicionarXFlutuante('carouselModal');
   showProviderBadge('carProviderBadge');
   window.__carouselGeradas = [];
+  filaDeCompartilhamento = [];
   window.__carBgImages = [];
+  document.getElementById('carManualSlides').innerHTML = ''; // limpa de verdade — evita herdar texto de outro roteiro
   document.getElementById('carBgImagesPreview').innerHTML = '';
   document.getElementById('carBgImagesInput').value = '';
   document.getElementById('carNomeInput').value = '';
@@ -3430,6 +3436,8 @@ function closeCarouselModal(){
 function buildSlideHTML(style, isCapa, title, body, customizacao){
   customizacao = customizacao || {};
   const S = CAROUSEL_STYLES[style];
+  const dimensoes = CAROUSEL_DIMENSOES[customizacao.plataforma === 'tiktok' ? 'tiktok' : 'meta'];
+  const CAROUSEL_W = dimensoes.largura, CAROUSEL_H = dimensoes.altura;
   const fontFamily = (customizacao.fontFamily && customizacao.fontFamily !== 'default') ? customizacao.fontFamily : S.fontFamily;
   const fontWeight = (customizacao.fontWeight && customizacao.fontWeight !== 'default') ? customizacao.fontWeight : S.fontWeight;
   const corTexto = (customizacao.color && customizacao.color !== 'default') ? customizacao.color : S.text;
@@ -3679,31 +3687,81 @@ async function compartilharSlide(idx){
   }
 }
 
+function baixarTodosSlides(){
+  const slides = window.__carouselGeradas || [];
+  if(slides.length===0){ toast('Nenhuma imagem gerada ainda.'); return; }
+
+  slides.forEach((slide, idx)=>{
+    setTimeout(()=>{
+      const a = document.createElement('a');
+      a.href = slide.dataUrl;
+      a.download = `${slide.name}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }, idx * 400); // espaça os downloads pra não travar/bloquear no navegador
+  });
+  toast(`Baixando ${slides.length} imagem${slides.length>1?'ns':''}... confere a pasta Downloads.`);
+}
+
+let filaDeCompartilhamento = [];
+
 async function compartilharTodosSlides(){
   const slides = window.__carouselGeradas || [];
   if(slides.length===0){ toast('Nenhuma imagem gerada ainda.'); return; }
 
-  if(!navigator.share || !navigator.canShare){
-    toast('Compartilhar direto não é suportado nesse navegador.');
+  // Se já tem uma fila em andamento (de um clique anterior), continua ela em vez de recomeçar do zero
+  if(filaDeCompartilhamento.length > 0){
+    await compartilharProximoDaFila();
     return;
   }
 
+  if(!navigator.share || !navigator.canShare){
+    toast('Compartilhar direto não é suportado nesse navegador — usa "Baixar Todas" em vez disso.');
+    return;
+  }
+
+  // Tenta primeiro em lote (funciona em alguns navegadores/computadores)
   try{
     const files = await Promise.all(slides.map(async (slide)=>{
       const blob = await (await fetch(slide.dataUrl)).blob();
       return new File([blob], `${slide.name}.png`, { type: 'image/png' });
     }));
 
-    if(!navigator.canShare({ files })){
-      toast('Esse aparelho não aceita compartilhar várias imagens de uma vez — compartilha uma por uma.');
-      return;
+    if(navigator.canShare({ files })){
+      await navigator.share({ title: '', files });
+      return; // deu certo em lote, termina aqui
     }
+  } catch(e){
+    if(e.name === 'AbortError') return; // usuário só cancelou, não é erro
+    // se falhar, cai pra fila abaixo em vez de simplesmente desistir
+  }
 
-    await navigator.share({ title: '', files });
+  // Não aceitou em lote (comum no iPhone) — monta a fila, um clique por imagem, sem truque
+  filaDeCompartilhamento = [...slides];
+  toast(`Seu aparelho só aceita 1 imagem por vez. Preparei uma fila — toca em "Compartilhar Todas" de novo pra cada uma (${filaDeCompartilhamento.length} restando).`);
+  await compartilharProximoDaFila();
+}
+
+async function compartilharProximoDaFila(){
+  if(filaDeCompartilhamento.length === 0) return;
+  const slide = filaDeCompartilhamento[0];
+  try{
+    const blob = await (await fetch(slide.dataUrl)).blob();
+    const file = new File([blob], `${slide.name}.png`, { type: 'image/png' });
+    if(navigator.canShare({ files: [file] })){
+      await navigator.share({ title: '', files: [file] });
+      filaDeCompartilhamento.shift(); // só remove da fila se deu certo
+      if(filaDeCompartilhamento.length > 0){
+        toast(`Enviado ✓ Toca em "Compartilhar Todas" de novo pra próxima (${filaDeCompartilhamento.length} restando).`);
+      } else {
+        toast('Todas as imagens foram compartilhadas ✓');
+      }
+    }
   } catch(e){
     if(e.name !== 'AbortError'){
       console.error(e);
-      toast('Não consegui abrir o compartilhamento em lote. Tenta uma por uma.');
+      toast('Não consegui enviar essa. Toca de novo pra tentar.');
     }
   }
 }
@@ -3744,7 +3802,8 @@ async function renderCarouselImages(style, slideTexts){
       };
       renderArea.innerHTML = buildSlideHTML(style, i===0, '', escapeHtmlPlain(slideTexts[i]), customizacao);
       const el = renderArea.firstElementChild;
-      const canvas = await html2canvas(el, { width:CAROUSEL_W, height:CAROUSEL_H, scale:1 });
+      const dimensoesRender = CAROUSEL_DIMENSOES[customizacao.plataforma === 'tiktok' ? 'tiktok' : 'meta'];
+      const canvas = await html2canvas(el, { width:dimensoesRender.largura, height:dimensoesRender.altura, scale:1 });
       const dataUrl = canvas.toDataURL('image/png');
       window.__carouselGeradas = window.__carouselGeradas || [];
       const idx = window.__carouselGeradas.length;
