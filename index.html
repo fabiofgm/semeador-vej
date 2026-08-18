@@ -2349,6 +2349,7 @@ function setTheme(t){ currentTheme = t; localStorage.setItem(THEME_KEY, t); appl
 function setFontSize(s){ currentFontSize = s; localStorage.setItem(FONTSIZE_KEY, s); applyAppearance(); }
 /* ---------- busca global (Ideias + Roteiros) ---------- */
 function openGlobalSearchModal(){
+  posicionarXFlutuante('globalSearchModal');
   document.getElementById("globalSearchModal").classList.add("show");
   document.getElementById("globalSearchInput").value = "";
   document.getElementById("globalSearchResults").innerHTML = "";
@@ -2463,6 +2464,23 @@ const AI_PROVIDER_STORAGE = "vej_ai_provider_v1";
 function getApiKey(){ return localStorage.getItem(AI_KEY_STORAGE) || ""; }
 function getGeminiKey(){ return localStorage.getItem(GEMINI_KEY_STORAGE) || ""; }
 function getAiProvider(){ return localStorage.getItem(AI_PROVIDER_STORAGE) || "claude"; }
+function posicionarXFlutuante(modalId){
+  requestAnimationFrame(()=>{
+    const modal = document.getElementById(modalId);
+    if(!modal) return;
+    const box = modal.querySelector('.modal-box');
+    const btn = modal.querySelector('.modal-close-float');
+    if(!box || !btn) return;
+    const rect = box.getBoundingClientRect();
+    // Gruda o X coladinho na borda direita real da caixa (não em cálculo teórico)
+    btn.style.left = Math.min(rect.right - 20, window.innerWidth - 50) + 'px';
+    btn.style.right = 'auto';
+  });
+}
+window.addEventListener('resize', ()=>{
+  document.querySelectorAll('.modal-overlay.show').forEach(m=>posicionarXFlutuante(m.id));
+});
+
 function showProviderBadge(elementId){
   const el = document.getElementById(elementId);
   if(!el) return;
@@ -2689,6 +2707,7 @@ async function copyAiModalText(){
 let cutTranscriberPipeline = null;
 
 function openCutModal(){
+  posicionarXFlutuante('cutModal');
   document.getElementById('cutModal').classList.add('show');
   document.getElementById('cutAudioInput').value = '';
   document.getElementById('cutProgress').style.display = 'none';
@@ -2816,6 +2835,7 @@ let verifyTargetId = null;
 function persistVerifyItems(){ localStorage.setItem('vej_verify_v1', JSON.stringify(verifyItems)); }
 
 function openVerifyModal(){
+  posicionarXFlutuante('verifyModal');
   document.getElementById('verifyModal').classList.add('show');
   document.getElementById('verifyQuickInput').value = '';
   renderVerifyList();
@@ -2954,6 +2974,7 @@ async function runFullScriptGeneration(tema){
 
 /* ---------- Gerar imagem com IA (só Gemini, via ponte Supabase) ---------- */
 function openImageGenModal(){
+  posicionarXFlutuante('imageGenModal');
   document.getElementById('imageGenTema').value = '';
   document.getElementById('imageGenResult').style.display = 'none';
   document.getElementById('imageGenResult').innerHTML = '';
@@ -3023,6 +3044,7 @@ const STUDY_SYSTEM_PROMPT = `Você é um assistente de estudo bíblico pra um cr
 - Pode fazer perguntas de volta pra entender melhor o que a pessoa quer saber.`;
 
 function openStudyModal(){
+  posicionarXFlutuante('studyModal');
   showProviderBadge('studyProviderBadge');
   studyHistory = [];
   document.getElementById('studyConversation').innerHTML = '';
@@ -3252,6 +3274,7 @@ function handleCarBgImages(event){
 }
 
 function openCarouselModal(){
+  posicionarXFlutuante('carouselModal');
   showProviderBadge('carProviderBadge');
   window.__carouselGeradas = [];
   window.__carBgImages = [];
@@ -3646,6 +3669,7 @@ async function aiVerseStudy(){
 }
 
 function openAppearanceModal(){
+  posicionarXFlutuante('appearanceModal');
   applyAppearance();
   updateApiKeyStatus();
   document.getElementById('tomVozInput').value = getTomVoz();
