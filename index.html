@@ -762,9 +762,11 @@
       <div style="flex:1;">
         <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Estilo visual</label>
         <select id="carStyleSelect" style="width:100%;">
-          <option value="classico">📖 Clássico</option>
+          <option value="aspas">💬 Aspas Gigantes</option>
+          <option value="editorial">📖 Editorial Sólido</option>
           <option value="moderno">⚡ Moderno</option>
           <option value="pergaminho">🕊️ Pergaminho</option>
+          <option value="natureza">🌅 Natureza Serena</option>
         </select>
       </div>
     </div>
@@ -2931,13 +2933,47 @@ function studyToScript(){
 let html2canvasLoaded = false;
 let carouselMode = 'ai';
 
-const CAROUSEL_STYLES = {
-  classico: { bg:'#1b3a6b', text:'#eee4d1', accent:'#c9a96a', fontFamily:"Georgia, 'Times New Roman', serif" },
-  moderno: { bg:'#17171a', text:'#eee4d1', accent:'#1f7a52', fontFamily:"-apple-system, 'Segoe UI', sans-serif" },
-  pergaminho: { bg:'#f4ecd8', text:'#2b2416', accent:'#7a2436', fontFamily:"Georgia, 'Palatino Linotype', serif" }
-};
-/* 4:5 — formato recomendado pelo próprio Instagram pra carrossel de feed (fixo, não é escolha) */
+/* 4:5 — formato recomendado pra carrossel de feed (fixo, não é escolha) */
 const CAROUSEL_W = 1080, CAROUSEL_H = 1350;
+
+/* Cor por categoria de versículo — mesmo sistema já validado */
+const CATEGORIA_CORES = {
+  ensino: '#17171a', oracao: '#eee4d1', promessa: '#1b3a6b',
+  cruz: '#7a2436', pratica: '#8a5a3a', recomeco: '#1f7a52'
+};
+
+const CAROUSEL_STYLES = {
+  aspas: {
+    label: '💬 Aspas Gigantes — clássico, aspa dourada enorme',
+    bg: '#111114', text: '#f0ece4', accent: '#d8a04a', handle: '#c7c2b8',
+    fontFamily: "Georgia, 'Palatino Linotype', serif", fontWeight: 500, fontSizeStart: 92,
+    align: 'center-block'
+  },
+  editorial: {
+    label: '📖 Editorial Sólido — fundo por cor do tema, sem moldura',
+    bg: '#1b3a6b', text: '#eee4d1', accent: '#e8b84d', handle: '#d6c8a8',
+    fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 700, fontSizeStart: 76,
+    align: 'top-block'
+  },
+  moderno: {
+    label: '⚡ Moderno — bloco de cor lateral, tipografia ousada',
+    bg: '#17171a', text: '#eee4d1', accent: '#1f7a52', handle: '#9a9a9a',
+    fontFamily: "-apple-system, 'Segoe UI', sans-serif", fontWeight: 800, fontSizeStart: 68,
+    align: 'left-block'
+  },
+  pergaminho: {
+    label: '🕊️ Pergaminho — fundo quente, sensação contemplativa',
+    bg: '#f4ecd8', text: '#2b2416', accent: '#7a2436', handle: '#8a7a5a',
+    fontFamily: "Georgia, 'Palatino Linotype', serif", fontWeight: 500, fontSizeStart: 70,
+    align: 'center-block'
+  },
+  natureza: {
+    label: '🌅 Natureza Serena — gradiente suave, tipografia leve',
+    bg: 'linear-gradient(180deg,#2d4a5e 0%,#1b3a6b 100%)', text: '#ffffff', accent: '#f2d9a8', handle: '#d8e4ec',
+    fontFamily: "-apple-system, 'Segoe UI', sans-serif", fontWeight: 400, fontSizeStart: 66,
+    align: 'center-block'
+  }
+};
 
 function setCarouselMode(mode){
   carouselMode = mode;
@@ -2988,28 +3024,69 @@ function closeCarouselModal(){
 
 function buildSlideHTML(style, isCapa, title, body){
   const S = CAROUSEL_STYLES[style];
-  const common = `width:${CAROUSEL_W}px;height:${CAROUSEL_H}px;box-sizing:border-box;display:flex;flex-direction:column;
-    justify-content:center;font-family:${S.fontFamily};background:${S.bg};color:${S.text};`;
-  if(style === 'classico'){
-    return `<div style="${common}padding:100px 90px;border:3px solid ${S.accent};box-sizing:border-box;text-align:center;align-items:center;">
-      ${title ? `<div style="font-size:34px;letter-spacing:3px;text-transform:uppercase;color:${S.accent};margin-bottom:40px;">${title}</div>` : ''}
-      <div style="font-size:${isCapa?64:44}px;line-height:1.45;font-style:italic;">${body}</div>
-      <div style="margin-top:50px;font-size:26px;color:${S.accent};letter-spacing:2px;">VIVENDO O EVANGELHO DE JESUS</div>
+  const bgProp = S.bg.startsWith('linear-gradient') ? `background:${S.bg};` : `background:${S.bg};`;
+
+  // Fonte auto-ajustável: começa no tamanho base, encolhe de 6 em 6px até caber com folga.
+  // Estimativa simples: caracteres por linha ~ largura útil / (tamanho * 0.55)
+  const larguraUtil = CAROUSEL_W - 180;
+  let fontSize = isCapa ? S.fontSizeStart + 10 : S.fontSizeStart;
+  const minFont = 42;
+  function estimarLinhas(texto, fs){
+    const charsPorLinha = Math.floor(larguraUtil / (fs * 0.55));
+    return Math.ceil(texto.length / Math.max(charsPorLinha, 8));
+  }
+  while(fontSize > minFont){
+    const linhas = estimarLinhas(body, fontSize);
+    const alturaTexto = linhas * fontSize * 1.35;
+    if(alturaTexto < CAROUSEL_H * 0.55) break;
+    fontSize -= 6;
+  }
+
+  const handleHtml = `<div style="font-family:-apple-system,sans-serif;font-weight:700;font-size:32px;color:${S.handle};letter-spacing:0.5px;">@VIVENDOOEVANGELHODEJESUS</div>`;
+  const refHtml = title ? `<div style="font-family:${S.fontFamily};font-weight:700;font-size:42px;color:${S.accent};margin-top:28px;">${title}</div>` : '';
+  const textoHtml = `<div style="font-family:${S.fontFamily};font-weight:${S.fontWeight};font-size:${fontSize}px;color:${S.text};line-height:1.35;text-align:center;max-width:${larguraUtil}px;">${body}</div>`;
+
+  if(style === 'aspas'){
+    return `<div style="width:${CAROUSEL_W}px;height:${CAROUSEL_H}px;box-sizing:border-box;${bgProp}display:flex;flex-direction:column;
+      align-items:center;justify-content:center;padding:80px;text-align:center;">
+      <div style="font-family:Georgia,serif;font-weight:700;font-size:220px;color:${S.accent};line-height:0.5;margin-bottom:20px;">&ldquo;</div>
+      ${textoHtml}
+      ${refHtml}
+      <div style="margin-top:32px;">${handleHtml}</div>
+    </div>`;
+  }
+  if(style === 'editorial'){
+    return `<div style="width:${CAROUSEL_W}px;height:${CAROUSEL_H}px;box-sizing:border-box;${bgProp}display:flex;flex-direction:column;
+      justify-content:center;align-items:center;padding:90px;text-align:center;border:3px solid ${S.accent};">
+      <div style="margin-bottom:36px;">${handleHtml}</div>
+      ${textoHtml}
+      ${refHtml}
     </div>`;
   }
   if(style === 'moderno'){
-    return `<div style="${common}position:relative;padding:100px 80px 100px 100px;">
-      <div style="position:absolute;left:0;top:0;bottom:0;width:26px;background:${S.accent};"></div>
-      ${title ? `<div style="font-size:30px;font-weight:700;color:${S.accent};margin-bottom:30px;">${title.toUpperCase()}</div>` : ''}
-      <div style="font-size:${isCapa?68:46}px;line-height:1.25;font-weight:800;">${body}</div>
-      <div style="margin-top:60px;font-size:24px;font-weight:700;color:${S.accent};">@VIVENDOOEVANGELHODEJESUS</div>
+    return `<div style="width:${CAROUSEL_W}px;height:${CAROUSEL_H}px;box-sizing:border-box;${bgProp}position:relative;
+      display:flex;flex-direction:column;justify-content:center;padding:100px 80px 100px 110px;">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:28px;background:${S.accent};"></div>
+      <div style="margin-bottom:30px;">${handleHtml}</div>
+      <div style="font-family:${S.fontFamily};font-weight:${S.fontWeight};font-size:${fontSize}px;color:${S.text};line-height:1.2;text-align:left;">${body}</div>
+      ${title ? `<div style="font-family:${S.fontFamily};font-weight:700;font-size:38px;color:${S.accent};margin-top:26px;">${title}</div>` : ''}
     </div>`;
   }
-  return `<div style="${common}padding:110px 100px;text-align:center;align-items:center;">
-    ${title ? `<div style="font-size:28px;letter-spacing:2px;color:${S.accent};margin-bottom:36px;font-style:italic;">${title}</div>` : ''}
-    <div style="font-size:${isCapa?58:40}px;line-height:1.5;">${body}</div>
-    <div style="margin-top:60px;width:80px;height:2px;background:${S.accent};"></div>
-    <div style="margin-top:20px;font-size:22px;color:${S.accent};">Vivendo o Evangelho de Jesus</div>
+  if(style === 'pergaminho'){
+    return `<div style="width:${CAROUSEL_W}px;height:${CAROUSEL_H}px;box-sizing:border-box;${bgProp}display:flex;flex-direction:column;
+      align-items:center;justify-content:center;padding:100px;text-align:center;">
+      <div style="margin-bottom:30px;">${handleHtml}</div>
+      ${textoHtml}
+      ${refHtml}
+      <div style="margin-top:40px;width:70px;height:2px;background:${S.accent};"></div>
+    </div>`;
+  }
+  // natureza
+  return `<div style="width:${CAROUSEL_W}px;height:${CAROUSEL_H}px;box-sizing:border-box;${bgProp}display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:90px;text-align:center;">
+    <div style="margin-bottom:34px;">${handleHtml}</div>
+    ${textoHtml}
+    ${refHtml}
   </div>`;
 }
 
