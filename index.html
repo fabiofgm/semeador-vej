@@ -2282,11 +2282,16 @@ function resetAllChecks(){
 /* ===================================================================
    BACKUP UNIFICADO (Ideias + Roteiros + Painel + Histórico + Checks)
    =================================================================== */
-function exportAllBackup(){
+async function exportAllBackup(){
   const backupObj = {
     ideas, scripts, scheduleData, historyData, panelTitle, formatGroups,
     layout: currentLayout, platformFilter: selectedPlatformFilter,
-    taskChecks: {}, exportedAt: new Date().toISOString(), appVersion: 1
+    taskChecks: {}, exportedAt: new Date().toISOString(), appVersion: 2,
+    tomVoz: getTomVoz(),
+    modelos: getModelos(),
+    modeloAtivoId: getModeloAtivoId(),
+    aiProvider: getAiProvider(),
+    bancoFotos: await listarFotosDoBanco()
   };
   scheduleData.forEach(g=>g.tasks.forEach(t=>{ backupObj.taskChecks[t.id] = localStorage.getItem(t.id); }));
   const blob = new Blob([JSON.stringify(backupObj, null, 2)], {type:'application/json'});
@@ -2296,7 +2301,7 @@ function exportAllBackup(){
   a.download = 'semeador_backup_' + new Date().toISOString().slice(0,10) + '.json';
   a.click();
   URL.revokeObjectURL(url);
-  toast('Backup completo exportado ✓');
+  toast('Backup completo exportado ✓ (inclui fotos, modelos e tom de voz)');
 }
 function importAllBackup(e){
   const file = e.target.files[0];
@@ -2305,7 +2310,7 @@ function importAllBackup(e){
   reader.onload = function(evt){
     try{
       const data = JSON.parse(evt.target.result);
-      askConfirm('Importar vai SUBSTITUIR todos os dados atuais (ideias, roteiros, painel). Continuar?', ()=>{
+      askConfirm('Importar vai SUBSTITUIR todos os dados atuais (ideias, roteiros, painel, banco de fotos, modelos). Continuar?', async ()=>{
         ideas = data.ideas || [];
         scripts = data.scripts || [];
         scheduleData = data.scheduleData || JSON.parse(JSON.stringify(defaultScheduleData));
@@ -2327,6 +2332,16 @@ function importAllBackup(e){
             if(data.taskChecks[id]!==null) localStorage.setItem(id, data.taskChecks[id]);
           });
         }
+
+        // Restaura o que foi adicionado hoje: tom de voz, modelos, provedor de IA e banco de fotos
+        if(data.tomVoz !== undefined) localStorage.setItem(TOM_VOZ_STORAGE, data.tomVoz);
+        if(data.modelos) saveModelos(data.modelos);
+        if(data.modeloAtivoId !== undefined) localStorage.setItem(MODELO_ATIVO_STORAGE, data.modeloAtivoId);
+        if(data.aiProvider) localStorage.setItem(AI_PROVIDER_STORAGE, data.aiProvider);
+        if(data.bancoFotos && Array.isArray(data.bancoFotos)){
+          for(const foto of data.bancoFotos){ await salvarFotoNoBanco(foto); }
+        }
+
         renderIdeas(); renderScripts(); renderPanel();
         toast('Backup importado com sucesso ✓');
       }, 'Importar backup');
@@ -3368,7 +3383,7 @@ function buildSlideHTML(style, isCapa, title, body, customizacao){
   // nunca no mesmo tamanho do resto (evita ficar desproporcional, tipo "Mateus 6:34" gigante igual o versículo).
   let referenciaDetectada = '';
   let corpoSemReferencia = body;
-  const matchRef = body.match(/^\[([^\]]+)\]\s*/);
+  const matchRef = body.match(/^[\[\(]([^\]\)]+)[\]\)]\s*/);
   if(matchRef){
     referenciaDetectada = matchRef[1];
     corpoSemReferencia = body.slice(matchRef[0].length);
