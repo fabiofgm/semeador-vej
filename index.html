@@ -882,6 +882,14 @@
       </div>
     </div>
 
+    <div>
+      <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Largura do texto (por plataforma)</label>
+      <select id="carPlatformWidthSelect" style="width:100%;">
+        <option value="meta">📱 Meta — Instagram/Facebook (mais largo)</option>
+        <option value="tiktok">🎵 TikTok/Kwai/Snapchat (mais recolhido — evita ícones)</option>
+      </select>
+    </div>
+
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <div style="flex:1;min-width:150px;">
         <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Tamanho da letra: <span id="carFontSizeLabel">Auto</span></label>
@@ -922,8 +930,9 @@
     <div id="carSeoBox" style="display:none;"></div>
     <div id="carouselResults" style="display:flex;flex-direction:column;gap:12px;"></div>
 
-    <div class="modal-actions">
+    <div class="modal-actions" style="justify-content:flex-end;">
       <button class="secondary" onclick="closeCarouselModal()">Fechar</button>
+      <button class="primary" onclick="compartilharTodosSlides()">📤 Compartilhar Todas</button>
     </div>
   </div>
 </div>
@@ -3365,14 +3374,53 @@ function openCarouselModal(){
   document.getElementById('carBgImagesPreview').innerHTML = '';
   document.getElementById('carBgImagesInput').value = '';
   document.getElementById('carNomeInput').value = '';
-  setCarouselMode('ai');
   document.getElementById('carTemaInput').value = '';
-  document.getElementById('carSlideCount').value = 4;
-  document.getElementById('carSlideCountLabel').textContent = '4';
   document.getElementById('carouselResults').innerHTML = '';
   document.getElementById('carSeoBox').style.display = 'none';
   document.getElementById('carouselProgress').style.display = 'none';
   document.getElementById('carouselModal').classList.add('show');
+
+  // Verifica se ESSE roteiro específico já tem um carrossel salvo — se tiver, restaura em vez de começar do zero
+  const script = scripts.find(s => s.id === editingScriptId);
+  const salvo = script && script.carrossel;
+
+  if(salvo){
+    setCarouselMode('manual');
+    document.getElementById('carSlideCount').value = salvo.slideTexts.length;
+    document.getElementById('carSlideCountLabel').textContent = String(salvo.slideTexts.length);
+    renderManualSlideInputs();
+    salvo.slideTexts.forEach((texto, i)=>{
+      const el = document.getElementById('carManualText'+i);
+      if(el) el.value = texto;
+    });
+    if(salvo.style) document.getElementById('carStyleSelect').value = salvo.style;
+    if(salvo.imagens && salvo.imagens.length){
+      const results = document.getElementById('carouselResults');
+      salvo.imagens.forEach((dataUrl, idx)=>{
+        window.__carouselGeradas.push({ name: `Slide ${idx+1}`, dataUrl });
+        const card = document.createElement('div');
+        card.style.cssText = 'background:var(--carvao-3);border:1px solid var(--border);border-radius:10px;padding:10px;';
+        card.innerHTML = `
+          <img src="${dataUrl}" onclick="viewCarouselSlide(${idx})"
+            style="width:100%;border-radius:6px;display:block;margin-bottom:8px;cursor:pointer;">
+          <div style="display:flex;gap:6px;">
+            <button onclick="compartilharSlide(${idx})" style="flex:1;background:var(--safira);color:var(--on-accent);border:none;
+              padding:9px;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer;">📤 Compartilhar</button>
+          </div>
+        `;
+        results.appendChild(card);
+      });
+    }
+    if(salvo.seo){
+      const seoBox = document.getElementById('carSeoBox');
+      mostrarSeoEditavel(salvo.seo);
+    }
+    toast('Carrossel salvo desse roteiro foi restaurado ✓');
+  } else {
+    setCarouselMode('ai');
+    document.getElementById('carSlideCount').value = 4;
+    document.getElementById('carSlideCountLabel').textContent = '4';
+  }
 }
 function closeCarouselModal(){
   document.getElementById('carouselModal').classList.remove('show');
@@ -3414,7 +3462,7 @@ function buildSlideHTML(style, isCapa, title, body, customizacao){
   const bodyComDestaque = aplicarDestaque(corpoSemReferencia);
 
   // Fonte: se o usuário escolheu um tamanho manual (>0), usa ele fixo. Senão, auto-ajusta.
-  const larguraUtil = CAROUSEL_W - 180;
+  const larguraUtil = customizacao.plataforma === 'tiktok' ? 800 : 940; // valores validados pelo próprio Fábio com dado real
   let fontSize;
   if(customizacao.fontSize && Number(customizacao.fontSize) > 0){
     fontSize = Number(customizacao.fontSize);
@@ -3553,22 +3601,47 @@ async function startCarouselGeneration(){
   }
 
   if(seo){
-    seoBox.style.display = 'block';
-    const seoText = `${seo.titulo}\n\n${seo.descricao}\n\n${seo.hashtags}`;
-    seoBox.innerHTML = `
-      <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin:10px 0 4px;">📝 Título, descrição e hashtags (texto — copia e cola)</label>
-      <textarea readonly style="width:100%;min-height:100px;background:var(--carvao-3);border:1px solid var(--border);border-radius:8px;
-        color:var(--areia);padding:10px;font-size:0.82rem;box-sizing:border-box;">${escapeHtmlPlain(seoText)}</textarea>
-      <button class="appearance-choice" style="width:100%;margin-top:6px;" onclick="copySeoText(this)">📋 Copiar texto do SEO</button>
-    `;
-    seoBox.dataset.seoText = seoText;
+    mostrarSeoEditavel(seo);
   }
+
+  // Salva o carrossel inteiro DENTRO do roteiro atual (não é global) — cada roteiro guarda o próprio
+  const scriptAtual = scripts.find(s => s.id === editingScriptId);
+  if(scriptAtual){
+    scriptAtual.carrossel = {
+      slideTexts: slideTexts,
+      seo: seo,
+      style: style,
+      imagens: window.__carouselGeradas.map(g => g.dataUrl)
+    };
+    persistScripts();
+  }
+
   progress.style.display = 'none';
-  toast('Pronto ✓');
+  toast('Pronto ✓ (salvo nesse roteiro)');
+}
+
+function mostrarSeoEditavel(seo){
+  const seoBox = document.getElementById('carSeoBox');
+  seoBox.style.display = 'block';
+  seoBox.innerHTML = `
+    <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin:10px 0 4px;">📝 Título</label>
+    <input type="text" id="carSeoTitulo" value="${escapeHtmlPlain(seo.titulo||'')}" style="width:100%;background:var(--carvao-3);
+      border:1px solid var(--border);border-radius:8px;color:var(--areia);padding:9px 10px;font-size:0.85rem;box-sizing:border-box;margin-bottom:8px;">
+    <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Descrição</label>
+    <textarea id="carSeoDescricao" style="width:100%;min-height:60px;background:var(--carvao-3);border:1px solid var(--border);border-radius:8px;
+      color:var(--areia);padding:9px 10px;font-size:0.85rem;box-sizing:border-box;margin-bottom:8px;">${escapeHtmlPlain(seo.descricao||'')}</textarea>
+    <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Hashtags</label>
+    <textarea id="carSeoHashtags" style="width:100%;min-height:50px;background:var(--carvao-3);border:1px solid var(--border);border-radius:8px;
+      color:var(--areia);padding:9px 10px;font-size:0.85rem;box-sizing:border-box;margin-bottom:8px;">${escapeHtmlPlain(seo.hashtags||'')}</textarea>
+    <button class="appearance-choice" style="width:100%;" onclick="copySeoText(this)">📋 Copiar tudo (título+descrição+hashtags)</button>
+  `;
 }
 
 function copySeoText(btn){
-  const text = document.getElementById('carSeoBox').dataset.seoText || '';
+  const titulo = document.getElementById('carSeoTitulo') ? document.getElementById('carSeoTitulo').value : '';
+  const descricao = document.getElementById('carSeoDescricao') ? document.getElementById('carSeoDescricao').value : '';
+  const hashtags = document.getElementById('carSeoHashtags') ? document.getElementById('carSeoHashtags').value : '';
+  const text = `${titulo}\n\n${descricao}\n\n${hashtags}`;
   navigator.clipboard.writeText(text).then(()=>toast('Copiado ✓')).catch(()=>toast('Seleciona e copia manualmente.'));
 }
 
@@ -3583,7 +3656,7 @@ async function compartilharSlide(idx){
   if(!slide) return;
 
   if(!navigator.share || !navigator.canShare){
-    toast('Compartilhar direto não é suportado nesse navegador — usa "Baixar" e anexa manualmente.');
+    toast('Compartilhar direto não é suportado nesse navegador.');
     return;
   }
 
@@ -3592,7 +3665,7 @@ async function compartilharSlide(idx){
     const file = new File([blob], `${slide.name}.png`, { type: 'image/png' });
 
     if(!navigator.canShare({ files: [file] })){
-      toast('Esse aparelho não aceita compartilhar imagem direto — usa "Baixar".');
+      toast('Esse aparelho não aceita compartilhar imagem direto.');
       return;
     }
 
@@ -3601,7 +3674,36 @@ async function compartilharSlide(idx){
   } catch(e){
     if(e.name !== 'AbortError'){ // usuário só cancelou o compartilhamento — não é erro de verdade
       console.error(e);
-      toast('Não consegui abrir o compartilhamento. Tenta "Baixar" em vez disso.');
+      toast('Não consegui abrir o compartilhamento. Tenta de novo.');
+    }
+  }
+}
+
+async function compartilharTodosSlides(){
+  const slides = window.__carouselGeradas || [];
+  if(slides.length===0){ toast('Nenhuma imagem gerada ainda.'); return; }
+
+  if(!navigator.share || !navigator.canShare){
+    toast('Compartilhar direto não é suportado nesse navegador.');
+    return;
+  }
+
+  try{
+    const files = await Promise.all(slides.map(async (slide)=>{
+      const blob = await (await fetch(slide.dataUrl)).blob();
+      return new File([blob], `${slide.name}.png`, { type: 'image/png' });
+    }));
+
+    if(!navigator.canShare({ files })){
+      toast('Esse aparelho não aceita compartilhar várias imagens de uma vez — compartilha uma por uma.');
+      return;
+    }
+
+    await navigator.share({ title: '', files });
+  } catch(e){
+    if(e.name !== 'AbortError'){
+      console.error(e);
+      toast('Não consegui abrir o compartilhamento em lote. Tenta uma por uma.');
     }
   }
 }
@@ -3637,7 +3739,8 @@ async function renderCarouselImages(style, slideTexts){
         fontSize: document.getElementById('carFontSizeSlider') ? document.getElementById('carFontSizeSlider').value : 0,
         color: document.getElementById('carColorSelect') ? document.getElementById('carColorSelect').value : 'default',
         nome: document.getElementById('carNomeInput') ? document.getElementById('carNomeInput').value : '',
-        bgImage: fotosDeFundo.length ? fotosDeFundo[i % fotosDeFundo.length] : null
+        bgImage: fotosDeFundo.length ? fotosDeFundo[i % fotosDeFundo.length] : null,
+        plataforma: document.getElementById('carPlatformWidthSelect') ? document.getElementById('carPlatformWidthSelect').value : 'meta'
       };
       renderArea.innerHTML = buildSlideHTML(style, i===0, '', escapeHtmlPlain(slideTexts[i]), customizacao);
       const el = renderArea.firstElementChild;
@@ -3653,11 +3756,9 @@ async function renderCarouselImages(style, slideTexts){
         <img src="${dataUrl}" onclick="viewCarouselSlide(${idx})"
           style="width:100%;border-radius:6px;display:block;margin-bottom:8px;cursor:pointer;">
         <div style="font-size:0.72rem;color:var(--areia-dim);text-align:center;margin:-4px 0 8px;">👆 Toca na imagem pra ver em tela cheia</div>
-        <div style="display:flex;gap:6px;">
-          <button onclick="compartilharSlide(${idx})" style="flex:1;background:var(--safira);color:var(--on-accent);border:none;
-            padding:9px;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer;">📤 Compartilhar</button>
-          <a href="${dataUrl}" download="slide-${i+1}-${style}.png" style="flex:1;text-align:center;background:var(--esmeralda);
-            color:var(--on-accent);padding:9px;border-radius:8px;font-weight:700;font-size:0.82rem;text-decoration:none;">⬇️ Baixar</a>
+        <div style="display:flex;justify-content:flex-end;">
+          <button onclick="compartilharSlide(${idx})" style="background:var(--safira);color:var(--on-accent);border:none;
+            padding:9px 18px;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer;">📤 Compartilhar</button>
         </div>
       `;
       results.appendChild(card);
