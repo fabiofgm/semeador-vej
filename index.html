@@ -487,6 +487,10 @@
         <button class="back-link" onclick="closeWizard()">← voltar pra lista</button>
       </div>
 
+      <div id="wizardProviderBadge" onclick="openAppearanceModal()" style="font-size:0.76rem;font-weight:700;padding:6px 12px;
+        border-radius:8px;background:var(--carvao-3);color:var(--areia-dim);width:fit-content;margin-bottom:14px;cursor:pointer;
+        border:1px solid var(--border);">🟣 Usando: Claude</div>
+
       <button type="button" onclick="aiGenerateFullScript()" style="width:100%;background:var(--esmeralda);color:var(--on-accent);
         border:none;border-radius:10px;padding:13px;font-weight:700;font-size:0.92rem;cursor:pointer;margin-bottom:16px;">
         ✨ Gerar roteiro completo a partir de um tema
@@ -1415,6 +1419,7 @@ function openWizard(id){
   window.scrollTo(0,0);
   const s = scripts.find(x=>x.id===id);
   if(!s) return;
+  showProviderBadge('wizardProviderBadge');
   editingScriptId = id;
   document.getElementById('scriptListView').style.display='none';
   document.getElementById('scriptWizard').style.display='block';
@@ -3281,7 +3286,10 @@ function openAppearanceModal(){
   document.getElementById('tomVozInput').value = getTomVoz();
   document.getElementById("appearanceModal").classList.add("show");
 }
-function closeAppearanceModal(){ document.getElementById("appearanceModal").classList.remove("show"); }
+function closeAppearanceModal(){
+  document.getElementById("appearanceModal").classList.remove("show");
+  showProviderBadge('wizardProviderBadge');
+}
 
 /* ---------- cabeçalho retrátil ao rolar ---------- */
 window.addEventListener('scroll', ()=>{
