@@ -442,6 +442,7 @@
       <button class="appearance-btn" onclick="openGlobalSearchModal()">🔍 Buscar</button>
       <button class="appearance-btn" onclick="openAppearanceModal()">🎨 Aparência</button>
       <button class="appearance-btn" onclick="openVerifyModal()">✅ Checar</button>
+      <button class="appearance-btn" onclick="openTrashModal()">🗑️ Limpar</button>
     </div>
   </header>
 
@@ -487,10 +488,14 @@
         <button class="back-link" onclick="closeWizard()">← voltar pra lista</button>
       </div>
 
-      <div id="wizardProviderBadge" onclick="openAppearanceModal()" style="font-size:0.76rem;font-weight:700;padding:6px 12px;
-        border-radius:8px;background:var(--carvao-3);color:var(--areia-dim);width:fit-content;margin-bottom:14px;cursor:pointer;
-        border:1px solid var(--border);">🟣 Usando: Claude</div>
-
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+        <div id="wizardProviderBadge" onclick="openAppearanceModal()" style="font-size:0.76rem;font-weight:700;padding:6px 12px;
+          border-radius:8px;background:var(--carvao-3);color:var(--areia-dim);width:fit-content;cursor:pointer;
+          border:1px solid var(--border);">🟣 Usando: Claude</div>
+        <div id="wizardTomVozBadge" onclick="openAppearanceModal()" style="font-size:0.76rem;font-weight:700;padding:6px 12px;
+          border-radius:8px;background:var(--carvao-3);color:var(--areia-dim);width:fit-content;cursor:pointer;
+          border:1px solid var(--border);display:none;">🎯 Tom personalizado ativo</div>
+      </div>
       <button type="button" onclick="aiGenerateFullScript()" style="width:100%;background:var(--esmeralda);color:var(--on-accent);
         border:none;border-radius:10px;padding:13px;font-weight:700;font-size:0.92rem;cursor:pointer;margin-bottom:16px;">
         ✨ Gerar roteiro completo a partir de um tema
@@ -694,6 +699,19 @@
 <!-- CONFIRM MODAL -->
 <!-- ATTACHMENT VIEWER MODAL -->
 <!-- AI SUGGESTION MODAL -->
+<!-- LIMPAR/LIXEIRA GERAL MODAL -->
+<div class="modal-overlay" id="trashModal">
+  <div class="modal-box" style="max-width:420px;">
+    <h3 style="margin:0;">🗑️ Limpar dados</h3>
+    <p style="font-size:0.82rem;color:var(--areia-dim);margin:0;">Escolhe o que quer apagar. Cada ação pede confirmação separada.</p>
+    <button class="to-script-secondary" style="width:100%;padding:12px;" onclick="closeTrashModal(); clearAllIdeas();">🌱 Excluir todas as Ideias</button>
+    <button class="to-script-secondary" style="width:100%;padding:12px;" onclick="closeTrashModal(); clearAllScripts();">📜 Excluir todos os Roteiros</button>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeTrashModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- GERAR IMAGEM COM IA MODAL -->
 <div class="modal-overlay align-top" id="imageGenModal">
   <div class="modal-box" style="max-width:520px;">
@@ -781,11 +799,74 @@
       </div>
     </div>
 
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:130px;">
+        <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Fonte</label>
+        <select id="carFontSelect" style="width:100%;">
+          <option value="default">✨ Padrão do estilo</option>
+          <option value="Georgia, serif">Georgia</option>
+          <option value="'Times New Roman', serif">Times New Roman</option>
+          <option value="Palatino, 'Palatino Linotype', serif">Palatino</option>
+          <option value="Baskerville, serif">Baskerville</option>
+          <option value="-apple-system, sans-serif">San Francisco</option>
+          <option value="'Helvetica Neue', sans-serif">Helvetica Neue</option>
+          <option value="'Avenir Next', sans-serif">Avenir Next</option>
+          <option value="Futura, sans-serif">Futura</option>
+          <option value="'American Typewriter', serif">American Typewriter</option>
+          <option value="Didot, serif">Didot</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:110px;">
+        <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Peso</label>
+        <select id="carWeightSelect" style="width:100%;">
+          <option value="default">✨ Padrão</option>
+          <option value="400">Simples</option>
+          <option value="700">Negrito</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:110px;">
+        <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Posição</label>
+        <select id="carPositionSelect" style="width:100%;">
+          <option value="center">Centro</option>
+          <option value="flex-start">Topo</option>
+          <option value="flex-end">Base</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:150px;">
+        <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Tamanho da letra: <span id="carFontSizeLabel">Auto</span></label>
+        <input type="range" id="carFontSizeSlider" min="0" max="120" value="0" style="width:100%;"
+          oninput="document.getElementById('carFontSizeLabel').textContent = this.value=='0' ? 'Auto' : this.value+'px'">
+      </div>
+      <div style="flex:1;min-width:150px;">
+        <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Cor da letra</label>
+        <select id="carColorSelect" style="width:100%;">
+          <option value="default">✨ Padrão do estilo</option>
+          <option value="#ffffff">⚪ Branco</option>
+          <option value="#111114">⚫ Preto</option>
+          <option value="#f2d024">🟡 Amarelo</option>
+          <option value="#d8a04a">🟨 Dourado</option>
+          <option value="#3a5f9c">🔵 Azul</option>
+          <option value="#c0392b">🔴 Vermelho</option>
+          <option value="#b5502d">🟠 Laranja queimado</option>
+        </select>
+      </div>
+    </div>
+
+    <p style="font-size:0.74rem;color:var(--areia-dim);margin:0;">
+      💡 Pra destacar uma palavra com a cor de detalhe do estilo, coloca ela entre **asteriscos duplos** no texto do slide (ex: "Deus é **fiel**").
+    </p>
+    <p style="font-size:0.72rem;color:var(--areia-dim);background:var(--carvao-3);padding:8px 10px;border-radius:8px;margin:0;">
+      ⚠️ Fonte, peso, posição, tamanho e cor só se aplicam quando você clica em "Gerar" — a imagem já gerada não muda sozinha. Mudou algo? Clica em "Gerar" de novo.
+    </p>
+
     <button class="primary" style="width:100%;margin-top:6px;" onclick="startCarouselGeneration()">Gerar</button>
 
     <div id="carouselProgress" style="display:none;font-size:0.82rem;color:var(--areia-dim);">Gerando...</div>
     <div id="carSeoBox" style="display:none;"></div>
-    <div id="carouselResults" style="display:flex;flex-direction:column;gap:12px;max-height:40vh;overflow:auto;"></div>
+    <div id="carouselResults" style="display:flex;flex-direction:column;gap:12px;"></div>
 
     <div class="modal-actions">
       <button class="secondary" onclick="closeCarouselModal()">Fechar</button>
@@ -1234,6 +1315,8 @@ function deleteIdea(id){
     renderIdeas();
   });
 }
+function openTrashModal(){ document.getElementById('trashModal').classList.add('show'); }
+function closeTrashModal(){ document.getElementById('trashModal').classList.remove('show'); }
 function clearAllIdeas(){
   if(ideas.length===0){ toast('Não há ideias salvas.'); return; }
   askConfirm(`Excluir TODAS as ${ideas.length} ideias? Essa ação não pode ser desfeita.`, ()=>{
@@ -1421,7 +1504,7 @@ function openWizard(id){
   window.scrollTo(0,0);
   const s = scripts.find(x=>x.id===id);
   if(!s) return;
-  showProviderBadge('wizardProviderBadge');
+  showProviderBadge('wizardProviderBadge'); showTomVozBadge('wizardTomVozBadge');
   editingScriptId = id;
   document.getElementById('scriptListView').style.display='none';
   document.getElementById('scriptWizard').style.display='block';
@@ -2313,6 +2396,17 @@ function showProviderBadge(elementId){
   const provider = getAiProvider();
   el.textContent = provider === 'gemini' ? '🔵 Usando: Gemini' : '🟣 Usando: Claude';
 }
+function showTomVozBadge(elementId){
+  const el = document.getElementById(elementId);
+  if(!el) return;
+  const tom = getTomVoz();
+  if(tom){
+    el.style.display = 'block';
+    el.title = tom; // aparece ao segurar/passar o dedo
+  } else {
+    el.style.display = 'none';
+  }
+}
 
 function setAiProvider(provider){
   localStorage.setItem(AI_PROVIDER_STORAGE, provider);
@@ -3030,33 +3124,48 @@ function closeCarouselModal(){
   document.getElementById('carouselRenderArea').innerHTML = '';
 }
 
-function buildSlideHTML(style, isCapa, title, body){
+function buildSlideHTML(style, isCapa, title, body, customizacao){
+  customizacao = customizacao || {};
   const S = CAROUSEL_STYLES[style];
+  const fontFamily = (customizacao.fontFamily && customizacao.fontFamily !== 'default') ? customizacao.fontFamily : S.fontFamily;
+  const fontWeight = (customizacao.fontWeight && customizacao.fontWeight !== 'default') ? customizacao.fontWeight : S.fontWeight;
+  const corTexto = (customizacao.color && customizacao.color !== 'default') ? customizacao.color : S.text;
+  const posicao = customizacao.position || 'center';
   const bgProp = S.bg.startsWith('linear-gradient') ? `background:${S.bg};` : `background:${S.bg};`;
 
-  // Fonte auto-ajustável: começa no tamanho base, encolhe de 6 em 6px até caber com folga.
-  // Estimativa simples: caracteres por linha ~ largura útil / (tamanho * 0.55)
-  const larguraUtil = CAROUSEL_W - 180;
-  let fontSize = isCapa ? S.fontSizeStart + 10 : S.fontSizeStart;
-  const minFont = 42;
-  function estimarLinhas(texto, fs){
-    const charsPorLinha = Math.floor(larguraUtil / (fs * 0.55));
-    return Math.ceil(texto.length / Math.max(charsPorLinha, 8));
+  // Destaque de palavra: **palavra** vira <span> colorido com a cor de detalhe do estilo
+  function aplicarDestaque(texto){
+    return texto.replace(/\*\*(.+?)\*\*/g, `<span style="color:${S.accent};">$1</span>`);
   }
-  while(fontSize > minFont){
-    const linhas = estimarLinhas(body, fontSize);
-    const alturaTexto = linhas * fontSize * 1.35;
-    if(alturaTexto < CAROUSEL_H * 0.55) break;
-    fontSize -= 6;
+  const bodyComDestaque = aplicarDestaque(body);
+
+  // Fonte: se o usuário escolheu um tamanho manual (>0), usa ele fixo. Senão, auto-ajusta.
+  const larguraUtil = CAROUSEL_W - 180;
+  let fontSize;
+  if(customizacao.fontSize && Number(customizacao.fontSize) > 0){
+    fontSize = Number(customizacao.fontSize);
+  } else {
+    fontSize = isCapa ? S.fontSizeStart + 10 : S.fontSizeStart;
+    const minFont = 42;
+    function estimarLinhas(texto, fs){
+      const charsPorLinha = Math.floor(larguraUtil / (fs * 0.55));
+      return Math.ceil(texto.length / Math.max(charsPorLinha, 8));
+    }
+    while(fontSize > minFont){
+      const linhas = estimarLinhas(body, fontSize);
+      const alturaTexto = linhas * fontSize * 1.35;
+      if(alturaTexto < CAROUSEL_H * 0.55) break;
+      fontSize -= 6;
+    }
   }
 
   const handleHtml = `<div style="font-family:-apple-system,sans-serif;font-weight:700;font-size:32px;color:${S.handle};letter-spacing:0.5px;">@VIVENDOOEVANGELHODEJESUS</div>`;
-  const refHtml = title ? `<div style="font-family:${S.fontFamily};font-weight:700;font-size:42px;color:${S.accent};margin-top:28px;">${title}</div>` : '';
-  const textoHtml = `<div style="font-family:${S.fontFamily};font-weight:${S.fontWeight};font-size:${fontSize}px;color:${S.text};line-height:1.35;text-align:center;max-width:${larguraUtil}px;">${body}</div>`;
+  const refHtml = title ? `<div style="font-family:${fontFamily};font-weight:700;font-size:42px;color:${S.accent};margin-top:28px;">${title}</div>` : '';
+  const textoHtml = `<div style="font-family:${fontFamily};font-weight:${fontWeight};font-size:${fontSize}px;color:${corTexto};line-height:1.35;text-align:center;max-width:${larguraUtil}px;">${bodyComDestaque}</div>`;
 
   if(style === 'aspas'){
     return `<div style="width:${CAROUSEL_W}px;height:${CAROUSEL_H}px;box-sizing:border-box;${bgProp}display:flex;flex-direction:column;
-      align-items:center;justify-content:center;padding:80px;text-align:center;">
+      align-items:center;justify-content:${posicao};padding:80px;text-align:center;">
       <div style="font-family:Georgia,serif;font-weight:700;font-size:220px;color:${S.accent};line-height:0.5;margin-bottom:20px;">&ldquo;</div>
       ${textoHtml}
       ${refHtml}
@@ -3065,7 +3174,7 @@ function buildSlideHTML(style, isCapa, title, body){
   }
   if(style === 'editorial'){
     return `<div style="width:${CAROUSEL_W}px;height:${CAROUSEL_H}px;box-sizing:border-box;${bgProp}display:flex;flex-direction:column;
-      justify-content:center;align-items:center;padding:90px;text-align:center;border:3px solid ${S.accent};">
+      justify-content:${posicao};align-items:center;padding:90px;text-align:center;border:3px solid ${S.accent};">
       <div style="margin-bottom:36px;">${handleHtml}</div>
       ${textoHtml}
       ${refHtml}
@@ -3073,16 +3182,16 @@ function buildSlideHTML(style, isCapa, title, body){
   }
   if(style === 'moderno'){
     return `<div style="width:${CAROUSEL_W}px;height:${CAROUSEL_H}px;box-sizing:border-box;${bgProp}position:relative;
-      display:flex;flex-direction:column;justify-content:center;padding:100px 80px 100px 110px;">
+      display:flex;flex-direction:column;justify-content:${posicao};padding:100px 80px 100px 110px;">
       <div style="position:absolute;left:0;top:0;bottom:0;width:28px;background:${S.accent};"></div>
       <div style="margin-bottom:30px;">${handleHtml}</div>
-      <div style="font-family:${S.fontFamily};font-weight:${S.fontWeight};font-size:${fontSize}px;color:${S.text};line-height:1.2;text-align:left;">${body}</div>
-      ${title ? `<div style="font-family:${S.fontFamily};font-weight:700;font-size:38px;color:${S.accent};margin-top:26px;">${title}</div>` : ''}
+      <div style="font-family:${fontFamily};font-weight:${fontWeight};font-size:${fontSize}px;color:${corTexto};line-height:1.2;text-align:left;">${bodyComDestaque}</div>
+      ${title ? `<div style="font-family:${fontFamily};font-weight:700;font-size:38px;color:${S.accent};margin-top:26px;">${title}</div>` : ''}
     </div>`;
   }
   if(style === 'pergaminho'){
     return `<div style="width:${CAROUSEL_W}px;height:${CAROUSEL_H}px;box-sizing:border-box;${bgProp}display:flex;flex-direction:column;
-      align-items:center;justify-content:center;padding:100px;text-align:center;">
+      align-items:center;justify-content:${posicao};padding:100px;text-align:center;">
       <div style="margin-bottom:30px;">${handleHtml}</div>
       ${textoHtml}
       ${refHtml}
@@ -3091,7 +3200,7 @@ function buildSlideHTML(style, isCapa, title, body){
   }
   // natureza
   return `<div style="width:${CAROUSEL_W}px;height:${CAROUSEL_H}px;box-sizing:border-box;${bgProp}display:flex;flex-direction:column;
-    align-items:center;justify-content:center;padding:90px;text-align:center;">
+    align-items:center;justify-content:${posicao};padding:90px;text-align:center;">
     <div style="margin-bottom:34px;">${handleHtml}</div>
     ${textoHtml}
     ${refHtml}
@@ -3198,7 +3307,14 @@ async function renderCarouselImages(style, slideTexts){
     for(let i=0;i<slideTexts.length;i++){
       if(!slideTexts[i]) continue;
       progress.textContent = `Gerando slide ${i+1} de ${slideTexts.length}...`;
-      renderArea.innerHTML = buildSlideHTML(style, i===0, titles[i]||'', escapeHtmlPlain(slideTexts[i]));
+      const customizacao = {
+        fontFamily: document.getElementById('carFontSelect') ? document.getElementById('carFontSelect').value : 'default',
+        fontWeight: document.getElementById('carWeightSelect') ? document.getElementById('carWeightSelect').value : 'default',
+        position: document.getElementById('carPositionSelect') ? document.getElementById('carPositionSelect').value : 'center',
+        fontSize: document.getElementById('carFontSizeSlider') ? document.getElementById('carFontSizeSlider').value : 0,
+        color: document.getElementById('carColorSelect') ? document.getElementById('carColorSelect').value : 'default'
+      };
+      renderArea.innerHTML = buildSlideHTML(style, i===0, titles[i]||'', escapeHtmlPlain(slideTexts[i]), customizacao);
       const el = renderArea.firstElementChild;
       const canvas = await html2canvas(el, { width:CAROUSEL_W, height:CAROUSEL_H, scale:1 });
       const dataUrl = canvas.toDataURL('image/png');
@@ -3303,7 +3419,7 @@ function openAppearanceModal(){
 }
 function closeAppearanceModal(){
   document.getElementById("appearanceModal").classList.remove("show");
-  showProviderBadge('wizardProviderBadge');
+  showProviderBadge('wizardProviderBadge'); showTomVozBadge('wizardTomVozBadge');
   showProviderBadge('studyProviderBadge');
   showProviderBadge('carProviderBadge');
 }
