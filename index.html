@@ -723,7 +723,8 @@
 <div class="modal-overlay align-top" id="studyModal">
   <div class="modal-box" style="max-width:560px;">
     <h3 style="margin:0;">💬 Tirar dúvida com a IA</h3>
-    <div id="studyProviderBadge" style="font-size:0.74rem;font-weight:700;padding:4px 10px;border-radius:999px;
+    <div id="studyProviderBadge" onclick="openAppearanceModal()" style="font-size:0.74rem;font-weight:700;padding:4px 10px;border-radius:999px;
+      cursor:pointer;border:1px solid var(--border);
       background:var(--carvao-3);color:var(--areia-dim);width:fit-content;"></div>
     <p style="font-size:0.8rem;color:var(--areia-dim);margin:0;">Conversa à vontade sobre o assunto. Quando terminar, pede pra resumir — daí você decide guardar ou virar roteiro.</p>
     <div id="studyConversation" style="max-height:40vh;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:4px;"></div>
@@ -744,7 +745,8 @@
 <div class="modal-overlay align-top" id="carouselModal">
   <div class="modal-box" style="max-width:560px;">
     <h3 style="margin:0;">🎨 Gerar Carrossel / Post</h3>
-    <div id="carProviderBadge" style="font-size:0.74rem;font-weight:700;padding:4px 10px;border-radius:999px;
+    <div id="carProviderBadge" onclick="openAppearanceModal()" style="font-size:0.74rem;font-weight:700;padding:4px 10px;border-radius:999px;
+      cursor:pointer;border:1px solid var(--border);
       background:var(--carvao-3);color:var(--areia-dim);width:fit-content;"></div>
 
     <div style="display:flex;gap:8px;">
@@ -3013,6 +3015,7 @@ document.getElementById('carSlideCount') && document.getElementById('carSlideCou
 
 function openCarouselModal(){
   showProviderBadge('carProviderBadge');
+  window.__carouselGeradas = [];
   setCarouselMode('ai');
   document.getElementById('carTemaInput').value = '';
   document.getElementById('carSlideCount').value = 4;
@@ -3165,6 +3168,12 @@ function copySeoText(btn){
   navigator.clipboard.writeText(text).then(()=>toast('Copiado ✓')).catch(()=>toast('Seleciona e copia manualmente.'));
 }
 
+function viewCarouselSlide(idx){
+  const slide = (window.__carouselGeradas || [])[idx];
+  if(!slide) return;
+  viewAttachment({ name: slide.name, type: 'image/png', dataUrl: slide.dataUrl });
+}
+
 async function renderCarouselImages(style, slideTexts){
   const progress = document.getElementById('carouselProgress');
   const results = document.getElementById('carouselResults');
@@ -3193,10 +3202,16 @@ async function renderCarouselImages(style, slideTexts){
       const el = renderArea.firstElementChild;
       const canvas = await html2canvas(el, { width:CAROUSEL_W, height:CAROUSEL_H, scale:1 });
       const dataUrl = canvas.toDataURL('image/png');
+      window.__carouselGeradas = window.__carouselGeradas || [];
+      const idx = window.__carouselGeradas.length;
+      window.__carouselGeradas.push({ name: `Slide ${i+1}`, dataUrl });
+
       const card = document.createElement('div');
       card.style.cssText = 'background:var(--carvao-3);border:1px solid var(--border);border-radius:10px;padding:10px;';
       card.innerHTML = `
-        <img src="${dataUrl}" style="width:100%;border-radius:6px;display:block;margin-bottom:8px;">
+        <img src="${dataUrl}" onclick="viewCarouselSlide(${idx})"
+          style="width:100%;border-radius:6px;display:block;margin-bottom:8px;cursor:pointer;">
+        <div style="font-size:0.72rem;color:var(--areia-dim);text-align:center;margin:-4px 0 8px;">👆 Toca na imagem pra ver em tela cheia</div>
         <a href="${dataUrl}" download="slide-${i+1}-${style}.png" style="display:block;text-align:center;background:var(--esmeralda);
           color:var(--on-accent);padding:9px;border-radius:8px;font-weight:700;font-size:0.82rem;text-decoration:none;">⬇️ Baixar Slide ${i+1}</a>
       `;
@@ -3289,6 +3304,8 @@ function openAppearanceModal(){
 function closeAppearanceModal(){
   document.getElementById("appearanceModal").classList.remove("show");
   showProviderBadge('wizardProviderBadge');
+  showProviderBadge('studyProviderBadge');
+  showProviderBadge('carProviderBadge');
 }
 
 /* ---------- cabeçalho retrátil ao rolar ---------- */
