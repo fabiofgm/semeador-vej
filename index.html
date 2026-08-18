@@ -673,7 +673,7 @@
 
   <footer>
     <span class="count" id="footerCount"></span>
-    <div style="font-size:0.7rem;color:var(--areia-dim);margin:4px 0 10px;">Semeador v2026.08.17-1</div>
+    <div style="font-size:0.7rem;color:var(--areia-dim);margin:4px 0 10px;">Semeador v2026.08.18-1</div>
     <div class="backup">
       <button onclick="clearAllIdeas()">Excluir ideias</button>
       <button onclick="clearAllScripts()">Excluir roteiros</button>
@@ -3383,10 +3383,14 @@ function buildSlideHTML(style, isCapa, title, body, customizacao){
   // nunca no mesmo tamanho do resto (evita ficar desproporcional, tipo "Mateus 6:34" gigante igual o versículo).
   let referenciaDetectada = '';
   let corpoSemReferencia = body;
-  const matchRef = body.match(/^[\[\(]([^\]\)]+)[\]\)]\s*/);
-  if(matchRef){
-    referenciaDetectada = matchRef[1];
-    corpoSemReferencia = body.slice(matchRef[0].length);
+  const matchRefInicio = body.match(/^[\[\(]([^\]\)]+)[\]\)]\s*/);
+  const matchRefFim = body.match(/\s*[\[\(]([^\]\)]+)[\]\)]$/);
+  if(matchRefInicio){
+    referenciaDetectada = matchRefInicio[1];
+    corpoSemReferencia = body.slice(matchRefInicio[0].length);
+  } else if(matchRefFim){
+    referenciaDetectada = matchRefFim[1];
+    corpoSemReferencia = body.slice(0, body.length - matchRefFim[0].length);
   }
 
   // Destaque de palavra: **palavra** vira <span> colorido com a cor de detalhe do estilo
@@ -3418,7 +3422,7 @@ function buildSlideHTML(style, isCapa, title, body, customizacao){
   const nomeCanal = (customizacao.nome && customizacao.nome.trim())
     ? `<div style="font-family:${fontFamily};font-weight:600;font-size:24px;color:${S.accent};letter-spacing:0.5px;margin-top:4px;">${escapeHtmlPlain(customizacao.nome.trim())}</div>`
     : '';
-  const handleHtml = `<div style="font-family:-apple-system,sans-serif;font-weight:700;font-size:32px;color:${S.handle};letter-spacing:0.5px;">@VIVENDOEVANGELHODEJESUS</div>${nomeCanal}`;
+  const handleHtml = `<div style="font-family:-apple-system,sans-serif;font-weight:700;font-size:26px;color:${S.handle};letter-spacing:0.5px;">@VIVENDOEVANGELHODEJESUS</div>${nomeCanal}`;
   const referenciaFinal = referenciaDetectada || title;
   const refFontSize = Math.max(38, Math.round(fontSize * 0.6));
   const refHtml = referenciaFinal ? `<div style="font-family:${fontFamily};font-weight:700;font-size:${refFontSize}px;color:${temFoto?'#ffffff':S.accent};margin-top:28px;">${escapeHtmlPlain(referenciaFinal)}</div>` : '';
@@ -3508,12 +3512,25 @@ async function startCarouselGeneration(){
     }
     slideTexts = parsed.slides || [];
     seo = { titulo: parsed.titulo, descricao: parsed.descricao, hashtags: parsed.hashtags };
+    window.__ultimoSeoGerado = seo; // guarda pra usar depois, quando confirmar a geração de imagem
+
+    // Mostra o texto pra revisar/copiar/editar ANTES de virar imagem — troca pra visão manual, já preenchida
+    progress.style.display = 'none';
+    setCarouselMode('manual');
+    document.getElementById('carSlideCount').dispatchEvent(new Event('input')); // garante campos certos renderizados
+    for(let i=0;i<slideTexts.length;i++){
+      const el = document.getElementById('carManualText'+i);
+      if(el) el.value = slideTexts[i];
+    }
+    toast('Texto pronto — revisa, seleciona/copia se quiser, e clica em "Gerar" de novo pra criar as imagens ✓');
+    return; // para aqui — só gera imagem no próximo clique, já em modo manual
   } else {
     for(let i=0;i<count;i++){
       const el = document.getElementById('carManualText'+i);
       slideTexts.push(el ? el.value.trim() : '');
     }
     if(slideTexts.every(t=>!t)){ toast('Escreve pelo menos um slide.'); return; }
+    seo = window.__ultimoSeoGerado || null; // reaproveita o SEO da IA, se veio de lá
   }
 
   const sucesso = await renderCarouselImages(style, slideTexts);
@@ -3545,6 +3562,34 @@ function viewCarouselSlide(idx){
   const slide = (window.__carouselGeradas || [])[idx];
   if(!slide) return;
   viewAttachment({ name: slide.name, type: 'image/png', dataUrl: slide.dataUrl });
+}
+
+async function compartilharSlide(idx){
+  const slide = (window.__carouselGeradas || [])[idx];
+  if(!slide) return;
+
+  if(!navigator.share || !navigator.canShare){
+    toast('Compartilhar direto não é suportado nesse navegador — usa "Baixar" e anexa manualmente.');
+    return;
+  }
+
+  try{
+    const blob = await (await fetch(slide.dataUrl)).blob();
+    const file = new File([blob], `${slide.name}.png`, { type: 'image/png' });
+
+    if(!navigator.canShare({ files: [file] })){
+      toast('Esse aparelho não aceita compartilhar imagem direto — usa "Baixar".');
+      return;
+    }
+
+    // título vazio de propósito — é o jeito confirmado de funcionar certo pro WhatsApp/Instagram no iPhone
+    await navigator.share({ title: '', files: [file] });
+  } catch(e){
+    if(e.name !== 'AbortError'){ // usuário só cancelou o compartilhamento — não é erro de verdade
+      console.error(e);
+      toast('Não consegui abrir o compartilhamento. Tenta "Baixar" em vez disso.');
+    }
+  }
 }
 
 async function renderCarouselImages(style, slideTexts){
@@ -3594,8 +3639,12 @@ async function renderCarouselImages(style, slideTexts){
         <img src="${dataUrl}" onclick="viewCarouselSlide(${idx})"
           style="width:100%;border-radius:6px;display:block;margin-bottom:8px;cursor:pointer;">
         <div style="font-size:0.72rem;color:var(--areia-dim);text-align:center;margin:-4px 0 8px;">👆 Toca na imagem pra ver em tela cheia</div>
-        <a href="${dataUrl}" download="slide-${i+1}-${style}.png" style="display:block;text-align:center;background:var(--esmeralda);
-          color:var(--on-accent);padding:9px;border-radius:8px;font-weight:700;font-size:0.82rem;text-decoration:none;">⬇️ Baixar Slide ${i+1}</a>
+        <div style="display:flex;gap:6px;">
+          <button onclick="compartilharSlide(${idx})" style="flex:1;background:var(--safira);color:var(--on-accent);border:none;
+            padding:9px;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer;">📤 Compartilhar</button>
+          <a href="${dataUrl}" download="slide-${i+1}-${style}.png" style="flex:1;text-align:center;background:var(--esmeralda);
+            color:var(--on-accent);padding:9px;border-radius:8px;font-weight:700;font-size:0.82rem;text-decoration:none;">⬇️ Baixar</a>
+        </div>
       `;
       results.appendChild(card);
       geradas++;
