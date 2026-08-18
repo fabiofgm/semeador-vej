@@ -2975,18 +2975,29 @@ function setCarouselMode(mode){
 function renderManualSlideInputs(){
   const count = Number(document.getElementById('carSlideCount').value);
   const box = document.getElementById('carManualSlides');
+
+  // Salva o que já foi digitado ANTES de reconstruir a tela, pra não perder nada ao mexer no slider
+  const jaEscrito = [];
+  for(let i=0;i<6;i++){
+    const el = document.getElementById('carManualText'+i);
+    jaEscrito.push(el ? el.value : null);
+  }
+
   const gancho = getFieldValue('f_gancho');
   const historia = getFieldValue('f_historia');
   const ref = document.getElementById('f_ref') ? document.getElementById('f_ref').value.trim() : '';
   const versiculo = getFieldValue('f_versiculo');
   const aplicacao = getFieldValue('f_aplicacao');
   const prefill = [gancho, historia, (ref&&versiculo)?`${ref}: "${versiculo}"`:'', aplicacao, '', ''];
+
   let html = '';
   for(let i=0;i<count;i++){
+    // Prioridade: o que a pessoa já digitou > preenchimento automático do roteiro
+    const valor = (jaEscrito[i] !== null && jaEscrito[i] !== undefined) ? jaEscrito[i] : (prefill[i]||'');
     html += `<div>
       <label style="font-size:0.72rem;color:var(--areia-dim);font-weight:700;">Slide ${i+1}</label>
       <textarea id="carManualText${i}" style="width:100%;min-height:56px;background:var(--carvao-3);border:1px solid var(--border);
-        border-radius:8px;color:var(--areia);padding:8px 10px;font-size:0.84rem;box-sizing:border-box;">${escapeHtmlPlain(prefill[i]||'')}</textarea>
+        border-radius:8px;color:var(--areia);padding:8px 10px;font-size:0.84rem;box-sizing:border-box;">${escapeHtmlPlain(valor)}</textarea>
     </div>`;
   }
   box.innerHTML = html;
@@ -3124,7 +3135,10 @@ async function startCarouselGeneration(){
     if(slideTexts.every(t=>!t)){ toast('Escreve pelo menos um slide.'); return; }
   }
 
-  await renderCarouselImages(style, slideTexts);
+  const sucesso = await renderCarouselImages(style, slideTexts);
+  if(!sucesso){
+    return; // a mensagem de erro já está visível em #carouselProgress, não esconde e não finge sucesso
+  }
 
   if(seo){
     seoBox.style.display = 'block';
@@ -3151,6 +3165,7 @@ async function renderCarouselImages(style, slideTexts){
   const results = document.getElementById('carouselResults');
   const renderArea = document.getElementById('carouselRenderArea');
   progress.style.display = 'block';
+  let geradas = 0;
 
   try{
     if(!html2canvasLoaded){
@@ -3181,10 +3196,18 @@ async function renderCarouselImages(style, slideTexts){
           color:var(--on-accent);padding:9px;border-radius:8px;font-weight:700;font-size:0.82rem;text-decoration:none;">⬇️ Baixar Slide ${i+1}</a>
       `;
       results.appendChild(card);
+      geradas++;
     }
+
+    if(geradas === 0){
+      progress.textContent = 'Nenhum slide tinha texto pra virar imagem. Escreve algo em pelo menos um campo.';
+      return false;
+    }
+    return true;
   } catch(e){
     progress.textContent = 'Não consegui gerar as imagens. Confere sua internet e tenta de novo.';
     console.error(e);
+    return false;
   }
 }
 
