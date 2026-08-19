@@ -885,8 +885,9 @@
     <div>
       <label style="font-size:0.76rem;color:var(--areia-dim);font-weight:700;display:block;margin-bottom:4px;">Largura do texto (por plataforma)</label>
       <select id="carPlatformWidthSelect" style="width:100%;">
-        <option value="meta">📱 Meta — Instagram/Facebook (mais largo)</option>
-        <option value="tiktok">🎵 TikTok/Kwai/Snapchat (mais recolhido — evita ícones)</option>
+        <option value="meta">📱 (A) Meta — Instagram/Facebook (4:5, texto largo)</option>
+        <option value="tiktok">🎵 (B) TikTok/Kwai — carrossel (4:5, texto recolhido)</option>
+        <option value="story">📲 (C) Story/Reels — vertical (9:16)</option>
       </select>
     </div>
 
@@ -1418,8 +1419,10 @@ function clearAllIdeas(){
   });
 }
 function ideaToScript(id){
+  if(__criandoRoteiro) return; // ignora clique repetido enquanto ja esta processando
+  __criandoRoteiro = true;
   const idea = ideas.find(i=>i.id===id);
-  if(!idea) return;
+  if(!idea) { __criandoRoteiro = false; return; }
   idea.status = 'roteirizada';
   persistIdeas();
   const s = {
@@ -1433,6 +1436,7 @@ function ideaToScript(id){
   switchHubTab('roteiros');
   openWizard(s.id);
   toast('Ideia levada pro roteiro ✓');
+  setTimeout(()=>{ __criandoRoteiro = false; }, 800);
 }
 
 /* ===================================================================
@@ -1547,12 +1551,16 @@ function closeAttachmentModal(){
   document.getElementById('attachmentModal').classList.remove('show');
   document.getElementById('attachmentModalBody').innerHTML = '';
 }
+let __criandoRoteiro = false;
 function newScript(){
+  if(__criandoRoteiro) return; // ignora clique repetido enquanto ja esta processando
+  __criandoRoteiro = true;
   const s = { id: uid(), titulo:'', gancho:'', historia:'', ref:'', versiculo:'', micro:'', ilustracao:'',
     aplicacao:'', reflexao:'', oracao:'', formato:'Short', status:'rascunho', createdAt: Date.now() };
   scripts.unshift(s);
   persistScripts();
   openWizard(s.id);
+  setTimeout(()=>{ __criandoRoteiro = false; }, 800); // libera de novo depois de um instante
 }
 const ALL_SCRIPT_FIELD_IDS = ["f_titulo","f_gancho","f_historia","f_versiculo","f_micro","f_ilustracao","f_aplicacao","f_reflexao","f_oracao"];
 
@@ -3220,8 +3228,9 @@ let carouselMode = 'ai';
 
 /* Tamanho por plataforma: Meta usa 4:5 (feed), TikTok/Kwai/Snapchat usam 9:16 (vertical, validado com dado real) */
 const CAROUSEL_DIMENSOES = {
-  meta: { largura: 1080, altura: 1350 },
-  tiktok: { largura: 1080, altura: 1920 }
+  meta: { largura: 1080, altura: 1350, larguraTexto: 940 },
+  tiktok: { largura: 1080, altura: 1350, larguraTexto: 800 }, // mesmo tamanho de tela do Meta, só texto mais estreito
+  story: { largura: 1080, altura: 1920, larguraTexto: 850 }
 };
 
 /* Cor por categoria de versículo — mesmo sistema já validado */
@@ -3436,7 +3445,7 @@ function closeCarouselModal(){
 function buildSlideHTML(style, isCapa, title, body, customizacao){
   customizacao = customizacao || {};
   const S = CAROUSEL_STYLES[style];
-  const dimensoes = CAROUSEL_DIMENSOES[customizacao.plataforma === 'tiktok' ? 'tiktok' : 'meta'];
+  const dimensoes = CAROUSEL_DIMENSOES[customizacao.plataforma] || CAROUSEL_DIMENSOES.meta;
   const CAROUSEL_W = dimensoes.largura, CAROUSEL_H = dimensoes.altura;
   const fontFamily = (customizacao.fontFamily && customizacao.fontFamily !== 'default') ? customizacao.fontFamily : S.fontFamily;
   const fontWeight = (customizacao.fontWeight && customizacao.fontWeight !== 'default') ? customizacao.fontWeight : S.fontWeight;
@@ -3470,7 +3479,7 @@ function buildSlideHTML(style, isCapa, title, body, customizacao){
   const bodyComDestaque = aplicarDestaque(corpoSemReferencia);
 
   // Fonte: se o usuário escolheu um tamanho manual (>0), usa ele fixo. Senão, auto-ajusta.
-  const larguraUtil = customizacao.plataforma === 'tiktok' ? 800 : 940; // valores validados pelo próprio Fábio com dado real
+  const larguraUtil = dimensoes.larguraTexto; // valores validados pelo próprio Fábio com dado real
   let fontSize;
   if(customizacao.fontSize && Number(customizacao.fontSize) > 0){
     fontSize = Number(customizacao.fontSize);
@@ -3772,6 +3781,7 @@ async function renderCarouselImages(style, slideTexts){
   const renderArea = document.getElementById('carouselRenderArea');
   progress.style.display = 'block';
   let geradas = 0;
+  window.__carouselGeradas = []; // sempre zera aqui — cada geração nova começa do zero, nunca soma com a anterior
 
   try{
     if(!html2canvasLoaded){
@@ -3802,21 +3812,20 @@ async function renderCarouselImages(style, slideTexts){
       };
       renderArea.innerHTML = buildSlideHTML(style, i===0, '', escapeHtmlPlain(slideTexts[i]), customizacao);
       const el = renderArea.firstElementChild;
-      const dimensoesRender = CAROUSEL_DIMENSOES[customizacao.plataforma === 'tiktok' ? 'tiktok' : 'meta'];
+      const dimensoesRender = CAROUSEL_DIMENSOES[customizacao.plataforma] || CAROUSEL_DIMENSOES.meta;
       const canvas = await html2canvas(el, { width:dimensoesRender.largura, height:dimensoesRender.altura, scale:1 });
       const dataUrl = canvas.toDataURL('image/png');
-      window.__carouselGeradas = window.__carouselGeradas || [];
-      const idx = window.__carouselGeradas.length;
       window.__carouselGeradas.push({ name: `Slide ${i+1}`, dataUrl });
+      const idxReal = window.__carouselGeradas.length - 1; // posição real na lista (considera slides vazios pulados)
 
       const card = document.createElement('div');
       card.style.cssText = 'background:var(--carvao-3);border:1px solid var(--border);border-radius:10px;padding:10px;';
       card.innerHTML = `
-        <img src="${dataUrl}" onclick="viewCarouselSlide(${idx})"
+        <img src="${dataUrl}" onclick="viewCarouselSlide(${idxReal})"
           style="width:100%;border-radius:6px;display:block;margin-bottom:8px;cursor:pointer;">
         <div style="font-size:0.72rem;color:var(--areia-dim);text-align:center;margin:-4px 0 8px;">👆 Toca na imagem pra ver em tela cheia</div>
         <div style="display:flex;justify-content:flex-end;">
-          <button onclick="compartilharSlide(${idx})" style="background:var(--safira);color:var(--on-accent);border:none;
+          <button onclick="compartilharSlide(${idxReal})" style="background:var(--safira);color:var(--on-accent);border:none;
             padding:9px 18px;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer;">📤 Compartilhar</button>
         </div>
       `;
