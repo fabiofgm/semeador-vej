@@ -183,7 +183,9 @@
     border-radius:10px;padding:14px 16px;margin-bottom:10px;
   }
   .idea-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
-  .idea-title{font-size:1rem;font-weight:600;line-height:1.35;white-space:pre-wrap;word-break:break-word;}
+  .idea-title{font-size:1rem;font-weight:600;line-height:1.35;white-space:pre-wrap;word-break:break-word;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer;}
+  .idea-title.expanded{-webkit-line-clamp:unset;overflow:visible;}
   .idea-meta{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;}
   .stars{color:#a67c1e;font-size:0.82rem;letter-spacing:1px;}
   .pill{
@@ -559,7 +561,7 @@
 
       <div class="block">
         <div class="block-head"><span class="verse-badge">9</span><span class="block-title">Título de trabalho & formato</span></div>
-        <div id="f_titulo" class="rich-field" contenteditable="true" data-placeholder="Título de trabalho deste roteiro" style="margin-bottom:10px;min-height:52px;" onblur="linkifyRichField(this)"></div>
+        <div id="f_titulo" class="rich-field" contenteditable="true" data-placeholder="Título de trabalho deste roteiro" style="margin-bottom:10px;min-height:52px;max-height:80px;overflow-y:auto;" onblur="linkifyRichField(this)"></div>
         <div class="meta-row">
           <div>
             <label>Formato</label>
@@ -1328,7 +1330,7 @@ function renderIdeas(){
     <div class="idea" id="idea-${i.id}" onclick="toggleDetail('${i.id}')">
       <div class="idea-top">
         <div>
-          <div class="idea-title">${linkify(escapeHtml(i.title))}</div>
+          <div class="idea-title" onclick="event.stopPropagation(); this.classList.toggle('expanded')">${linkify(escapeHtml(i.title))}</div>
           <div class="idea-meta">
             <span class="stars">${starString(i.stars)}</span>
             <span class="pill">${i.format}</span>
@@ -1367,6 +1369,17 @@ function renderIdeas(){
           <label>Chaves 🔑 (palavras pra buscar depois, separadas por vírgula)</label>
           <input type="text" value="${escapeHtml(i.chaves||'')}" placeholder="ex: reino dos céus, conversão" list="chavesDatalist" onchange="updateIdea('${i.id}','chaves',this.value)">
         </div>
+        ${i.notasCompletas ? `
+        <div class="full">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <label style="margin:0;">📋 Estudo completo</label>
+            <button type="button" onclick="event.stopPropagation(); copyPlainText(${JSON.stringify(i.notasCompletas)}, this)"
+              style="background:var(--carvao-3);border:1px solid var(--border);color:var(--areia);border-radius:6px;
+              padding:4px 9px;font-size:0.78rem;cursor:pointer;">📋 Copiar tudo</button>
+          </div>
+          <div style="background:var(--carvao-3);border-radius:8px;padding:10px 12px;font-size:0.84rem;white-space:pre-wrap;line-height:1.5;max-height:260px;overflow:auto;">${escapeHtmlPlain(i.notasCompletas)}</div>
+        </div>
+        ` : ''}
         <div class="detail-actions">
           <button class="to-script-secondary" onclick="closeDetail('${i.id}')">Fechar</button>
           <button class="to-script" onclick="ideaToScript('${i.id}')">Transformar em roteiro →</button>
@@ -1567,6 +1580,21 @@ const ALL_SCRIPT_FIELD_IDS = ["f_titulo","f_gancho","f_historia","f_versiculo","
 function escapeHtmlPlain(s){
   return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+async function copyPlainText(text, btn){
+  if(!text){ toast('Nada pra copiar.'); return; }
+  try{
+    await navigator.clipboard.writeText(text);
+    toast('Copiado ✓');
+    if(btn){
+      const original = btn.textContent;
+      btn.textContent = '✓ Copiado';
+      setTimeout(()=>{ btn.textContent = original; }, 1200);
+    }
+  } catch(e){
+    toast('Não consegui copiar. Seleciona o texto manualmente.');
+  }
+}
+
 async function copyFieldValue(fieldId, btn){
   const text = getFieldValue(fieldId);
   if(!text){ toast('Campo vazio, nada pra copiar.'); return; }
@@ -3135,11 +3163,25 @@ function closeStudyModal(){
 function renderStudyMessage(role, text){
   const box = document.getElementById('studyConversation');
   const isUser = role === 'user';
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = `align-self:${isUser?'flex-end':'flex-start'};max-width:85%;display:flex;flex-direction:column;gap:4px;`;
+
   const bubble = document.createElement('div');
-  bubble.style.cssText = `align-self:${isUser?'flex-end':'flex-start'};max-width:85%;background:${isUser?'var(--safira)':'var(--carvao-3)'};
+  bubble.style.cssText = `background:${isUser?'var(--safira)':'var(--carvao-3)'};
     color:${isUser?'var(--on-accent)':'var(--areia)'};border-radius:12px;padding:10px 14px;font-size:0.86rem;white-space:pre-wrap;word-break:break-word;`;
   bubble.textContent = text;
-  box.appendChild(bubble);
+  wrapper.appendChild(bubble);
+
+  if(!isUser){
+    const copyBtn = document.createElement('button');
+    copyBtn.textContent = '📋 Copiar';
+    copyBtn.style.cssText = `align-self:flex-start;background:none;border:1px solid var(--border);color:var(--areia-dim);
+      border-radius:6px;padding:3px 9px;font-size:0.72rem;cursor:pointer;`;
+    copyBtn.onclick = ()=>copyPlainText(text, copyBtn);
+    wrapper.appendChild(copyBtn);
+  }
+
+  box.appendChild(wrapper);
   box.scrollTop = box.scrollHeight;
 }
 
