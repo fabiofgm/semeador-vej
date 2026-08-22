@@ -186,6 +186,30 @@
   .idea-title{font-size:1rem;font-weight:600;line-height:1.35;white-space:pre-wrap;word-break:break-word;
     display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer;}
   .idea-title.expanded{-webkit-line-clamp:unset;overflow:visible;}
+  .script-title-clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer;}
+
+  .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .cal-nav-btn{background:var(--carvao-3);border:1px solid var(--border);color:var(--areia);border-radius:8px;
+    width:36px;height:36px;font-size:1.1rem;cursor:pointer;}
+  .cal-mes-titulo{font-family:var(--serif);font-size:1.1rem;font-weight:600;text-transform:capitalize;}
+  .cal-semana-header{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;
+    font-size:0.68rem;color:var(--areia-dim);font-weight:700;text-align:center;text-transform:uppercase;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .cal-cell{background:var(--carvao-2);border:1px solid var(--border);border-radius:8px;padding:5px 4px;
+    min-height:74px;cursor:pointer;overflow:hidden;font-size:0.68rem;}
+  .cal-cell:hover{border-color:var(--areia-dim);}
+  .cal-cell-vazia{background:none;border:none;cursor:default;}
+  .cal-cell-hoje{border-color:var(--safira-l);border-width:2px;}
+  .cal-cell-numero{font-weight:700;font-size:0.8rem;margin-bottom:2px;}
+  .cal-hoje-tag{font-size:0.58rem;color:var(--safira-l);font-weight:700;}
+  .cal-cell-progresso{display:inline-block;font-size:0.62rem;font-weight:700;padding:1px 5px;border-radius:999px;margin-bottom:3px;}
+  .cal-progresso-ok{background:var(--esmeralda);color:var(--on-accent);}
+  .cal-progresso-faltando{background:var(--terracota);color:var(--on-accent);}
+  .cal-task-preview{color:var(--areia-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;}
+  .cal-task-time{opacity:0.7;}
+  .cal-task-mais{color:var(--areia-dim);font-style:italic;opacity:0.8;}
+  @media (max-width:420px){ .cal-cell{min-height:62px;font-size:0.62rem;} .cal-task-preview{display:none;} }
+  .script-title-clamp.expanded{-webkit-line-clamp:unset;overflow:visible;}
   .idea-meta{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;}
   .stars{color:#a67c1e;font-size:0.82rem;letter-spacing:1px;}
   .pill{
@@ -625,6 +649,7 @@
         <span class="layout-label">🔀 Ver por:</span>
         <button class="layout-btn active" id="layout-days-btn" onclick="switchLayout('days')">📅 Dias</button>
         <button class="layout-btn" id="layout-format-btn" onclick="switchLayout('format')">🏷️ Formato</button>
+        <button class="layout-btn" id="layout-month-btn" onclick="switchLayout('month')">🗓️ Mês</button>
       </div>
       <div class="platform-filter-group">
         <span class="layout-label">🎯 Plataforma:</span>
@@ -648,7 +673,7 @@
       <button class="btn-factory-reset" onclick="factoryResetConfig()">⚠️ Restaurar Padrão Original</button>
     </div>
 
-    <div class="progress-container">
+    <div class="progress-container" id="weeklyProgressContainer">
       <div class="progress-top">
         <div class="progress-bar-wrapper">
           <div id="progress-text" style="font-weight:700;font-size:1rem;">Progresso Geral: 0 / 0 (0%)</div>
@@ -739,6 +764,19 @@
     <button class="to-script-secondary" style="width:100%;padding:12px;" onclick="closeTrashModal(); clearAllScripts();">📜 Excluir todos os Roteiros</button>
     <div class="modal-actions">
       <button class="secondary" onclick="closeTrashModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDARIO - DETALHE DO DIA MODAL -->
+<div class="modal-overlay align-top" id="calDayModal">
+  <button class="modal-close-float" onclick="closeCalDayModal()">✕</button>
+  <div class="modal-box" style="max-width:480px;">
+    <h3 id="calDayModalTitle" style="margin:0;text-transform:capitalize;">Dia</h3>
+    <p style="font-size:0.78rem;color:var(--areia-dim);margin:0;">Marca o que já foi programado/publicado nesse dia.</p>
+    <div id="calDayModalBody"></div>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeCalDayModal()">Fechar</button>
     </div>
   </div>
 </div>
@@ -1470,7 +1508,7 @@ function renderScripts(){
     box.innerHTML = scripts.map(s=>`
       <div class="script-card" onclick="openWizard('${s.id}')">
         <div style="min-width:0;flex:1;">
-          <div style="font-weight:600;word-break:break-word;overflow-wrap:break-word;">${escapeHtml(s.titulo || '(sem título)')}</div>
+          <div class="script-title-clamp" onclick="event.stopPropagation(); this.classList.toggle('expanded')" style="font-weight:600;word-break:break-word;overflow-wrap:break-word;">${escapeHtml(s.titulo || '(sem título)')}</div>
           <div class="st">${statusLabel(s.status)} · ${s.formato}</div>
         </div>
         <button class="del" title="Excluir" onclick="event.stopPropagation(); deleteScript('${s.id}')">🗑️</button>
@@ -1901,6 +1939,7 @@ function switchLayout(layout){
   localStorage.setItem(LAYOUT_KEY, layout);
   document.getElementById('layout-days-btn').classList.toggle('active', layout==='days');
   document.getElementById('layout-format-btn').classList.toggle('active', layout==='format');
+  document.getElementById('layout-month-btn').classList.toggle('active', layout==='month');
   activeDayTabIdx = 0;
   renderPanel();
 }
@@ -1981,6 +2020,124 @@ function markScriptRecorded(id){
   toast('Roteiro marcado como gravado ✓');
 }
 
+/* ---------- Calendário Mensal (Painel) ---------- */
+window.__calMes = window.__calMes ?? new Date().getMonth(); // 0-11
+window.__calAno = window.__calAno ?? new Date().getFullYear();
+
+const MESES_NOMES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+
+function tarefasDoDiaCalendario(dataObj){
+  const jsDay = dataObj.getDay(); // 0=Dom...6=Sab
+  const dayOrderAlvo = jsDay === 0 ? 7 : jsDay;
+  const grupo = scheduleData.find(g => g.dayOrder === dayOrderAlvo);
+  if(!grupo) return [];
+  return grupo.tasks.filter(t => taskMatchesPlatform(t.platform));
+}
+
+function dataParaChave(dataObj){
+  return `${dataObj.getFullYear()}-${String(dataObj.getMonth()+1).padStart(2,'0')}-${String(dataObj.getDate()).padStart(2,'0')}`;
+}
+
+function calCheckKey(dataChave, taskId){ return `cal_check_${dataChave}_${taskId}`; }
+
+function renderMonthCalendar(container){
+  const mes = window.__calMes, ano = window.__calAno;
+  const primeiroDia = new Date(ano, mes, 1);
+  const ultimoDia = new Date(ano, mes+1, 0);
+  const totalDias = ultimoDia.getDate();
+  // quantas células vazias antes do dia 1 (semana começando Segunda)
+  const jsDayPrimeiro = primeiroDia.getDay();
+  const vazioAntes = jsDayPrimeiro === 0 ? 6 : jsDayPrimeiro - 1;
+
+  const hoje = new Date();
+  const hojeChave = dataParaChave(hoje);
+
+  let celulas = '';
+  for(let i=0; i<vazioAntes; i++){ celulas += `<div class="cal-cell cal-cell-vazia"></div>`; }
+
+  for(let dia=1; dia<=totalDias; dia++){
+    const dataObj = new Date(ano, mes, dia);
+    const chave = dataParaChave(dataObj);
+    const tarefas = tarefasDoDiaCalendario(dataObj);
+    const feitas = tarefas.filter(t => localStorage.getItem(calCheckKey(chave, t.id)) === '1').length;
+    const isHoje = chave === hojeChave;
+    const temFalta = tarefas.length > 0 && feitas < tarefas.length;
+
+    const preview = tarefas.slice(0,2).map(t=>
+      `<div class="cal-task-preview">${escapeHtmlPlain(t.content)} <span class="cal-task-time">${escapeHtmlPlain(t.time||'')}</span></div>`
+    ).join('');
+    const maisTexto = tarefas.length > 2 ? `<div class="cal-task-mais">+${tarefas.length-2} mais</div>` : '';
+
+    celulas += `
+      <div class="cal-cell ${isHoje?'cal-cell-hoje':''}" onclick="abrirDiaCalendario('${chave}')">
+        <div class="cal-cell-numero">${dia}${isHoje?' <span class="cal-hoje-tag">hoje</span>':''}</div>
+        ${tarefas.length>0 ? `<div class="cal-cell-progresso ${temFalta?'cal-progresso-faltando':'cal-progresso-ok'}">${feitas}/${tarefas.length}</div>` : ''}
+        ${preview}
+        ${maisTexto}
+      </div>`;
+  }
+
+  container.innerHTML = `
+    <div class="cal-header">
+      <button class="cal-nav-btn" onclick="mudarMesCalendario(-1)">←</button>
+      <div class="cal-mes-titulo">${MESES_NOMES[mes]} ${ano}</div>
+      <button class="cal-nav-btn" onclick="mudarMesCalendario(1)">→</button>
+    </div>
+    <div class="cal-semana-header">
+      <div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div><div>Dom</div>
+    </div>
+    <div class="cal-grid">${celulas}</div>
+  `;
+}
+
+function mudarMesCalendario(delta){
+  let novoMes = window.__calMes + delta;
+  let novoAno = window.__calAno;
+  if(novoMes < 0){ novoMes = 11; novoAno--; }
+  if(novoMes > 11){ novoMes = 0; novoAno++; }
+  window.__calMes = novoMes;
+  window.__calAno = novoAno;
+  renderPanel();
+}
+
+function abrirDiaCalendario(dataChave){
+  const [ano, mes, dia] = dataChave.split('-').map(Number);
+  const dataObj = new Date(ano, mes-1, dia);
+  const tarefas = tarefasDoDiaCalendario(dataObj);
+  const nomeDia = dataObj.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  document.getElementById('calDayModalTitle').textContent = nomeDia;
+  const box = document.getElementById('calDayModalBody');
+
+  if(tarefas.length === 0){
+    box.innerHTML = `<p style="color:var(--areia-dim);font-size:0.86rem;">Nenhuma mídia programada nesse dia (com o filtro de plataforma atual).</p>`;
+  } else {
+    box.innerHTML = tarefas.map(t=>{
+      const key = calCheckKey(dataChave, t.id);
+      const marcado = localStorage.getItem(key) === '1';
+      return `
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--border);cursor:pointer;">
+          <input type="checkbox" ${marcado?'checked':''} onchange="toggleCalCheck('${key}', this, '${dataChave}')" style="width:20px;height:20px;flex-shrink:0;">
+          <div style="flex:1;">
+            <div style="font-weight:600;${marcado?'text-decoration:line-through;color:var(--areia-dim);':''}">${escapeHtmlPlain(t.content)}</div>
+            <div style="font-size:0.78rem;color:var(--areia-dim);">${escapeHtmlPlain(t.platform||'')} · ${escapeHtmlPlain(t.time||'')}</div>
+          </div>
+        </label>`;
+    }).join('');
+  }
+  document.getElementById('calDayModal').classList.add('show');
+  posicionarXFlutuante('calDayModal');
+}
+
+function toggleCalCheck(key, checkboxEl, dataChave){
+  if(checkboxEl.checked){ localStorage.setItem(key, '1'); }
+  else { localStorage.removeItem(key); }
+  abrirDiaCalendario(dataChave); // re-renderiza a lista (riscando o texto) e o calendário por trás
+  renderPanel();
+}
+
+function closeCalDayModal(){ document.getElementById('calDayModal').classList.remove('show'); }
+
 function renderPanel(){
   populatePlatformDropdown();
   document.getElementById('platformFilter').value = selectedPlatformFilter;
@@ -1992,6 +2149,14 @@ function renderPanel(){
   const historyCard = document.getElementById('history-card-view');
   tabs.innerHTML = "";
   container.innerHTML = "";
+
+  if(currentLayout==='month'){
+    document.getElementById('weeklyProgressContainer').style.display = 'none';
+    renderMonthCalendar(container);
+    if(historyCard) historyCard.innerHTML = '';
+    return;
+  }
+  document.getElementById('weeklyProgressContainer').style.display = '';
 
   if(currentLayout==='days'){
     scheduleData.forEach((group, idx)=>{
